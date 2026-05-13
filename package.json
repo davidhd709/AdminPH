@@ -1,0 +1,24 @@
+{
+  "name": "adminph",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AdminPH — SaaS multi-tenant para administración de propiedad horizontal en Colombia",
+  "scripts": {
+    "prepare": "husky",
+    "lint": "npm --prefix backend run lint",
+    "lint:fix": "npm --prefix backend run lint:fix",
+    "format": "npm --prefix backend run format",
+    "format:check": "npm --prefix backend run format:check",
+    "build": "npm --prefix backend run build",
+    "test": "npm --prefix backend run test"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

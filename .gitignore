@@ -66,3 +66,6 @@ minio_data/
 *.zip
 .tmp/
 .cache/
+
+# ===== Misc =====
+.claude/
