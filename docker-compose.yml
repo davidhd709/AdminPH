@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:16
+    container_name: adminph_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: adminph
+      POSTGRES_PASSWORD: adminph_password
+      POSTGRES_DB: adminph_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - adminph_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  adminph_postgres_data:

@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPERADMIN
+  COMPANY_ADMIN
+  PROPERTY_ADMIN
+  ACCOUNTANT
+  SECURITY
+  OWNER
+  RESIDENT
+}
+
+enum CompanyStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum PropertyStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UnitStatus {
+  OCCUPIED
+  VACANT
+  RENTED
+  MAINTENANCE
+}
+
+enum FeeStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  PARTIAL
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  LOGIN
+  LOGOUT
+  GENERATE
+}
+
+enum FeeConceptType {
+  ADMINISTRATION
+  EXTRAORDINARY
+  FINE
+  INTEREST
+  PARKING
+  OTHER
+}
+
+enum CalculationType {
+  FIXED
+  COEFFICIENT
+}
+
+enum InterestType {
+  DAILY
+  MONTHLY
+}
+
+model Company {
+  id        String        @id @default(uuid())
+  name      String
+  nit       String?       @unique
+  status    CompanyStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+
+  properties  Property[]
+  users       User[]
+  auditLogs   AuditLog[]
+  feeConcepts FeeConcept[]
+  fees        Fee[]
+  payments    Payment[]
+
+  @@index([id])
+}
+
+model Property {
+  id               String         @id @default(uuid())
+  companyId        String
+  company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name             String
+  nit              String?        @unique
+  address          String
+  city             String
+  department       String
+  phone            String?
+  email            String?
+  coefficientTotal Decimal        @db.Decimal(18, 8)
+  status           PropertyStatus @default(ACTIVE)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
+
+  towers        Tower[]
+  units         Unit[]
+  propertyUsers PropertyUser[]
+  fees          Fee[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  feeConcepts   FeeConcept[]
+  lateFeeConfig LateFeeConfig?
+
+  @@index([companyId])
+  @@index([id])
+}
+
+model LateFeeConfig {
+  id           String       @id @default(uuid())
+  propertyId   String       @unique
+  property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  companyId    String
+  interestRate Decimal      @db.Decimal(5, 2)
+  interestType InterestType @default(MONTHLY)
+  graceDays    Int          @default(5)
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  @@index([propertyId])
+}
+
+model Tower {
+  id          String    @id @default(uuid())
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  units Unit[]
+
+  @@index([propertyId])
+}
+
+model Unit {
+  id          String     @id @default(uuid())
+  towerId     String?
+  tower       Tower?     @relation(fields: [towerId], references: [id])
+  propertyId  String
+  property    Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  code        String // e.g. "A-101"
+  floor       Int
+  number      String
+  area        Decimal    @db.Decimal(10, 2)
+  coefficient Decimal    @db.Decimal(18, 8)
+  status      UnitStatus @default(VACANT)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+
+  owners    Owner[]
+  residents Resident[]
+  fees      Fee[]
+  payments  Payment[]
+  auditLogs AuditLog[]
+
+  @@unique([propertyId, code])
+  @@index([propertyId])
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  fullName     String
+  document     String    @unique
+  phone        String?
+  globalRole   UserRole  @default(RESIDENT)
+  refreshToken String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  companyId     String?
+  company       Company?       @relation(fields: [companyId], references: [id])
+  propertyUsers PropertyUser[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  owners        Owner[]
+  residents     Resident[]
+
+  @@index([email])
+}
+
+model PropertyUser {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  role       UserRole
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, propertyId])
+}
+
+model Owner {
+  id        String    @id @default(uuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  unitId    String
+  unit      Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  isPrimary Boolean   @default(true)
+  status    String    @default("ACTIVE")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([unitId])
+}
+
+model Resident {
+  id        String    @id @default(uuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  unitId    String
+  unit      Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  status    String    @default("ACTIVE")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([unitId])
+}
+
+model FeeConcept {
+  id              String          @id @default(uuid())
+  companyId       String
+  company         Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId      String
+  property        Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  type            FeeConceptType  @default(ADMINISTRATION)
+  calculationType CalculationType @default(FIXED)
+  defaultAmount   Decimal         @db.Decimal(18, 2)
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+
+  fees Fee[]
+
+  @@index([companyId])
+  @@index([propertyId])
+}
+
+model Fee {
+  id            String     @id @default(uuid())
+  companyId     String
+  company       Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId    String
+  property      Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId        String
+  unit          Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  conceptId     String
+  concept       FeeConcept @relation(fields: [conceptId], references: [id])
+  amount        Decimal    @db.Decimal(18, 2)
+  pendingAmount Decimal    @db.Decimal(18, 2)
+  paidAmount    Decimal    @default(0) @db.Decimal(18, 2)
+  dueDate       DateTime
+  status        FeeStatus  @default(PENDING)
+  period        String // e.g. "2026-05"
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?
+
+  allocations PaymentAllocation[]
+
+  @@unique([unitId, conceptId, period])
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([unitId, status])
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  companyId       String
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId      String
+  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId          String
+  unit            Unit          @relation(fields: [unitId], references: [id])
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  amount          Decimal       @db.Decimal(18, 2)
+  receiptUrl      String
+  bankReference   String
+  status          PaymentStatus @default(PENDING_REVIEW)
+  rejectionReason String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  allocations PaymentAllocation[]
+
+  @@unique([propertyId, bankReference])
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([unitId])
+}
+
+model PaymentAllocation {
+  id              String   @id @default(uuid())
+  paymentId       String
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  feeId           String
+  fee             Fee      @relation(fields: [feeId], references: [id])
+  amountAllocated Decimal  @db.Decimal(18, 2)
+  createdAt       DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([feeId])
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  companyId  String?
+  company    Company?    @relation(fields: [companyId], references: [id])
+  propertyId String?
+  property   Property?   @relation(fields: [propertyId], references: [id])
+  entityName String
+  entityId   String
+  action     AuditAction
+  oldValue   Json?
+  newValue   Json?
+  timestamp  DateTime    @default(now())
+  unit       Unit?       @relation(fields: [unitId], references: [id])
+  unitId     String?
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([propertyId])
+}
