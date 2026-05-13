@@ -1,10 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { LateFeeConfig} from "@prisma/client";
-import { Fee, Prisma } from "@prisma/client";
-import type { CreateLateFeeConfigDto} from "./dto/late-fee.dto";
-import { UpdateLateFeeConfigDto } from "./dto/late-fee.dto";
-import type { AuditService } from "../audit/audit.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { LateFeeConfig } from "@prisma/client";
+import { CreateLateFeeConfigDto } from "./dto/late-fee.dto";
+import { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class LateFeeService {

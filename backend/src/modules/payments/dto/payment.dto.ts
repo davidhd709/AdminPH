@@ -1,13 +1,13 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsDate } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsDate } from "class-validator";
 
 export class CreatePaymentDto {
   @IsString()
   @IsNotEmpty()
-  unitId: string;
+  unitId!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  amount: number;
+  amount!: number;
 
   @IsString()
   @IsOptional()
@@ -15,7 +15,7 @@ export class CreatePaymentDto {
 
   @IsString()
   @IsNotEmpty()
-  bankReference: string;
+  bankReference!: string;
 
   @IsDate()
   @IsOptional()
@@ -23,13 +23,13 @@ export class CreatePaymentDto {
 
   @IsString()
   @IsNotEmpty()
-  receiptUrl: string;
+  receiptUrl!: string;
 }
 
 export class ApprovePaymentDto {
   @IsString()
   @IsNotEmpty()
-  paymentId: string;
+  paymentId!: string;
 
   @IsOptional()
   @IsString()
@@ -39,9 +39,9 @@ export class ApprovePaymentDto {
 export class RejectPaymentDto {
   @IsString()
   @IsNotEmpty()
-  paymentId: string;
+  paymentId!: string;
 
   @IsString()
   @IsNotEmpty()
-  rejectionReason: string;
+  rejectionReason!: string;
 }

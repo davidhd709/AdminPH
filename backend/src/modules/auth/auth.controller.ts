@@ -8,23 +8,23 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
-import type { AuthService } from "./auth.service";
+import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 
 class LoginDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
-  password: string;
+  password!: string;
 }
 
 class RefreshDto {
   @IsString()
   @IsNotEmpty()
-  refresh_token: string;
+  refresh_token!: string;
 }
 
 @Controller("auth")

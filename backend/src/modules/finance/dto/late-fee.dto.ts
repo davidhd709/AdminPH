@@ -1,26 +1,18 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsNumber,
-  IsBoolean,
-  IsEnum,
-} from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, IsEnum } from "class-validator";
 import { InterestType } from "@prisma/client";
 
 export class CreateLateFeeConfigDto {
   @IsString()
   @IsNotEmpty()
-  propertyId: string;
+  propertyId!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  interestRate: number;
+  interestRate!: number;
 
   @IsEnum(InterestType)
   @IsNotEmpty()
-  interestType: InterestType;
+  interestType!: InterestType;
 
   @IsNumber()
   @IsOptional()

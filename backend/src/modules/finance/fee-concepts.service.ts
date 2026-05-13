@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { FeeConcept, Prisma } from "@prisma/client";
-import type { CreateFeeConceptDto, UpdateFeeConceptDto } from "./dto/fee-concept.dto";
-import type { AuditService } from "../audit/audit.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { FeeConcept, Prisma } from "@prisma/client";
+import { CreateFeeConceptDto, UpdateFeeConceptDto } from "./dto/fee-concept.dto";
+import { AuditService } from "../audit/audit.service";
 import { ForbiddenException, NotFoundException } from "@nestjs/common";
 
 @Injectable()

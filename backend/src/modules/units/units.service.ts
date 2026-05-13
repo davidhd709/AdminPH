@@ -1,8 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { Unit, Prisma } from "@prisma/client";
-import type { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
-import type { AuditService } from "../audit/audit.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { Unit, Prisma } from "@prisma/client";
+import { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
+import { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class UnitsService {

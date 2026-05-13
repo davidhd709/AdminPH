@@ -1,17 +1,19 @@
 import { Injectable } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { AuditAction } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditAction } from "@prisma/client";
 
 export interface AuditLogParams {
   userId: string;
-  companyId?: string;
-  propertyId?: string;
+  companyId?: string | null;
+  propertyId?: string | null;
   entityName: string;
   entityId: string;
   action: AuditAction;
+  // oldValue/newValue son JSON dinámico; Prisma los tipa como InputJsonValue
+  // y este service solo los pasa de largo.
   oldValue?: any;
   newValue?: any;
-  request?: any;
+  request?: unknown;
 }
 
 @Injectable()

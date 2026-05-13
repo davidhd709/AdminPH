@@ -1,9 +1,9 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateOwnerDto {
   @IsString()
   @IsNotEmpty()
-  unitId: string;
+  unitId!: string;
 
   @IsString()
   @IsOptional()
@@ -17,7 +17,7 @@ export class CreateOwnerDto {
 export class CreateResidentDto {
   @IsString()
   @IsNotEmpty()
-  unitId: string;
+  unitId!: string;
 
   @IsString()
   @IsOptional()

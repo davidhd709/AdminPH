@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Patch, Param, UseGuards } from "@nestjs/common";
-import type { PaymentsService } from "./payments.service";
-import type { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
+import { Controller, Post, Body, Patch, UseGuards } from "@nestjs/common";
+import { PaymentsService } from "./payments.service";
+import { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";

@@ -1,16 +1,6 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Patch,
-  Delete,
-  Body,
-  Query,
-  Param,
-  UseGuards,
-} from "@nestjs/common";
-import type { FeesService } from "./fees.service";
-import type { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
+import { Controller, Post, Get, Patch, Body, Query, Param, UseGuards } from "@nestjs/common";
+import { FeesService } from "./fees.service";
+import { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";

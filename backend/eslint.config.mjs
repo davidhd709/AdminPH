@@ -41,10 +41,12 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-empty-object-type": "warn",
       "@typescript-eslint/no-require-imports": "error",
-      "@typescript-eslint/consistent-type-imports": [
-        "warn",
-        { prefer: "type-imports", disallowTypeAnnotations: false },
-      ],
+      // Desactivado: NestJS DI requiere import normal (no `import type`) para
+      // que TypeScript emita metadata correcta de reflect-metadata. Si se
+      // habilita esta regla, ESLint convertiría inyecciones como
+      // `private prisma: PrismaService` a type-only imports y rompería
+      // la resolución de dependencias en runtime.
+      "@typescript-eslint/consistent-type-imports": "off",
     },
   },
 );

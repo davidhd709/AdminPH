@@ -4,11 +4,10 @@ import {
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { Payment} from "@prisma/client";
-import { Prisma, Fee } from "@prisma/client";
-import type { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
-import type { AuditService } from "../audit/audit.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { Payment } from "@prisma/client";
+import { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
+import { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class PaymentsService {

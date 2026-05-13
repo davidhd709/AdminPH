@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
-import type { TowersService } from "./towers.service";
-import type { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
+import { TowersService } from "./towers.service";
+import { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import type { Request as ExpressRequest } from "express";
+import { Request as ExpressRequest } from "express";
 
 @Controller("towers")
 @UseGuards(JwtAuthGuard, RolesGuard)

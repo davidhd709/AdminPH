@@ -1,6 +1,6 @@
 import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import { User, Unit, Fee, Payment, Prisma } from "@prisma/client";
+import { Fee, Payment } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
 
 export interface AccountStatement {
   unit: any;
@@ -10,9 +10,9 @@ export interface AccountStatement {
     totalOverdue: number;
     totalPaid: number;
   };
-  pendingFees: any[];
-  overdueFees: any[];
-  paymentHistory: any[];
+  pendingFees: Fee[];
+  overdueFees: Fee[];
+  paymentHistory: Payment[];
 }
 
 @Injectable()
@@ -64,8 +64,8 @@ export class AccountStatementService {
     let totalPending = 0;
     let totalOverdue = 0;
     let totalPaid = 0;
-    const pendingFees = [];
-    const overdueFees = [];
+    const pendingFees: Fee[] = [];
+    const overdueFees: Fee[] = [];
 
     const now = new Date();
 

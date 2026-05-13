@@ -3,11 +3,11 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber } from "class-valid
 export class CreatePropertyDto {
   @IsString()
   @IsNotEmpty()
-  companyId: string;
+  companyId!: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()
@@ -15,15 +15,15 @@ export class CreatePropertyDto {
 
   @IsString()
   @IsNotEmpty()
-  address: string;
+  address!: string;
 
   @IsString()
   @IsNotEmpty()
-  city: string;
+  city!: string;
 
   @IsString()
   @IsNotEmpty()
-  department: string;
+  department!: string;
 
   @IsString()
   @IsOptional()
@@ -35,7 +35,7 @@ export class CreatePropertyDto {
 
   @IsNumber()
   @IsNotEmpty()
-  coefficientTotal: number;
+  coefficientTotal!: number;
 }
 
 export class UpdatePropertyDto {

@@ -1,9 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { Fee} from "@prisma/client";
-import { Prisma } from "@prisma/client";
-import type { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
-import type { AuditService } from "../audit/audit.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { Fee } from "@prisma/client";
+import { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
+import { AuditService } from "../audit/audit.service";
 
 export interface GenerationSummary {
   totalUnits: number;
@@ -95,7 +94,7 @@ export class FeesService {
           continue;
         }
 
-        const fee = await this.prisma.fee.create({
+        await this.prisma.fee.create({
           data: {
             unitId: unit.id,
             propertyId: property.id,
@@ -113,7 +112,8 @@ export class FeesService {
         summary.createdFees++;
         summary.totalAmount += Number(amount);
       } catch (e) {
-        summary.errors.push(`Unit ${unit.code}: ${e.message}`);
+        const msg = e instanceof Error ? e.message : String(e);
+        summary.errors.push(`Unit ${unit.code}: ${msg}`);
         summary.skippedFees++;
       }
     }
@@ -155,7 +155,7 @@ export class FeesService {
     });
   }
 
-  async findOne(id: string, user: any): Promise<Fee | null> {
+  async findOne(id: string, user: any): Promise<Fee> {
     const fee = await this.prisma.fee.findFirst({
       where: { id, deletedAt: null },
       include: { property: true, unit: true },

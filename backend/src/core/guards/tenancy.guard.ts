@@ -1,6 +1,6 @@
-import type { CanActivate, ExecutionContext} from "@nestjs/common";
+import { CanActivate, ExecutionContext } from "@nestjs/common";
 import { Injectable, ForbiddenException } from "@nestjs/common";
-import type { PrismaService } from "../../modules/prisma/prisma.service";
+import { PrismaService } from "../../modules/prisma/prisma.service";
 
 @Injectable()
 export class TenancyGuard implements CanActivate {

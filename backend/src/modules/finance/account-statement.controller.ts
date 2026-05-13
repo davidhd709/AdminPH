@@ -1,5 +1,5 @@
 import { Controller, Get, Param, UseGuards } from "@nestjs/common";
-import type { AccountStatementService } from "./account-statement.service";
+import { AccountStatementService } from "./account-statement.service";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";

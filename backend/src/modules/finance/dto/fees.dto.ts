@@ -1,21 +1,21 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsDate } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsDate } from "class-validator";
 
 export class GenerateFeesDto {
   @IsString()
   @IsNotEmpty()
-  propertyId: string;
+  propertyId!: string;
 
   @IsString()
   @IsNotEmpty()
-  conceptId: string;
+  conceptId!: string;
 
   @IsString()
   @IsNotEmpty()
-  period: string; // Format: YYYY-MM
+  period!: string; // Format: YYYY-MM
 
   @IsDate()
   @IsNotEmpty()
-  dueDate: Date;
+  dueDate!: Date;
 
   @IsNumber()
   @IsOptional()

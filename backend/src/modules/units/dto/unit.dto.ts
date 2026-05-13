@@ -1,9 +1,9 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsNumber } from "class-validator";
 
 export class CreateUnitDto {
   @IsString()
   @IsNotEmpty()
-  propertyId: string;
+  propertyId!: string;
 
   @IsString()
   @IsOptional()
@@ -11,23 +11,23 @@ export class CreateUnitDto {
 
   @IsString()
   @IsNotEmpty()
-  code: string;
+  code!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  floor: number;
+  floor!: number;
 
   @IsString()
   @IsNotEmpty()
-  number: string;
+  number!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  area: number;
+  area!: number;
 
   @IsNumber()
   @IsNotEmpty()
-  coefficient: number;
+  coefficient!: number;
 }
 
 export class UpdateUnitDto {

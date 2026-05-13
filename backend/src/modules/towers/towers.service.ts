@@ -1,8 +1,8 @@
 import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
-import type { PrismaService } from "../prisma/prisma.service";
-import type { Tower, Prisma } from "@prisma/client";
-import type { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
-import type { AuditService } from "../audit/audit.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { Tower, Prisma } from "@prisma/client";
+import { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
+import { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class TowersService {

@@ -1,12 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsNumber,
-  IsBoolean,
-  IsEnum,
-} from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, IsEnum } from "class-validator";
 
 export enum FeeConceptType {
   ADMINISTRATION = "ADMINISTRATION",
@@ -25,11 +17,11 @@ export enum CalculationType {
 export class CreateFeeConceptDto {
   @IsString()
   @IsNotEmpty()
-  propertyId: string;
+  propertyId!: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()
@@ -37,15 +29,15 @@ export class CreateFeeConceptDto {
 
   @IsEnum(FeeConceptType)
   @IsNotEmpty()
-  type: FeeConceptType;
+  type!: FeeConceptType;
 
   @IsEnum(CalculationType)
   @IsNotEmpty()
-  calculationType: CalculationType;
+  calculationType!: CalculationType;
 
   @IsNumber()
   @IsNotEmpty()
-  defaultAmount: number;
+  defaultAmount!: number;
 
   @IsBoolean()
   @IsOptional()

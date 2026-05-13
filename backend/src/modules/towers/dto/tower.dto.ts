@@ -3,11 +3,11 @@ import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 export class CreateTowerDto {
   @IsString()
   @IsNotEmpty()
-  propertyId: string;
+  propertyId!: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()

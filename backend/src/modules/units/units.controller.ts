@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
-import type { UnitsService } from "./units.service";
-import type { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
+import { UnitsService } from "./units.service";
+import { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import type { Request as ExpressRequest } from "express";
+import { Request as ExpressRequest } from "express";
 
 @Controller("units")
 @UseGuards(JwtAuthGuard, RolesGuard)
