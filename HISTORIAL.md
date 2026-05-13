@@ -449,3 +449,165 @@ Roadmap temporal sugerido: 4 meses para llegar a producción con MVP estable;
 
 Detalle completo de tareas, criterios de éxito y estructura de carpetas
 objetivo en `PLAN.md`.
+
+---
+
+## 2026-05-12 — Fase 1 del plan completa (higiene del repo)
+
+Se cerraron las 5 sub-fases del bloque 1. Resumen por sub-fase:
+
+### Fase 1.1 — git init + `.gitignore` + primer commit + tag
+
+- `git init -b main` en raíz `Ph/`.
+- `.gitignore` completo (node_modules, dist, .env*, .vscode, OS junk,
+  Prisma generated, Docker volumes locales).
+- Verificado: `.env` y `backend/.env` NO se commitean; `.env.example` SÍ.
+- Primer commit: `chore: initial commit — AdminPH backend MVP base`.
+- Tag `v0.1.0-mvp-base` apuntando al primer commit.
+- Tras configurar nuevo autor `davidhd709 <davidhd709@gmail.com>` (override
+  local del repo), se hizo `git commit --amend --reset-author --no-edit`
+  y se re-tag.
+- Remoto configurado: `https://github.com/davidhd709/AdminPH.git`.
+  Push lo hace el usuario manualmente (este sandbox no tiene credenciales).
+
+### Fase 1.2 — ESLint + Prettier + EditorConfig
+
+- Instalados: `eslint@10`, `typescript-eslint@8` (meta-paquete),
+  `eslint-config-prettier`, `eslint-plugin-prettier`, `prettier@3`.
+- `backend/eslint.config.mjs` con **flat config** (ESLint 9+ default).
+  Preset `typescript-eslint/recommended` + integración Prettier.
+- Reglas extra: `no-console: warn` (allow warn/error/info), `prefer-const`,
+  `no-var`, `eqeqeq: smart`, `@typescript-eslint/no-explicit-any: warn`.
+- `backend/.prettierrc` y `backend/.prettierignore`.
+- `.editorconfig` en raíz: 2 spaces, LF, UTF-8, trim trailing whitespace.
+- Scripts npm en `backend/package.json`: `lint`, `lint:fix`, `format`,
+  `format:check`.
+- Ejecutado `npm run format` una vez: 17 archivos reformateados (estilo,
+  sin cambio de lógica).
+
+**Decisión revertida durante Fase 1.4:** la regla
+`@typescript-eslint/consistent-type-imports` fue inicialmente `warn` con
+fix automático. ESLint convirtió `import { JwtService }` a `import type`
+en archivos donde el símbolo se usa para inyección DI. Eso ROMPE NestJS DI
+porque TypeScript no emite metadata de `reflect-metadata` para `import type`,
+y la inyección falla en runtime. **La regla se desactivó** y todos los
+`import type` se revirtieron a `import` regular.
+
+### Fase 1.3 — Husky + lint-staged + commitlint
+
+- Setup monorepo-ready: creado `package.json` en raíz `Ph/` con scripts
+  proxy a backend. Tooling de calidad vive en raíz porque `.git` está ahí.
+- Instalados (en raíz): `husky@9`, `lint-staged`, `@commitlint/cli`,
+  `@commitlint/config-conventional`.
+- Husky inicializado con `npx husky init`.
+- Hooks configurados:
+  - `pre-commit`: `cd backend && npx lint-staged`.
+  - `commit-msg`: `npx commitlint --edit "$1"`.
+- `backend/.lintstagedrc.json`: para `*.ts` corre `eslint --fix` +
+  `prettier --write`; otros archivos solo `prettier`.
+- `commitlint.config.mjs` en raíz: extends `@commitlint/config-conventional`,
+  header max 100 chars, body sin límite.
+- Verificación end-to-end:
+  - Commit con mensaje `"mensaje malo"` → REJECTED por commit-msg hook
+    (`husky - commit-msg script failed (code 1)`).
+  - Commit con mensaje convencional → ACCEPTED, pre-commit ejecutó
+    lint-staged sin errores.
+
+### Fase 1.4 — TypeScript strict mode
+
+Activado **en una sola pasada** (no gradual como el plan sugería —
+la calidad del código permitía hacerlo directo):
+
+```json
+"strict": true,
+"noUnusedLocals": true,
+"noFallthroughCasesInSwitch": true,
+"noImplicitReturns": true
+```
+
+Errores generados y resueltos:
+
+1. **26 errores TS6133 (unused imports/vars)** — limpiados en 20 archivos.
+   Símbolos eliminados: `IsEmail` (en muchos DTOs), `Prisma` (en services
+   que no lo usan), `UserRole`, `Param`, `Delete`, `Patch`,
+   `BadRequestException`, `Response`, variable `fee` no usada,
+   `UpdateLateFeeConfigDto`, etc. Sin silenciar con `_` prefix, eliminación real.
+
+2. **43 errores TS2564 (DTO sin initializer)** — resueltos con definite-
+   assignment operator (`!`) en cada propiedad requerida. Patrón estándar
+   para DTOs validados por class-validator + ValidationPipe global. Tocados
+   11 archivos DTO.
+
+3. **2 errores TS2322 en `audit.service.ts`** — al cambiar inicialmente
+   `oldValue`/`newValue` a `unknown`, Prisma rechazaba: espera
+   `InputJsonValue | NullableJsonNullValueInput`. Decidido mantener `any`
+   ahí (JSON dinámico real) con comentario explicativo. `request?` sí se
+   tipó como `unknown`.
+
+4. **4 errores TS18047 (`fee`/`oldUser` possibly null)** — corregidos
+   cambiando el return type de `findOne` de `Promise<T | null>` a
+   `Promise<T>` en `fees.service.ts` y `users.service.ts`, porque ambos
+   tiran `NotFoundException` antes de retornar valor null.
+
+5. **4 errores TS7034/TS7005 en `account-statement.service.ts`** —
+   `pendingFees` y `overdueFees` declaradas como arrays vacíos sin tipo.
+   Tipados como `Fee[]`.
+
+6. **1 error TS18046 en `fees.service.ts`** — `catch (e)` con `e` de tipo
+   `unknown`. Corregido con narrowing: `e instanceof Error ? e.message : String(e)`.
+
+7. **1 error TS7053 en `jwt-auth.guard.ts`** — `request["user"] = payload`
+   con Express `Request` sin index signature. Resuelto con augmentación
+   global de tipo Express (nuevo archivo `src/core/types/express.d.ts`)
+   y nueva interface `AuthUser` en `src/core/types/auth-user.ts`.
+
+8. **3 errores TS2322 en `users.service.ts`** — `User.companyId` de Prisma
+   es `string | null` pero `AuditLogParams.companyId` era `string | undefined`.
+   Cambiado a `string | null | undefined` (mismo para `propertyId`).
+
+**Importante — bug introducido por ESLint en Fase 1.2:** la regla
+`consistent-type-imports` había convertido inyecciones DI a `import type`,
+rompiendo el runtime de NestJS. Detectado al activar strict + revisar
+archivos. Regla desactivada, y todos los `import type` revertidos a `import`
+en `src/**/*.ts` con un solo `sed -i 's/^import type {/import {/'`.
+
+**Verificación final:**
+- `npm run build` → exit 0 con strict completo.
+- `npm run lint` → exit 0 (143 warnings, todas de `no-explicit-any` que
+  quedan como deuda explícita).
+- Smoke test end-to-end en `PORT=3030`:
+  - Login `POST /auth/login` → 200 con `access_token`/`refresh_token`.
+  - `GET /companies` sin token → 401.
+  - `GET /companies` con Bearer → 200.
+
+Decisión de puerto: el puerto 3000 estaba ocupado por otro proyecto del
+usuario (`canchas/`). El smoke test corrió en `PORT=3030`.
+
+### Fase 1.5 — README ampliado + CONTRIBUTING
+
+- `README.md` reescrito con: setup paso a paso (Node 22, Docker, env,
+  migrate deploy, seed), comandos raíz y backend, estructura de carpetas,
+  tabla de decisiones técnicas, links a docs.
+- `CONTRIBUTING.md` nuevo con: flujo de branches, Conventional Commits
+  obligatorio, pre-commit hooks, flujo de PR, estándares TypeScript/NestJS/
+  Prisma, soft delete, logs, 10 reglas no negociables.
+
+### Estado al cerrar Fase 1
+
+- Repo git inicializado, primer commit firmado por `davidhd709`.
+- Remoto configurado (sin push aún — pendiente de credenciales del usuario).
+- 4 commits en `main`:
+  - `1b83893` chore: initial commit
+  - `89fdcfd` chore(tooling): ESLint + Prettier + EditorConfig
+  - `5835325` chore(tooling): Husky + lint-staged + commitlint
+  - `<sha>`  chore(ts): enable strict mode
+  - `18b15ad` docs: write README and CONTRIBUTING
+- Tag `v0.1.0-mvp-base` apuntando al primer commit.
+- Build, lint y formato OK.
+- Auth funcional verificada con strict mode.
+- Deuda explícita restante: 143 warnings `no-explicit-any` para Fase 2.
+
+Próximo paso: tag de milestone `v0.2.0-phase1-complete` y arranque de
+**Fase 2: Seguridad core** (TenancyGuard global, soft-delete extension,
+AuditLog con IP/UA, refresh token rotation, password policy, throttler
+por endpoint, Helmet con CSP).

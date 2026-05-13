@@ -53,7 +53,13 @@
 
 ---
 
-## Fase 1 — Higiene y fundamentos del repositorio
+## Fase 1 — Higiene y fundamentos del repositorio ✅ COMPLETA (2026-05-12)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen: git init, .gitignore,
+> ESLint flat config + Prettier + EditorConfig, Husky + lint-staged +
+> commitlint, TypeScript `strict: true` con limpieza de 76 errores
+> (TS6133/TS2564/TS18047/TS2322/etc.), README y CONTRIBUTING completos.
+> Auth verificada end-to-end con strict mode. Tag `v0.1.0-mvp-base`.
 
 **Objetivo:** dejar el proyecto listo para colaboración multi-dev con calidad enforced
 desde el primer commit.
