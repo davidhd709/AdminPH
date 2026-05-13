@@ -1,17 +1,6 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Patch,
-  Param,
-  UseGuards,
-} from "@nestjs/common";
-import { PaymentsService } from "./payments.service";
-import {
-  CreatePaymentDto,
-  ApprovePaymentDto,
-  RejectPaymentDto,
-} from "./dto/payment.dto";
+import { Controller, Post, Body, Patch, Param, UseGuards } from "@nestjs/common";
+import type { PaymentsService } from "./payments.service";
+import type { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
@@ -23,14 +12,7 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post()
-  @Roles(
-    "SUPERADMIN",
-    "COMPANY_ADMIN",
-    "PROPERTY_ADMIN",
-    "ACCOUNTANT",
-    "OWNER",
-    "RESIDENT",
-  )
+  @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT", "OWNER", "RESIDENT")
   async create(
     @Body() dto: CreatePaymentDto,
     @CurrentUser() user: any,

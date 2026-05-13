@@ -1,21 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
-import { UsersService } from "./users.service";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import type { UsersService } from "./users.service";
+import type { CreateUserDto } from "./dto/create-user.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { Request as ExpressRequest } from "express";
+import type { Request as ExpressRequest } from "express";
 
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -50,11 +40,7 @@ export class UsersController {
 
   @Delete(":id")
   @Roles("SUPERADMIN")
-  async remove(
-    @Param("id") id: string,
-    @CurrentUser() user: any,
-    @Req() request: ExpressRequest,
-  ) {
+  async remove(@Param("id") id: string, @CurrentUser() user: any, @Req() request: ExpressRequest) {
     return this.usersService.delete(id, user, request);
   }
 }

@@ -1,14 +1,15 @@
-import {
-  Injectable,
+import type {
   NestInterceptor,
   ExecutionContext,
-  CallHandler,
+  CallHandler} from "@nestjs/common";
+import {
+  Injectable,
   BadRequestException,
   Response,
 } from "@nestjs/common";
-import { Observable } from "rxjs";
+import type { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { AuditService } from "../../modules/audit/audit.service";
+import type { AuditService } from "../../modules/audit/audit.service";
 
 @Injectable()
 export class TenancyInterceptor implements NestInterceptor {

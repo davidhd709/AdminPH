@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { User, UserRole } from "@prisma/client";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { User} from "@prisma/client";
+import { UserRole } from "@prisma/client";
+import type { CreateUserDto } from "./dto/create-user.dto";
+import type { AuditService } from "../audit/audit.service";
 
 export class UpdateUserDto {
   fullName?: string;
@@ -61,12 +58,7 @@ export class UsersService {
     });
   }
 
-  async update(
-    id: string,
-    dto: UpdateUserDto,
-    user: any,
-    request: any,
-  ): Promise<User> {
+  async update(id: string, dto: UpdateUserDto, user: any, request: any): Promise<User> {
     const oldUser = await this.findOne(id, user);
 
     const updated = await this.prisma.user.update({

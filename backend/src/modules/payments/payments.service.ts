@@ -4,14 +4,11 @@ import {
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Payment, Prisma, Fee } from "@prisma/client";
-import {
-  CreatePaymentDto,
-  ApprovePaymentDto,
-  RejectPaymentDto,
-} from "./dto/payment.dto";
-import { AuditService } from "../audit/audit.service";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { Payment} from "@prisma/client";
+import { Prisma, Fee } from "@prisma/client";
+import type { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
+import type { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class PaymentsService {
@@ -20,11 +17,7 @@ export class PaymentsService {
     private auditService: AuditService,
   ) {}
 
-  async createPayment(
-    dto: CreatePaymentDto,
-    user: any,
-    request: any,
-  ): Promise<Payment> {
+  async createPayment(dto: CreatePaymentDto, user: any, request: any): Promise<Payment> {
     const unit = await this.prisma.unit.findFirst({
       where: { id: dto.unitId, deletedAt: null },
       include: { property: true },
@@ -34,15 +27,10 @@ export class PaymentsService {
 
     // Multi-tenancy & Ownership check
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        unit.property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && unit.property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
-      if (
-        !["COMPANY_ADMIN", "ACCOUNTANT", "PROPERTY_ADMIN"].includes(user.role)
-      ) {
+      if (!["COMPANY_ADMIN", "ACCOUNTANT", "PROPERTY_ADMIN"].includes(user.role)) {
         // Check if user is owner or resident of this unit
         const person = await this.prisma.owner.findFirst({
           where: { unitId: dto.unitId, userId: user.sub },
@@ -52,9 +40,7 @@ export class PaymentsService {
             where: { unitId: dto.unitId, userId: user.sub },
           });
           if (!resident)
-            throw new ForbiddenException(
-              "You can only create payments for your own units",
-            );
+            throw new ForbiddenException("You can only create payments for your own units");
         }
       }
     }
@@ -115,9 +101,7 @@ export class PaymentsService {
       user.role !== "SUPERADMIN" &&
       !["COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT"].includes(user.role)
     ) {
-      throw new ForbiddenException(
-        "Insufficient permissions to approve payments",
-      );
+      throw new ForbiddenException("Insufficient permissions to approve payments");
     }
 
     // Tenancy check
@@ -203,11 +187,7 @@ export class PaymentsService {
     });
   }
 
-  async rejectPayment(
-    dto: RejectPaymentDto,
-    user: any,
-    request: any,
-  ): Promise<Payment> {
+  async rejectPayment(dto: RejectPaymentDto, user: any, request: any): Promise<Payment> {
     const payment = await this.prisma.payment.findFirst({
       where: { id: dto.paymentId, deletedAt: null },
     });
@@ -220,9 +200,7 @@ export class PaymentsService {
       user.role !== "SUPERADMIN" &&
       !["COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT"].includes(user.role)
     ) {
-      throw new ForbiddenException(
-        "Insufficient permissions to reject payments",
-      );
+      throw new ForbiddenException("Insufficient permissions to reject payments");
     }
 
     const rejected = await this.prisma.payment.update({

@@ -1,15 +1,10 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { LateFeeConfig, Fee, Prisma } from "@prisma/client";
-import {
-  CreateLateFeeConfigDto,
-  UpdateLateFeeConfigDto,
-} from "./dto/late-fee.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { LateFeeConfig} from "@prisma/client";
+import { Fee, Prisma } from "@prisma/client";
+import type { CreateLateFeeConfigDto} from "./dto/late-fee.dto";
+import { UpdateLateFeeConfigDto } from "./dto/late-fee.dto";
+import type { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class LateFeeService {
@@ -18,11 +13,7 @@ export class LateFeeService {
     private auditService: AuditService,
   ) {}
 
-  async createConfig(
-    dto: CreateLateFeeConfigDto,
-    user: any,
-    request: any,
-  ): Promise<LateFeeConfig> {
+  async createConfig(dto: CreateLateFeeConfigDto, user: any, request: any): Promise<LateFeeConfig> {
     const property = await this.prisma.property.findFirst({
       where: { id: dto.propertyId, deletedAt: null },
     });
@@ -30,18 +21,14 @@ export class LateFeeService {
     if (!property) throw new NotFoundException("Property not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: dto.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -68,10 +55,7 @@ export class LateFeeService {
     return config;
   }
 
-  async getConfig(
-    propertyId: string,
-    user: any,
-  ): Promise<LateFeeConfig | null> {
+  async getConfig(propertyId: string, user: any): Promise<LateFeeConfig | null> {
     const config = await this.prisma.lateFeeConfig.findFirst({
       where: { propertyId, deletedAt: null },
     });
@@ -84,18 +68,14 @@ export class LateFeeService {
       });
       if (!property) throw new NotFoundException("Property not found");
 
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -113,9 +93,7 @@ export class LateFeeService {
   }> {
     const config = await this.getConfig(propertyId, user);
     if (!config || !config.active) {
-      throw new ForbiddenException(
-        "Late fee configuration is not active for this property",
-      );
+      throw new ForbiddenException("Late fee configuration is not active for this property");
     }
 
     const overdueFees = await this.prisma.fee.findMany({
@@ -145,13 +123,11 @@ export class LateFeeService {
       const pending = Number(fee.pendingAmount);
 
       if (config.interestType === "DAILY") {
-        interestAmount =
-          pending * (Number(config.interestRate) / 100) * diffDays;
+        interestAmount = pending * (Number(config.interestRate) / 100) * diffDays;
       } else {
         const diffMonths = Math.floor(diffDays / 30);
         if (diffMonths > 0) {
-          interestAmount =
-            pending * (Number(config.interestRate) / 100) * diffMonths;
+          interestAmount = pending * (Number(config.interestRate) / 100) * diffMonths;
         }
       }
 
@@ -168,9 +144,7 @@ export class LateFeeService {
         });
 
         if (!interestConcept) {
-          throw new NotFoundException(
-            "Interest fee concept not configured for this property",
-          );
+          throw new NotFoundException("Interest fee concept not configured for this property");
         }
 
         const existingInterest = await this.prisma.fee.findFirst({
@@ -205,9 +179,7 @@ export class LateFeeService {
 
     await this.auditService.log({
       userId: user.sub,
-      companyId: (
-        await this.prisma.property.findFirst({ where: { id: propertyId } })
-      )?.companyId,
+      companyId: (await this.prisma.property.findFirst({ where: { id: propertyId } }))?.companyId,
       propertyId,
       entityName: "LateFeeCalculation",
       entityId: "SYSTEM",

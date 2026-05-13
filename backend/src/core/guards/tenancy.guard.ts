@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from "@nestjs/common";
-import { PrismaService } from "../../modules/prisma/prisma.service";
+import type { CanActivate, ExecutionContext} from "@nestjs/common";
+import { Injectable, ForbiddenException } from "@nestjs/common";
+import type { PrismaService } from "../../modules/prisma/prisma.service";
 
 @Injectable()
 export class TenancyGuard implements CanActivate {
@@ -20,17 +16,13 @@ export class TenancyGuard implements CanActivate {
     if (user.role === "SUPERADMIN") return true;
 
     // 1. Company Isolation
-    const requestedCompanyId =
-      request.params.companyId || request.query.companyId;
+    const requestedCompanyId = request.params.companyId || request.query.companyId;
     if (requestedCompanyId && requestedCompanyId !== user.companyId) {
-      throw new ForbiddenException(
-        "Access denied: You do not belong to this company",
-      );
+      throw new ForbiddenException("Access denied: You do not belong to this company");
     }
 
     // 2. Property Isolation
-    const requestedPropertyId =
-      request.params.propertyId || request.query.propertyId;
+    const requestedPropertyId = request.params.propertyId || request.query.propertyId;
     if (requestedPropertyId) {
       const propertyUser = await this.prisma.propertyUser.findFirst({
         where: {
@@ -40,9 +32,7 @@ export class TenancyGuard implements CanActivate {
       });
 
       if (!propertyUser) {
-        throw new ForbiddenException(
-          "Access denied: You are not assigned to this property",
-        );
+        throw new ForbiddenException("Access denied: You are not assigned to this property");
       }
     }
 

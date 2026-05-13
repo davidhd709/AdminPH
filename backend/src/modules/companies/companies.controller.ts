@@ -1,21 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
-import { CompaniesService } from "./companies.service";
-import { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import type { CompaniesService } from "./companies.service";
+import type { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { Request as ExpressRequest } from "express";
+import type { Request as ExpressRequest } from "express";
 
 @Controller("companies")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -57,11 +47,7 @@ export class CompaniesController {
 
   @Delete(":id")
   @Roles("SUPERADMIN")
-  async remove(
-    @Param("id") id: string,
-    @CurrentUser() user: any,
-    @Req() request: ExpressRequest,
-  ) {
+  async remove(@Param("id") id: string, @CurrentUser() user: any, @Req() request: ExpressRequest) {
     return this.companiesService.remove(id, user, request);
   }
 }

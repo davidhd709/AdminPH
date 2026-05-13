@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsNumber,
-  IsDate,
-} from "class-validator";
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsNumber, IsDate } from "class-validator";
 
 export class GenerateFeesDto {
   @IsString()

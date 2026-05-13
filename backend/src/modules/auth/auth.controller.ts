@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { AuthService } from "./auth.service";
+import type { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 
@@ -68,10 +68,7 @@ export class AuthController {
     }
 
     const tokens = await this.authService.generateTokens(userEntity);
-    await this.authService.updateRefreshToken(
-      userEntity.id,
-      tokens.refresh_token,
-    );
+    await this.authService.updateRefreshToken(userEntity.id, tokens.refresh_token);
 
     return tokens;
   }

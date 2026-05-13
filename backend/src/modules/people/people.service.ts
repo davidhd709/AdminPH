@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Owner, Resident, Prisma } from "@prisma/client";
-import { CreateOwnerDto, CreateResidentDto } from "./dto/people.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { Owner, Resident} from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { CreateOwnerDto, CreateResidentDto } from "./dto/people.dto";
+import type { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class PeopleService {
@@ -16,11 +13,7 @@ export class PeopleService {
   ) {}
 
   // Owners
-  async createOwner(
-    dto: CreateOwnerDto,
-    user: any,
-    request: any,
-  ): Promise<Owner> {
+  async createOwner(dto: CreateOwnerDto, user: any, request: any): Promise<Owner> {
     const unit = await this.prisma.unit.findFirst({
       where: { id: dto.unitId, deletedAt: null },
       include: { property: true },
@@ -29,18 +22,14 @@ export class PeopleService {
     if (!unit) throw new NotFoundException("Unit not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        unit.property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && unit.property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: unit.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -69,18 +58,14 @@ export class PeopleService {
     if (!unit) throw new NotFoundException("Unit not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        unit.property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && unit.property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: unit.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -125,11 +110,7 @@ export class PeopleService {
   }
 
   // Residents
-  async createResident(
-    dto: CreateResidentDto,
-    user: any,
-    request: any,
-  ): Promise<Resident> {
+  async createResident(dto: CreateResidentDto, user: any, request: any): Promise<Resident> {
     const unit = await this.prisma.unit.findFirst({
       where: { id: dto.unitId, deletedAt: null },
       include: { property: true },
@@ -138,18 +119,14 @@ export class PeopleService {
     if (!unit) throw new NotFoundException("Unit not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        unit.property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && unit.property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: unit.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -178,18 +155,14 @@ export class PeopleService {
     if (!unit) throw new NotFoundException("Unit not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        unit.property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && unit.property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: unit.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 

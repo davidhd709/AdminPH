@@ -12,7 +12,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "lint": "echo \"Lint pendiente de configurar\"",
+    "lint": "eslint \"src/**/*.ts\" \"prisma/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"prisma/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"prisma/**/*.ts\"",
     "test": "echo \"Tests pendientes de configurar\""
   },
   "dependencies": {
@@ -47,9 +50,16 @@
     "@types/node": "latest",
     "@types/passport-jwt": "latest",
     "@types/pg": "^8.20.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.3",
     "prisma": "latest",
     "ts-node": "latest",
     "tsx": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "typescript-eslint": "^8.59.3"
   }
 }

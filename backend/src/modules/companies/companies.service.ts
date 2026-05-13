@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Company, Prisma } from "@prisma/client";
-import { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { Company} from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
+import type { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class CompaniesService {
@@ -15,11 +12,7 @@ export class CompaniesService {
     private auditService: AuditService,
   ) {}
 
-  async create(
-    dto: CreateCompanyDto,
-    user: any,
-    request: any,
-  ): Promise<Company> {
+  async create(dto: CreateCompanyDto, user: any, request: any): Promise<Company> {
     const company = await this.prisma.company.create({
       data: dto,
     });
@@ -59,12 +52,7 @@ export class CompaniesService {
     });
   }
 
-  async update(
-    id: string,
-    dto: UpdateCompanyDto,
-    user: any,
-    request: any,
-  ): Promise<Company> {
+  async update(id: string, dto: UpdateCompanyDto, user: any, request: any): Promise<Company> {
     if (user.role !== "SUPERADMIN" && user.companyId !== id) {
       throw new ForbiddenException("Access denied to update this company");
     }

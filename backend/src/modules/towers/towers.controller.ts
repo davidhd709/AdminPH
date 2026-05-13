@@ -1,21 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
-import { TowersService } from "./towers.service";
-import { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import type { TowersService } from "./towers.service";
+import type { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { Request as ExpressRequest } from "express";
+import type { Request as ExpressRequest } from "express";
 
 @Controller("towers")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,10 +24,7 @@ export class TowersController {
 
   @Get()
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
-  async findAll(
-    @CurrentUser() user: any,
-    @Param("propertyId") propertyId: string,
-  ) {
+  async findAll(@CurrentUser() user: any, @Param("propertyId") propertyId: string) {
     return this.towersService.findAll(user, propertyId);
   }
 
@@ -60,11 +47,7 @@ export class TowersController {
 
   @Delete(":id")
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
-  async remove(
-    @Param("id") id: string,
-    @CurrentUser() user: any,
-    @Req() request: ExpressRequest,
-  ) {
+  async remove(@Param("id") id: string, @CurrentUser() user: any, @Req() request: ExpressRequest) {
     return this.towersService.remove(id, user, request);
   }
 }

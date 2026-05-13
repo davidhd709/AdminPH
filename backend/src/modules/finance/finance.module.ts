@@ -8,12 +8,7 @@ import { FeesController } from "./fees.controller";
 import { LateFeeController } from "./late-fee.controller";
 
 @Module({
-  providers: [
-    FeeConceptsService,
-    FeesService,
-    LateFeeService,
-    AccountStatementService,
-  ],
+  providers: [FeeConceptsService, FeesService, LateFeeService, AccountStatementService],
   controllers: [AccountStatementController, FeesController, LateFeeController],
   exports: [FeesService],
 })

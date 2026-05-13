@@ -1,12 +1,8 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Unit, Prisma } from "@prisma/client";
-import { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { Unit, Prisma } from "@prisma/client";
+import type { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
+import type { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class UnitsService {
@@ -23,18 +19,14 @@ export class UnitsService {
     if (!property) throw new NotFoundException("Property not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: dto.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -61,18 +53,14 @@ export class UnitsService {
       });
       if (!property) throw new NotFoundException("Property not found");
 
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -94,30 +82,21 @@ export class UnitsService {
 
     if (user.role !== "SUPERADMIN") {
       const property = unit.property;
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: property.id },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
     return unit;
   }
 
-  async update(
-    id: string,
-    dto: UpdateUnitDto,
-    user: any,
-    request: any,
-  ): Promise<Unit> {
+  async update(id: string, dto: UpdateUnitDto, user: any, request: any): Promise<Unit> {
     const oldUnit = await this.findOne(id, user);
     const updated = await this.prisma.unit.update({
       where: { id },

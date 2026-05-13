@@ -1,20 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
-import { PeopleService } from "./people.service";
-import { CreateOwnerDto, CreateResidentDto } from "./dto/people.dto";
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import type { PeopleService } from "./people.service";
+import type { CreateOwnerDto, CreateResidentDto } from "./dto/people.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { Request as ExpressRequest } from "express";
+import type { Request as ExpressRequest } from "express";
 
 @Controller("people")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -59,10 +50,7 @@ export class PeopleController {
 
   @Get("residents/:unitId")
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
-  async getResidents(
-    @Param("unitId") unitId: string,
-    @CurrentUser() user: any,
-  ) {
+  async getResidents(@Param("unitId") unitId: string, @CurrentUser() user: any) {
     return this.peopleService.findResidentsByUnit(unitId, user);
   }
 

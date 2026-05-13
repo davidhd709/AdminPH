@@ -1,9 +1,5 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
 import { User, Unit, Fee, Payment, Prisma } from "@prisma/client";
 
 export interface AccountStatement {
@@ -37,15 +33,10 @@ export class AccountStatementService {
 
     // Multi-tenancy check
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        unit.property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && unit.property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied to this company");
       }
-      if (
-        !["COMPANY_ADMIN", "ACCOUNTANT", "PROPERTY_ADMIN"].includes(user.role)
-      ) {
+      if (!["COMPANY_ADMIN", "ACCOUNTANT", "PROPERTY_ADMIN"].includes(user.role)) {
         const isOwnerOrResident = await this.prisma.owner.findFirst({
           where: { unitId, userId: user.sub },
         });
@@ -54,9 +45,7 @@ export class AccountStatementService {
             where: { unitId, userId: user.sub },
           });
           if (!resident)
-            throw new ForbiddenException(
-              "You can only view statements for your own units",
-            );
+            throw new ForbiddenException("You can only view statements for your own units");
         }
       }
     }

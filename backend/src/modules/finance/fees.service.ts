@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Fee, Prisma } from "@prisma/client";
-import { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { Fee} from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
+import type { AuditService } from "../audit/audit.service";
 
 export interface GenerationSummary {
   totalUnits: number;
@@ -36,18 +33,14 @@ export class FeesService {
 
     // Multi-tenancy check
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied to this company");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: dto.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -92,16 +85,12 @@ export class FeesService {
           amount = dto.baseAmount || Number(concept.defaultAmount);
         } else {
           if (!dto.baseAmount)
-            throw new Error(
-              "baseAmount is required for coefficient calculation",
-            );
+            throw new Error("baseAmount is required for coefficient calculation");
           amount = dto.baseAmount * Number(unit.coefficient);
         }
 
         if (amount <= 0) {
-          summary.errors.push(
-            `Unit ${unit.code}: Amount must be greater than 0`,
-          );
+          summary.errors.push(`Unit ${unit.code}: Amount must be greater than 0`);
           summary.skippedFees++;
           continue;
         }
@@ -182,8 +171,7 @@ export class FeesService {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: fee.propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 

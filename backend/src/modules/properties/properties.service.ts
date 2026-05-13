@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Property, Prisma } from "@prisma/client";
-import { CreatePropertyDto, UpdatePropertyDto } from "./dto/property.dto";
-import { AuditService } from "../audit/audit.service";
+import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { Property} from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { CreatePropertyDto, UpdatePropertyDto } from "./dto/property.dto";
+import type { AuditService } from "../audit/audit.service";
 
 @Injectable()
 export class PropertiesService {
@@ -15,15 +12,9 @@ export class PropertiesService {
     private auditService: AuditService,
   ) {}
 
-  async create(
-    dto: CreatePropertyDto,
-    user: any,
-    request: any,
-  ): Promise<Property> {
+  async create(dto: CreatePropertyDto, user: any, request: any): Promise<Property> {
     if (user.role !== "SUPERADMIN" && user.companyId !== dto.companyId) {
-      throw new ForbiddenException(
-        "You cannot create properties for other companies",
-      );
+      throw new ForbiddenException("You cannot create properties for other companies");
     }
 
     const property = await this.prisma.property.create({
@@ -70,30 +61,21 @@ export class PropertiesService {
     if (!property) throw new NotFoundException("Property not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied to this property");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: id },
         });
-        if (!assignment)
-          throw new ForbiddenException("You are not assigned to this property");
+        if (!assignment) throw new ForbiddenException("You are not assigned to this property");
       }
     }
 
     return property;
   }
 
-  async update(
-    id: string,
-    dto: UpdatePropertyDto,
-    user: any,
-    request: any,
-  ): Promise<Property> {
+  async update(id: string, dto: UpdatePropertyDto, user: any, request: any): Promise<Property> {
     const oldProperty = await this.findOne(id, user);
 
     const updated = await this.prisma.property.update({
@@ -120,9 +102,7 @@ export class PropertiesService {
     const oldProperty = await this.findOne(id, user);
 
     if (user.role !== "SUPERADMIN" && user.role !== "COMPANY_ADMIN") {
-      throw new ForbiddenException(
-        "Insufficient permissions to delete property",
-      );
+      throw new ForbiddenException("Insufficient permissions to delete property");
     }
 
     const deleted = await this.prisma.property.update({

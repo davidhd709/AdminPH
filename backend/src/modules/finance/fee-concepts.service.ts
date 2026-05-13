@@ -1,11 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { FeeConcept, Prisma } from "@prisma/client";
-import {
-  CreateFeeConceptDto,
-  UpdateFeeConceptDto,
-} from "./dto/fee-concept.dto";
-import { AuditService } from "../audit/audit.service";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { FeeConcept, Prisma } from "@prisma/client";
+import type { CreateFeeConceptDto, UpdateFeeConceptDto } from "./dto/fee-concept.dto";
+import type { AuditService } from "../audit/audit.service";
 import { ForbiddenException, NotFoundException } from "@nestjs/common";
 
 @Injectable()
@@ -15,11 +12,7 @@ export class FeeConceptsService {
     private auditService: AuditService,
   ) {}
 
-  async create(
-    dto: CreateFeeConceptDto,
-    user: any,
-    request: any,
-  ): Promise<FeeConcept> {
+  async create(dto: CreateFeeConceptDto, user: any, request: any): Promise<FeeConcept> {
     const { propertyId } = dto;
 
     // Validate property access
@@ -30,18 +23,14 @@ export class FeeConceptsService {
     if (!property) throw new NotFoundException("Property not found");
 
     if (user.role !== "SUPERADMIN") {
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied to this company");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -49,10 +38,7 @@ export class FeeConceptsService {
     const existing = await this.prisma.feeConcept.findFirst({
       where: { propertyId, name: dto.name, active: true },
     });
-    if (existing)
-      throw new ForbiddenException(
-        "An active concept with this name already exists",
-      );
+    if (existing) throw new ForbiddenException("An active concept with this name already exists");
 
     const concept = await this.prisma.feeConcept.create({
       data: {
@@ -84,18 +70,14 @@ export class FeeConceptsService {
       });
       if (!property) throw new NotFoundException("Property not found");
 
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
@@ -117,30 +99,21 @@ export class FeeConceptsService {
 
     if (user.role !== "SUPERADMIN") {
       const property = concept.property;
-      if (
-        user.role === "COMPANY_ADMIN" &&
-        property.companyId !== user.companyId
-      ) {
+      if (user.role === "COMPANY_ADMIN" && property.companyId !== user.companyId) {
         throw new ForbiddenException("Access denied");
       }
       if (!["COMPANY_ADMIN"].includes(user.role)) {
         const assignment = await this.prisma.propertyUser.findFirst({
           where: { userId: user.sub, propertyId: property.id },
         });
-        if (!assignment)
-          throw new ForbiddenException("Not assigned to this property");
+        if (!assignment) throw new ForbiddenException("Not assigned to this property");
       }
     }
 
     return concept;
   }
 
-  async update(
-    id: string,
-    dto: UpdateFeeConceptDto,
-    user: any,
-    request: any,
-  ): Promise<FeeConcept> {
+  async update(id: string, dto: UpdateFeeConceptDto, user: any, request: any): Promise<FeeConcept> {
     const oldConcept = await this.findOne(id, user);
 
     const updated = await this.prisma.feeConcept.update({

@@ -1,17 +1,7 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Patch,
-  Body,
-  Param,
-  UseGuards,
-} from "@nestjs/common";
-import { LateFeeService } from "./late-fee.service";
-import {
-  CreateLateFeeConfigDto,
-  UpdateLateFeeConfigDto,
-} from "./dto/late-fee.dto";
+import { Controller, Post, Get, Patch, Body, Param, UseGuards } from "@nestjs/common";
+import type { LateFeeService } from "./late-fee.service";
+import type { CreateLateFeeConfigDto} from "./dto/late-fee.dto";
+import { UpdateLateFeeConfigDto } from "./dto/late-fee.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
@@ -34,10 +24,7 @@ export class LateFeeController {
 
   @Get("config/:propertyId")
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT")
-  async getConfig(
-    @Param("propertyId") propertyId: string,
-    @CurrentUser() user: any,
-  ) {
+  async getConfig(@Param("propertyId") propertyId: string, @CurrentUser() user: any) {
     return this.lateFeeService.getConfig(propertyId, user);
   }
 
@@ -48,10 +35,6 @@ export class LateFeeController {
     @CurrentUser() user: any,
     @Body("request") request: any,
   ) {
-    return this.lateFeeService.calculateAndGenerateInterest(
-      propertyId,
-      user,
-      request,
-    );
+    return this.lateFeeService.calculateAndGenerateInterest(propertyId, user, request);
   }
 }

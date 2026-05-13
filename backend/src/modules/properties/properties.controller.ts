@@ -1,21 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
-import { PropertiesService } from "./properties.service";
-import { CreatePropertyDto, UpdatePropertyDto } from "./dto/property.dto";
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import type { PropertiesService } from "./properties.service";
+import type { CreatePropertyDto, UpdatePropertyDto } from "./dto/property.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { Request as ExpressRequest } from "express";
+import type { Request as ExpressRequest } from "express";
 
 @Controller("properties")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -57,11 +47,7 @@ export class PropertiesController {
 
   @Delete(":id")
   @Roles("SUPERADMIN", "COMPANY_ADMIN")
-  async remove(
-    @Param("id") id: string,
-    @CurrentUser() user: any,
-    @Req() request: ExpressRequest,
-  ) {
+  async remove(@Param("id") id: string, @CurrentUser() user: any, @Req() request: ExpressRequest) {
     return this.propertiesService.remove(id, user, request);
   }
 }

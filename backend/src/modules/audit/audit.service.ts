@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { AuditAction } from "@prisma/client";
+import type { PrismaService } from "../prisma/prisma.service";
+import type { AuditAction } from "@prisma/client";
 
 export interface AuditLogParams {
   userId: string;
