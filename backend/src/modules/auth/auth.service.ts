@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { PrismaService } from "../prisma/prisma.service";
 import { User } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-    public prisma: PrismaService,
+    private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
 
@@ -19,12 +19,9 @@ export class AuthService {
     return bcrypt.compare(password, hash);
   }
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-      include: {
-        propertyUsers: true,
-      },
+  async validateUser(email: string, pass: string): Promise<User | null> {
+    const user = await this.prisma.user.findFirst({
+      where: { email, deletedAt: null },
     });
 
     if (!user) return null;
@@ -32,6 +29,12 @@ export class AuthService {
     if (!isMatch) return null;
 
     return user;
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+    });
   }
 
   async generateTokens(user: User): Promise<{ access_token: string; refresh_token: string }> {
@@ -55,10 +58,14 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string) {
+  async updateRefreshToken(userId: string, refreshToken: string | null) {
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken },
     });
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.updateRefreshToken(userId, null);
   }
 }

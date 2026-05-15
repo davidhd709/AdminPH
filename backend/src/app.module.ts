@@ -2,6 +2,9 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
+import { JwtAuthGuard } from "./core/guards/jwt-auth.guard";
+import { RolesGuard } from "./core/guards/roles.guard";
+import { TenancyGuard } from "./core/guards/tenancy.guard";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
@@ -32,6 +35,13 @@ import { PaymentsModule } from "./modules/payments/payments.module";
     FinanceModule,
     PaymentsModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    // Orden de guards globales: Throttler -> Jwt -> Roles -> Tenancy.
+    // El orden importa: Nest los ejecuta en el orden en que están aquí.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: TenancyGuard },
+  ],
 })
 export class AppModule {}

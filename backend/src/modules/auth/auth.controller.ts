@@ -1,16 +1,17 @@
 import {
-  Controller,
-  Post,
   Body,
-  UnauthorizedException,
+  Controller,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  Post,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { JwtService } from "@nestjs/jwt";
 import { AuthService } from "./auth.service";
-import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
+import { Public } from "../../core/decorators/public.decorator";
+import { AuthUser } from "../../core/types/auth-user";
 
 class LoginDto {
   @IsEmail()
@@ -29,8 +30,12 @@ class RefreshDto {
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
+  ) {}
 
+  @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
@@ -53,18 +58,26 @@ export class AuthController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  /**
+   * Refresh es @Public() porque el access_token puede estar expirado.
+   * La autenticación se hace contra el refresh_token verificado en BD.
+   */
+  @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body() dto: RefreshDto, @CurrentUser() user: any) {
-    // In a real scenario, we would verify the refresh token against the DB
-    // and check if it's expired or revoked.
-    const userEntity = await this.authService.prisma.user.findUnique({
-      where: { id: user.sub },
-    });
+  async refresh(@Body() dto: RefreshDto) {
+    let payload: AuthUser;
+    try {
+      payload = await this.jwtService.verifyAsync<AuthUser>(dto.refresh_token, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+    } catch {
+      throw new UnauthorizedException("Invalid or expired refresh token");
+    }
 
+    const userEntity = await this.authService.getUserById(payload.sub);
     if (!userEntity || userEntity.refreshToken !== dto.refresh_token) {
-      throw new UnauthorizedException("Invalid refresh token");
+      throw new UnauthorizedException("Refresh token revoked or rotated");
     }
 
     const tokens = await this.authService.generateTokens(userEntity);
@@ -73,14 +86,10 @@ export class AuthController {
     return tokens;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post("logout")
   @HttpCode(HttpStatus.OK)
-  async logout(@CurrentUser() user: any) {
-    await this.authService.prisma.user.update({
-      where: { id: user.sub },
-      data: { refreshToken: null },
-    });
+  async logout(@CurrentUser() user: AuthUser) {
+    await this.authService.logout(user.sub);
     return { message: "Logged out successfully" };
   }
 }
