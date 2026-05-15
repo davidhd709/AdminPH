@@ -611,3 +611,227 @@ Próximo paso: tag de milestone `v0.2.0-phase1-complete` y arranque de
 **Fase 2: Seguridad core** (TenancyGuard global, soft-delete extension,
 AuditLog con IP/UA, refresh token rotation, password policy, throttler
 por endpoint, Helmet con CSP).
+
+---
+
+## 2026-05-14 / 2026-05-15 — Fase 2 del plan completa (seguridad core)
+
+Se cerraron las 7 sub-fases del bloque 2. Cada sub-fase tiene su propio
+commit con detalle completo del cambio y smoke test end-to-end. Resumen
+ejecutivo abajo.
+
+### Fase 2.1 — TenancyGuard global + `@Public()` / `@SkipTenancy()`
+
+Los 3 guards de seguridad pasan de `@UseGuards` manual en cada controller
+a `APP_GUARD` global en `AppModule`. Orden: Throttler → Jwt → Roles → Tenancy.
+
+Nuevos decoradores:
+- `@Public()` — salta los 3 guards (login, refresh, health).
+- `@SkipTenancy()` — solo salta TenancyGuard (mantiene Jwt + Roles).
+
+`TenancyGuard` reescrito: valida `companyId`/`propertyId` en params + query
++ body. COMPANY_ADMIN accede a properties de su misma empresa; otros roles
+necesitan `PropertyUser`. Defense in depth: services siguen validando.
+
+Smoke: POST /properties con `companyId` fake en body → 403 cross-company.
+
+### Fase 2.2 — Soft delete consistente
+
+Auditoría exhaustiva (delegada a agente Explore, multi-línea aware):
+48 queries totales, 40 ya correctas, 8 arregladas. Cero hard deletes en
+código (todo soft-delete vía `update { deletedAt }`).
+
+Queries corregidas (agregado `deletedAt: null`):
+- `account-statement.service.ts:40,44` (Owner/Resident validación tenencia)
+- `fee-concepts.service.ts:38` (dedup por nombre + active)
+- `late-fee.service.ts:137` (lookup INTEREST + active)
+- `late-fee.service.ts:180` (refactor: select acotado para audit log)
+- `payments.service.ts:34,38,48` (Owner/Resident/Payment dedup)
+
+Nuevo `src/core/prisma/soft-delete-extension.ts` con la extensión completa
+implementada (findFirst/findMany/findUnique/count + delete/deleteMany como
+update). NO está activada todavía — requiere refactor del PrismaService
+(Prisma 7 `client.$extends()` retorna tipo distinto). Queda como deuda
+documentada para iteración futura. Eliminado el stub viejo
+`prisma-extension.ts`.
+
+### Fase 2.3 — AuditLog con `ipAddress` + `userAgent` + `requestId`
+
+Schema:
+- `AuditLog` agrega columnas `ipAddress?`, `userAgent?`, `requestId?`.
+- Nuevo index `(action, timestamp)` para queries forenses.
+- enum `AuditAction` amplía con `FAILED_LOGIN`, `CHANGE_PASSWORD`,
+  `PASSWORD_RESET`.
+- Migración: `20260515042904_audit_log_request_context`.
+
+`audit.service.ts` extrae contexto del request:
+- `X-Forwarded-For` (primer hop) con fallback a `request.ip`.
+- `User-Agent` header.
+- `X-Request-Id` header (correlation id).
+
+`auth.controller.ts` registra LOGIN/LOGOUT/FAILED_LOGIN. El FAILED_LOGIN
+solo se loguea si el email corresponde a un User existente (evita filas
+con userId fake).
+
+Smoke: 3 AuditLogs creados con IP=::1, UA=smoke-test-agent, requestId=...
+verificados con `SELECT FROM "AuditLog"`.
+
+### Fase 2.4 — Refresh token rotation con detección de reuso
+
+Schema:
+- Eliminado `User.refreshToken: String?`.
+- Nuevo modelo `RefreshToken` con `tokenHash` único, `expiresAt`,
+  `revokedAt`, `ipAddress`, `userAgent`. FK CASCADE a User.
+- Índices: `tokenHash` unique + `(userId, revokedAt)`.
+- Migración: `20260515043343_refresh_token_model`.
+
+Decisión: **SHA-256** en lugar de bcrypt para el hash del token. Bcrypt
+es no-deterministic (incluye salt), obligando a traer todos los tokens
+activos y comparar uno por uno. SHA-256 permite búsqueda directa por
+hash. Para refresh tokens es estándar de la industria.
+
+`AuthService` métodos nuevos:
+- `issueTokens(user, request)` — emite par y persiste row hasheada.
+- `rotateRefreshToken(jwt, request)` — verifica JWT, busca hash, marca
+  viejo como revocado, emite nuevo. **Si el JWT es válido pero el hash
+  NO existe o ya está revocado, asume reuso/robo y revoca TODOS los
+  tokens del user** (signal de credenciales comprometidas).
+- `revokeAllUserTokens(userId)`.
+- Excepciones: `RefreshTokenReuseError`, `RefreshTokenExpiredError`.
+
+Smoke end-to-end:
+- login → refresh #1 → refresh con #1 → rota a #2 ✓
+- reusar #1 (ya revocado) → 401 + revoca TODOS los tokens ✓
+- #2 también queda revocado por el revoke-all ✓
+- BD final: 2 rows con `revoked=true`, IP/UA persistidos.
+
+### Fase 2.5 — Password policy + lockout + SafeUser
+
+Schema:
+- `User` agrega `failedLoginCount Int @default(0)`, `lastFailedLoginAt`,
+  `lockedUntil`.
+- Migración: `20260515044137_user_account_lockout`.
+
+Password policy (`@IsStrongPassword` custom validator):
+- Mínimo 10 caracteres.
+- ≥1 mayúscula, ≥1 minúscula, ≥1 dígito, ≥1 símbolo.
+- Aplicado en `CreateUserDto`.
+
+Lockout policy (constantes en AuthService):
+- `LOCKOUT_THRESHOLD = 5` intentos fallidos.
+- `LOCKOUT_WINDOW_MS = 15 min` ventana de conteo.
+- `LOCKOUT_DURATION_MS = 30 min` duración del bloqueo.
+- Si pasa la ventana sin fallo nuevo, el contador se reinicia al próximo.
+- Login exitoso siempre resetea contador y desbloquea.
+
+`validateUser` ahora retorna discriminated union:
+`{ kind: 'ok', user } | { kind: 'locked', until } | { kind: 'invalid' }`.
+`auth.controller.ts` maneja los 3 casos: 200 / 423 (con `lockedUntil` en
+body) / 401.
+
+Endpoint admin nuevo: `POST /users/:id/unlock` (SUPERADMIN, COMPANY_ADMIN)
+con audit log `entityName=UserLockout`.
+
+**FIX CRÍTICO**: `POST /users` devolvía el password en plain text y lo
+persistía sin hashear. Ahora:
+- `users.service.ts:create()` hashea con bcrypt antes de persistir.
+- Nuevo tipo `SafeUser = Omit<User, "password" | "failedLoginCount" |
+  "lastFailedLoginAt" | "lockedUntil">`.
+- Helper estático `UsersService.toSafeUser()`.
+- create/findOne/update/delete retornan `SafeUser` (nunca el record crudo).
+- `findRawById` disponible para uso interno cuando se necesita el record
+  completo (ej. comparar password en login).
+
+Smoke end-to-end:
+- 5 logins fallidos → 401 c/u, 6to con password correcto → 423 con body
+  `{ lockedUntil: "..." }`. BD: failedLoginCount=5, lockedUntil=now+30m.
+- POST /users/:id/unlock con SUPERADMIN → 204. BD: counters en 0.
+- Login post-unlock con password correcto → 200.
+- POST /users password "weak" → 400 mensaje de política.
+- POST /users password fuerte → 201 sin password, sin counters lockout
+  en la respuesta.
+
+### Fase 2.6 — Helmet CSP estricto + CORS por env + Throttler por endpoint
+
+`main.ts`:
+- `trust proxy = 1` (Express lee `X-Forwarded-For` del 1er hop, necesario
+  detrás de Nginx/CDN).
+- Helmet con CSP estricto en prod (`default-src 'self'`,
+  `object-src 'none'`, `frame-ancestors 'none'`,
+  `upgrade-insecure-requests`) + HSTS 1 año + `referrer-policy: no-referrer`.
+  En dev: CSP off (permite Swagger UI inline scripts).
+- CORS por env `CORS_ORIGINS` (lista CSV). **En prod NUNCA `*`**: si la
+  env está vacía, el server falla al arrancar.
+- Swagger UI solo se monta en `NODE_ENV != production`.
+- `ValidationPipe`: `transformOptions.enableImplicitConversion = false`,
+  `disableErrorMessages = isProd` (adelanto de Fase 2.7).
+- `bootstrap` ahora hace `process.exit(1)` en error fatal.
+
+`app.module.ts` ThrottlerModule con 3 policies:
+- `default`: 100 req/min/IP (global).
+- `strict`: 10 req/min/IP (override en `POST /auth/login`).
+- `sensitive`: 30 req/min/IP (override en `POST /auth/refresh`).
+
+`.env`/`.env.example` cambian `CORS_ORIGIN` → `CORS_ORIGINS` (CSV).
+
+Smoke end-to-end:
+- Headers de respuesta: `Content-Security-Policy: ...`,
+  `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: SAMEORIGIN`.
+- CORS con `Origin: http://localhost:3001` → `Access-Control-Allow-Origin`
+  matchea (no `*`).
+- 12 POSTs a `/auth/login` en burst → todos 429 después del 10mo (strict
+  throttler activo).
+
+### Fase 2.7 — ValidationPipe seguro (cubierto en 2.6)
+
+La config final del ValidationPipe quedó adelantada en 2.6:
+```ts
+new ValidationPipe({
+  whitelist: true,
+  forbidNonWhitelisted: true,
+  transform: true,
+  transformOptions: { enableImplicitConversion: false },
+  disableErrorMessages: isProd,
+})
+```
+
+### Estado al cerrar Fase 2
+
+Commits en `main` durante Fase 2:
+```
+bb670ff feat(security): harden Helmet CSP, env-driven CORS, per-endpoint throttling — Fase 2.6
+7bdb93f chore: remove stray prisma/ dir from repo root
+72488c1 feat(security): password policy + account lockout + safe user responses — Fase 2.5
+4c028a3 feat(auth): refresh token rotation with reuse detection — Fase 2.4
+d1f0727 feat(audit): persist ipAddress, userAgent and requestId — Fase 2.3
+[2.2]   feat(security): consistent soft-delete in queries + extension stub — Fase 2.2
+e139ebb feat(security): apply JwtAuth/Roles/Tenancy guards globally — Fase 2.1
+```
+
+3 migraciones aplicadas a BD (audit_log_request_context, refresh_token_model,
+user_account_lockout).
+
+Build, lint y formato OK. Smoke tests end-to-end pasaron en cada sub-fase.
+
+### Deuda explícita restante para fases posteriores
+
+- **Soft-delete extension activación**: requiere refactor del PrismaService
+  para wrapper sobre cliente extendido (Prisma 7 `$extends` retorna tipo
+  distinto). Programado para fase que tenga tiempo dedicado a tests.
+- **`audit.service.log` con `unknown` para `request`**: actualmente sí
+  extrae IP/UA/RequestId, pero el `requestId` viene SOLO del header
+  externo. Fase 3 (observabilidad) agregará middleware que genera
+  correlation id si no viene.
+- **Swagger en prod**: aún sin auth. Fase 9 (infra) lo cubrirá con basicAuth
+  o sub-domain interno.
+- **Throttler values hardcoded**: migrar a env en Fase 3 o 9.
+- **Tests específicos para flujos de seguridad**: lockout, rotation,
+  cross-tenant — Fase 4 (testing).
+- **143 warnings `no-explicit-any` restantes**: la introducción de
+  `AuthUser` interface (Fase 2.1) bajó algunas; el grueso queda como
+  refactor incremental, no bloqueante.
+
+Próximo paso: tag `v0.3.0-phase2-complete` y arranque de **Fase 3:
+Observabilidad** (Pino logger, Request ID middleware, health checks,
+error tracking).

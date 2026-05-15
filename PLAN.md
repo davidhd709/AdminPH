@@ -144,7 +144,17 @@ Un commit con archivo TS mal formateado se formatea automáticamente.
 
 ---
 
-## Fase 2 — Seguridad core (multi-tenancy + auth robusto)
+## Fase 2 — Seguridad core (multi-tenancy + auth robusto) ✅ COMPLETA (2026-05-14)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen:
+> 2.1 TenancyGuard global + `@Public/@SkipTenancy`; 2.2 soft-delete consistente
+> (8 queries arregladas + extension stub para activación futura); 2.3 AuditLog
+> con `ipAddress`/`userAgent`/`requestId` + LOGIN/LOGOUT/FAILED_LOGIN;
+> 2.4 refresh token rotation con SHA-256 hash y detección de reuso; 2.5
+> password policy (mín 10 + casing + dígito + símbolo) + lockout 5/30min +
+> SafeUser response + fix de password hash; 2.6 Helmet CSP + CORS por env +
+> Throttler 3 policies (default/strict/sensitive); 2.7 ValidationPipe seguro.
+> Tag `v0.3.0-phase2-complete`.
 
 **Objetivo:** garantizar que ningún dato cruce entre tenants y que la auth sea production-grade.
 
