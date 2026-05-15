@@ -1,16 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from "@nestjs/common";
+import { Request as ExpressRequest } from "express";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
-import { RolesGuard } from "../../core/guards/roles.guard";
+import { AuthService } from "../auth/auth.service";
+import { AuditService } from "../audit/audit.service";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { Request as ExpressRequest } from "express";
+import { AuthUser } from "../../core/types/auth-user";
 
 @Controller("users")
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
+    private readonly auditService: AuditService,
+  ) {}
 
   @Post()
   @Roles("SUPERADMIN", "COMPANY_ADMIN")
@@ -42,5 +57,30 @@ export class UsersController {
   @Roles("SUPERADMIN")
   async remove(@Param("id") id: string, @CurrentUser() user: any, @Req() request: ExpressRequest) {
     return this.usersService.delete(id, user, request);
+  }
+
+  /**
+   * Desbloquea una cuenta bloqueada por intentos fallidos. Audit con
+   * action=UPDATE y entityName=UserLockout.
+   */
+  @Post(":id/unlock")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles("SUPERADMIN", "COMPANY_ADMIN")
+  async unlock(
+    @Param("id") id: string,
+    @CurrentUser() current: AuthUser,
+    @Req() request: ExpressRequest,
+  ): Promise<void> {
+    const target = await this.usersService.findOne(id, current);
+    await this.authService.unlockUser(target.id);
+    await this.auditService.log({
+      userId: current.sub,
+      companyId: target.companyId,
+      entityName: "UserLockout",
+      entityId: target.id,
+      action: "UPDATE",
+      newValue: { unlockedBy: current.sub, unlockedAt: new Date().toISOString() },
+      request,
+    });
   }
 }

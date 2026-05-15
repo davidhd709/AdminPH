@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   HttpCode,
+  HttpException,
   HttpStatus,
   Post,
   Req,
@@ -41,12 +42,26 @@ export class AuthController {
   @Post("login")
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Req() request: Request) {
-    const user = await this.authService.validateUser(dto.email, dto.password);
-    if (!user) {
+    const result = await this.authService.validateUser(dto.email, dto.password);
+
+    if (result.kind === "locked") {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.LOCKED,
+          error: "Locked",
+          message: "Account is locked due to repeated failed logins. Try again later.",
+          lockedUntil: result.until.toISOString(),
+        },
+        HttpStatus.LOCKED,
+      );
+    }
+
+    if (result.kind === "invalid") {
       await this.logFailedLoginIfUserExists(dto.email, request);
       throw new UnauthorizedException("Invalid credentials");
     }
 
+    const user = result.user;
     const tokens = await this.authService.issueTokens(user, request);
 
     await this.auditService.log({

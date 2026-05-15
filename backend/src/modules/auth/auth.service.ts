@@ -30,15 +30,80 @@ export class AuthService {
 
   // ===== User lookups =====
 
-  async validateUser(email: string, pass: string): Promise<User | null> {
+  /**
+   * Verifica credenciales con política de bloqueo.
+   *
+   * Resultados posibles:
+   *   - { kind: 'ok', user }            credenciales válidas y no bloqueado.
+   *   - { kind: 'locked', until }       cuenta bloqueada hasta `until`.
+   *   - { kind: 'invalid' }             email no existe o password incorrecto.
+   *
+   * Política: tras LOCKOUT_THRESHOLD intentos fallidos en LOCKOUT_WINDOW_MS,
+   * la cuenta se bloquea por LOCKOUT_DURATION_MS. El contador se reinicia
+   * cuando la ventana se cierra o cuando hay un login exitoso.
+   */
+  async validateUser(
+    email: string,
+    pass: string,
+  ): Promise<{ kind: "ok"; user: User } | { kind: "locked"; until: Date } | { kind: "invalid" }> {
     const user = await this.prisma.user.findFirst({
       where: { email, deletedAt: null },
     });
-    if (!user) return null;
+    if (!user) return { kind: "invalid" };
+
+    const now = new Date();
+    if (user.lockedUntil && user.lockedUntil > now) {
+      return { kind: "locked", until: user.lockedUntil };
+    }
+
     const isMatch = await this.comparePassword(pass, user.password);
-    if (!isMatch) return null;
-    return user;
+    if (!isMatch) {
+      await this.recordFailedLogin(user);
+      return { kind: "invalid" };
+    }
+
+    if (user.failedLoginCount > 0 || user.lockedUntil) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginCount: 0, lastFailedLoginAt: null, lockedUntil: null },
+      });
+    }
+    return { kind: "ok", user };
   }
+
+  /**
+   * Reinicia manualmente el contador y desbloquea (uso admin).
+   */
+  async unlockUser(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { failedLoginCount: 0, lastFailedLoginAt: null, lockedUntil: null },
+    });
+  }
+
+  private async recordFailedLogin(user: User): Promise<void> {
+    const now = new Date();
+    const lastFail = user.lastFailedLoginAt;
+    const windowOpen =
+      lastFail && now.getTime() - lastFail.getTime() < AuthService.LOCKOUT_WINDOW_MS;
+    const nextCount = windowOpen ? user.failedLoginCount + 1 : 1;
+    const shouldLock = nextCount >= AuthService.LOCKOUT_THRESHOLD;
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginCount: nextCount,
+        lastFailedLoginAt: now,
+        lockedUntil: shouldLock
+          ? new Date(now.getTime() + AuthService.LOCKOUT_DURATION_MS)
+          : user.lockedUntil,
+      },
+    });
+  }
+
+  static readonly LOCKOUT_THRESHOLD = 5;
+  static readonly LOCKOUT_WINDOW_MS = 15 * 60 * 1000; // 15 min
+  static readonly LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 min
 
   getUserById(id: string): Promise<User | null> {
     return this.prisma.user.findFirst({ where: { id, deletedAt: null } });

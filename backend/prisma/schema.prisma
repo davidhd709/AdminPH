@@ -189,16 +189,19 @@ model Unit {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  email      String    @unique
-  password   String
-  fullName   String
-  document   String    @unique
-  phone      String?
-  globalRole UserRole  @default(RESIDENT)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String
+  fullName          String
+  document          String    @unique
+  phone             String?
+  globalRole        UserRole  @default(RESIDENT)
+  failedLoginCount  Int       @default(0)
+  lastFailedLoginAt DateTime?
+  lockedUntil       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
 
   companyId     String?
   company       Company?       @relation(fields: [companyId], references: [id])

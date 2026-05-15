@@ -1,13 +1,12 @@
-import { IsEmail, IsNotEmpty, IsString, IsOptional, Length } from "class-validator";
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsStrongPassword } from "../../../core/validators/is-strong-password.validator";
 
 export class CreateUserDto {
   @IsEmail()
   @IsNotEmpty()
   email!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Length(8, 100)
+  @IsStrongPassword()
   password!: string;
 
   @IsString()
