@@ -138,6 +138,8 @@ export class LateFeeService {
           where: {
             propertyId: propertyId,
             name: { contains: "INTEREST", mode: "insensitive" },
+            active: true,
+            deletedAt: null,
           },
         });
 
@@ -175,9 +177,13 @@ export class LateFeeService {
       }
     }
 
+    const propertyForAudit = await this.prisma.property.findFirst({
+      where: { id: propertyId, deletedAt: null },
+      select: { companyId: true },
+    });
     await this.auditService.log({
       userId: user.sub,
-      companyId: (await this.prisma.property.findFirst({ where: { id: propertyId } }))?.companyId,
+      companyId: propertyForAudit?.companyId,
       propertyId,
       entityName: "LateFeeCalculation",
       entityId: "SYSTEM",

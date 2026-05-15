@@ -36,7 +36,7 @@ export class FeeConceptsService {
 
     // Prevent duplicate active concepts with same name in same property
     const existing = await this.prisma.feeConcept.findFirst({
-      where: { propertyId, name: dto.name, active: true },
+      where: { propertyId, name: dto.name, active: true, deletedAt: null },
     });
     if (existing) throw new ForbiddenException("An active concept with this name already exists");
 

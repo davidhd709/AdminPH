@@ -38,11 +38,11 @@ export class AccountStatementService {
       }
       if (!["COMPANY_ADMIN", "ACCOUNTANT", "PROPERTY_ADMIN"].includes(user.role)) {
         const isOwnerOrResident = await this.prisma.owner.findFirst({
-          where: { unitId, userId: user.sub },
+          where: { unitId, userId: user.sub, deletedAt: null },
         });
         if (!isOwnerOrResident) {
           const resident = await this.prisma.resident.findFirst({
-            where: { unitId, userId: user.sub },
+            where: { unitId, userId: user.sub, deletedAt: null },
           });
           if (!resident)
             throw new ForbiddenException("You can only view statements for your own units");

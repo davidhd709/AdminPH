@@ -32,11 +32,11 @@ export class PaymentsService {
       if (!["COMPANY_ADMIN", "ACCOUNTANT", "PROPERTY_ADMIN"].includes(user.role)) {
         // Check if user is owner or resident of this unit
         const person = await this.prisma.owner.findFirst({
-          where: { unitId: dto.unitId, userId: user.sub },
+          where: { unitId: dto.unitId, userId: user.sub, deletedAt: null },
         });
         if (!person) {
           const resident = await this.prisma.resident.findFirst({
-            where: { unitId: dto.unitId, userId: user.sub },
+            where: { unitId: dto.unitId, userId: user.sub, deletedAt: null },
           });
           if (!resident)
             throw new ForbiddenException("You can only create payments for your own units");
@@ -44,12 +44,14 @@ export class PaymentsService {
       }
     }
 
-    // Prevent duplicate bank references in the same property
+    // Prevent duplicate bank references in the same property (entre pagos activos).
+    // Si un pago previo con esa referencia fue soft-deleted, no se cuenta.
     const duplicate = await this.prisma.payment.findFirst({
       where: {
         propertyId: unit.propertyId,
         bankReference: dto.bankReference,
         status: { not: "REJECTED" },
+        deletedAt: null,
       },
     });
     if (duplicate)
