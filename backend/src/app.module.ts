@@ -22,7 +22,16 @@ import { PaymentsModule } from "./modules/payments/payments.module";
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    // Multiples policies de throttling. Cada @Throttle() en un endpoint puede
+    // elegir cuál aplicar via @SkipThrottle / @Throttle({ short: ... }).
+    // - default: 100 req/min por IP (todos los endpoints).
+    // - strict : 10 req/min   (login).
+    // - sensitive: 30 req/min (refresh, password reset, etc.).
+    ThrottlerModule.forRoot([
+      { name: "default", ttl: 60_000, limit: 100 },
+      { name: "strict", ttl: 60_000, limit: 10 },
+      { name: "sensitive", ttl: 60_000, limit: 30 },
+    ]),
     PrismaModule,
     AuditModule,
     AuthModule,

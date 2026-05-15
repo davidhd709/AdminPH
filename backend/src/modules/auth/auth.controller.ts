@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { Request } from "express";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { Throttle } from "@nestjs/throttler";
 import { AuthService, RefreshTokenExpiredError, RefreshTokenReuseError } from "./auth.service";
 import { AuditService } from "../audit/audit.service";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
@@ -39,6 +40,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle({ strict: { limit: 10, ttl: 60_000 } })
   @Post("login")
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Req() request: Request) {
@@ -90,6 +92,7 @@ export class AuthController {
    * los refresh tokens del usuario y se rechaza el request.
    */
   @Public()
+  @Throttle({ sensitive: { limit: 30, ttl: 60_000 } })
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
   async refresh(@Body() dto: RefreshDto, @Req() request: Request) {
