@@ -57,6 +57,9 @@ enum AuditAction {
   REJECT
   LOGIN
   LOGOUT
+  FAILED_LOGIN
+  CHANGE_PASSWORD
+  PASSWORD_RESET
   GENERATE
 }
 
@@ -351,16 +354,20 @@ model AuditLog {
   company    Company?    @relation(fields: [companyId], references: [id])
   propertyId String?
   property   Property?   @relation(fields: [propertyId], references: [id])
+  unitId     String?
+  unit       Unit?       @relation(fields: [unitId], references: [id])
   entityName String
   entityId   String
   action     AuditAction
   oldValue   Json?
   newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  requestId  String?
   timestamp  DateTime    @default(now())
-  unit       Unit?       @relation(fields: [unitId], references: [id])
-  unitId     String?
 
   @@index([userId])
   @@index([companyId])
   @@index([propertyId])
+  @@index([action, timestamp])
 }

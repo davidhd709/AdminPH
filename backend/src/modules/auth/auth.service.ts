@@ -37,6 +37,12 @@ export class AuthService {
     });
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: { email, deletedAt: null },
+    });
+  }
+
   async generateTokens(user: User): Promise<{ access_token: string; refresh_token: string }> {
     const payload = {
       sub: user.id,
