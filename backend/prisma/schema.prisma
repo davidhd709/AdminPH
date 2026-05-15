@@ -189,27 +189,41 @@ model Unit {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  password     String
-  fullName     String
-  document     String    @unique
-  phone        String?
-  globalRole   UserRole  @default(RESIDENT)
-  refreshToken String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
+  id         String    @id @default(uuid())
+  email      String    @unique
+  password   String
+  fullName   String
+  document   String    @unique
+  phone      String?
+  globalRole UserRole  @default(RESIDENT)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
 
   companyId     String?
   company       Company?       @relation(fields: [companyId], references: [id])
   propertyUsers PropertyUser[]
   payments      Payment[]
   auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
   owners        Owner[]
   residents     Resident[]
 
   @@index([email])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique // SHA-256 hex del refresh token JWT
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  ipAddress String?
+  userAgent String?
+
+  @@index([userId, revokedAt])
 }
 
 model PropertyUser {
