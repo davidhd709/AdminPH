@@ -97,6 +97,7 @@ model Company {
   feeConcepts FeeConcept[]
   fees        Fee[]
   payments    Payment[]
+  pqrs        Pqr[]
 
   @@index([id])
 }
@@ -126,6 +127,7 @@ model Property {
   auditLogs     AuditLog[]
   feeConcepts   FeeConcept[]
   lateFeeConfig LateFeeConfig?
+  pqrs          Pqr[]
 
   @@index([companyId])
   @@index([id])
@@ -183,6 +185,7 @@ model Unit {
   fees      Fee[]
   payments  Payment[]
   auditLogs AuditLog[]
+  pqrs      Pqr[]
 
   @@unique([propertyId, code])
   @@index([propertyId])
@@ -213,6 +216,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   owners              Owner[]
   residents           Resident[]
+  pqrsCreated         Pqr[]                @relation("PqrCreatedBy")
+  pqrResponses        PqrResponse[]        @relation("PqrResponseAuthor")
 
   @@index([email])
 }
@@ -401,4 +406,60 @@ model AuditLog {
   @@index([companyId])
   @@index([propertyId])
   @@index([action, timestamp])
+}
+
+// ===================== Fase 7.1 — PQR =====================
+
+enum PqrCategory {
+  PETITION // Petición
+  COMPLAINT // Queja
+  CLAIM // Reclamo
+  SUGGESTION // Sugerencia
+  OTHER
+}
+
+enum PqrStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+model Pqr {
+  id           String      @id @default(uuid())
+  ticketNumber Int         @unique @default(autoincrement())
+  companyId    String
+  company      Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId   String
+  property     Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId       String?
+  unit         Unit?       @relation(fields: [unitId], references: [id])
+  createdById  String
+  createdBy    User        @relation("PqrCreatedBy", fields: [createdById], references: [id])
+  category     PqrCategory
+  subject      String
+  description  String
+  status       PqrStatus   @default(OPEN)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  deletedAt    DateTime?
+
+  responses PqrResponse[]
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([status])
+}
+
+model PqrResponse {
+  id        String   @id @default(uuid())
+  pqrId     String
+  pqr       Pqr      @relation(fields: [pqrId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("PqrResponseAuthor", fields: [authorId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([pqrId])
 }
