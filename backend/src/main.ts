@@ -1,11 +1,11 @@
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
-import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Logger as PinoLogger } from "nestjs-pino";
 import helmet from "helmet";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { configureApp } from "./app-setup";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -19,6 +19,10 @@ async function bootstrap() {
 
   // Detrás de Nginx/CDN: confiar en X-Forwarded-* del primer hop.
   app.set("trust proxy", 1);
+
+  // Prefijo global /api + versionado v1 + ValidationPipe. Compartido con los
+  // tests E2E vía configureApp (ver src/app-setup.ts).
+  configureApp(app);
 
   // 1. Helmet con CSP estricto.
   // En dev se permite swagger-ui (inline scripts/styles).
@@ -64,18 +68,7 @@ async function bootstrap() {
     maxAge: 600,
   });
 
-  // 3. Global Validation
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: { enableImplicitConversion: false },
-      disableErrorMessages: isProd,
-    }),
-  );
-
-  // 4. Swagger en dev/staging; en prod queda detrás de un guard manual.
+  // Swagger en dev/staging; en prod queda detrás de un guard manual.
   if (!isProd) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle("AdminPH API")

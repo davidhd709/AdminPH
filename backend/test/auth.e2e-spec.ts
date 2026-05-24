@@ -1,8 +1,9 @@
-import { INestApplication, ValidationPipe } from "@nestjs/common";
+import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
 import request from "supertest";
 import { AppModule } from "../src/app.module";
+import { configureApp } from "../src/app-setup";
 import { PrismaService } from "../src/modules/prisma/prisma.service";
 
 /**
@@ -26,9 +27,7 @@ describe("Auth (e2e)", () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
-    );
+    configureApp(app);
     await app.init();
 
     prisma = app.get(PrismaService);
@@ -55,7 +54,7 @@ describe("Auth (e2e)", () => {
 
   it("POST /auth/login con credenciales válidas -> 200 + tokens", async () => {
     const res = await request(app.getHttpServer())
-      .post("/auth/login")
+      .post("/api/v1/auth/login")
       .send({ email, password })
       .expect(200);
 
@@ -67,37 +66,37 @@ describe("Auth (e2e)", () => {
 
   it("POST /auth/login con password incorrecto -> 401", async () => {
     await request(app.getHttpServer())
-      .post("/auth/login")
+      .post("/api/v1/auth/login")
       .send({ email, password: "WrongPass1!" })
       .expect(401);
   });
 
   it("GET /companies sin token -> 401", async () => {
-    await request(app.getHttpServer()).get("/companies").expect(401);
+    await request(app.getHttpServer()).get("/api/v1/companies").expect(401);
   });
 
   it("GET /companies con token válido -> 200", async () => {
     const login = await request(app.getHttpServer())
-      .post("/auth/login")
+      .post("/api/v1/auth/login")
       .send({ email, password })
       .expect(200);
 
     await request(app.getHttpServer())
-      .get("/companies")
+      .get("/api/v1/companies")
       .set("Authorization", `Bearer ${login.body.access_token}`)
       .expect(200);
   });
 
   it("POST /auth/refresh rota el token; reusar el viejo -> 401", async () => {
     const login = await request(app.getHttpServer())
-      .post("/auth/login")
+      .post("/api/v1/auth/login")
       .send({ email, password })
       .expect(200);
 
     const oldRefresh = login.body.refresh_token;
 
     const rotated = await request(app.getHttpServer())
-      .post("/auth/refresh")
+      .post("/api/v1/auth/refresh")
       .send({ refresh_token: oldRefresh })
       .expect(200);
 
@@ -105,7 +104,7 @@ describe("Auth (e2e)", () => {
 
     // Reusar el refresh viejo (ya revocado) -> 401.
     await request(app.getHttpServer())
-      .post("/auth/refresh")
+      .post("/api/v1/auth/refresh")
       .send({ refresh_token: oldRefresh })
       .expect(401);
   });
