@@ -1243,3 +1243,61 @@ módulo; el seed no incluye datos de estos módulos nuevos.
 Fases 1-7 + 9 completas (8 de 10). Solo queda **Fase 8** (integraciones
 externas: pasarela de pagos, email real, WhatsApp, PDF/Excel), que depende
 de servicios/cuentas externas.
+
+---
+
+## 2026-05-24 — Fase 8 del plan (integraciones externas)
+
+Estrategia: implementar de verdad lo que NO requiere credenciales externas, y
+dejar abstracción + stub para lo que sí (patrón aprobado: misma interface,
+proveedor real se conecta sin tocar el resto).
+
+### 8.4 — PDF (pdfkit) — REAL
+- `PdfService.accountStatement(unitId, user)`: estado de cuenta en PDF.
+- `PdfService.pazYSalvo(unitId, user)`: certificado; Forbidden si hay deuda.
+- Reusa `AccountStatementService` (ahora exportado desde FinanceModule).
+
+### 8.5 — Excel (exceljs) — REAL
+- `ExcelService.portfolio(propertyId, user)`: cartera por unidad + total, con
+  formato de moneda. Solo roles financieros.
+
+Módulo `src/modules/reports` (ReportsController):
+- GET /api/v1/reports/account-statement/:unitId.pdf
+- GET /api/v1/reports/paz-y-salvo/:unitId.pdf
+- GET /api/v1/reports/portfolio/:propertyId.xlsx
+Verificado: PDF válido (1 página), Excel válido (Microsoft Excel 2007+),
+paz y salvo con deuda → 403.
+
+### 8.1 + 8.6 — Pasarela de pagos + Webhook — ABSTRACCIÓN/STUB
+- `PaymentGatewayService`: createCheckout (stub URL) + verifyWebhookSignature
+  (HMAC-SHA256 sobre GATEWAY_WEBHOOK_SECRET, timingSafeEqual).
+- POST /api/v1/payments/:id/checkout y POST /api/v1/payments/webhook (@Public,
+  auth por firma).
+- Refactor clave: extraída la allocation oldest-first de `approvePayment` a
+  `allocateAndApprove(payment, auditUserId, reviewedBy)`, reusada por la
+  aprobación manual (reviewedBy=MANUAL) y la automática del webhook
+  (`approveViaGateway`, reviewedBy=GATEWAY). Sin duplicar lógica financiera.
+- Verificado: webhook firma inválida → 401; válida → 201, pago APPROVED/GATEWAY
+  con allocation ejecutada.
+
+### 8.3 — WhatsApp/SMS — ABSTRACCIÓN/STUB
+- `NotificationsService` (@Global): send(channel, to, message) + helpers.
+  TODO prod: WhatsApp Cloud API / Twilio.
+
+### 8.2 — Email
+- Cubierto por `MailService` (Fase 6.1, log-transport). Adapter SMTP real con
+  mailhog/Resend queda como TODO.
+
+### Estado al cerrar Fase 8
+Commits cb980d3 (PDF/Excel) y b671585 (gateway/webhook/notifications).
+Build OK, 68 unit tests verdes, lint 0 errors. Tag `v0.10.0-phase8-complete`.
+
+### 🏁 PROYECTO: las 10 fases del plan están completas
+1 higiene · 2 seguridad · 3 observabilidad · 4 testing/CI · 5 API ·
+6 auth+seed · 7 módulos negocio (9) · 8 integraciones · 9 infra prod ·
+(10 docs/runbooks cubierto en fase 9).
+
+Deuda técnica viva (toda documentada): conectar proveedores reales
+(pasarela, email SMTP, WhatsApp, storage para file upload), email
+verification flow, optimizar imagen Docker, subir coverage, activar
+soft-delete extension, tests e2e por módulo de negocio.

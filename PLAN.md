@@ -530,7 +530,17 @@ DTOs → tests → docs. Ninguno antes de tener MVP financiero estable.
 
 ---
 
-## Fase 8 — Integraciones externas
+## Fase 8 — Integraciones externas ✅ COMPLETA (2026-05-24, parcial)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Implementadas **de verdad** (sin
+> deps externas): 8.4 PDF (estado de cuenta + paz y salvo con pdfkit), 8.5
+> Excel (cartera con exceljs). Como **abstracción + stub** (listas para
+> conectar proveedor real): 8.1 pasarela (PaymentGatewayService + checkout),
+> 8.6 webhook (HMAC-SHA256, aprueba pago vía allocateAndApprove compartido),
+> 8.3 WhatsApp/SMS (NotificationsService), 8.2 email (MailService de Fase 6.1).
+> Tag `v0.10.0-phase8-complete`.
+> Deuda: conectar proveedores reales (Wompi/ePayco, Resend/SMTP, WhatsApp
+> Cloud API), raw-body para verificación de firma exacta del proveedor.
 
 ### 8.1 Pasarela de pagos (PSE / Wompi / ePayco)
 ### 8.2 Envío de email transaccional (SendGrid / Resend)
