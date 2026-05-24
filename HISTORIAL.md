@@ -1301,3 +1301,77 @@ Deuda técnica viva (toda documentada): conectar proveedores reales
 (pasarela, email SMTP, WhatsApp, storage para file upload), email
 verification flow, optimizar imagen Docker, subir coverage, activar
 soft-delete extension, tests e2e por módulo de negocio.
+
+---
+
+# FRONTEND (Angular 21)
+
+> Bitácora del frontend (`frontend/`). Stack: Angular 21 standalone + zoneless +
+> signals, PrimeNG 21, Tailwind 4, gestor **pnpm**. Consume la API en `/api/v1`.
+> Detalle ampliado en `frontend/README.md`.
+
+## 2026-05-24 — Frontend Fases 1 → 3.5
+
+### Fase 1 — Base de arquitectura (commit 6b207fc)
+Arquitectura enterprise: core/shared/layout/features. Auth base (TokenService,
+AuthStore con signals, AuthService, guards auth/public/role, interceptors
+auth/error), layout (shell + sidebar filtrado por permiso + topbar), RBAC por
+permiso (`core/auth/permissions.ts`), entornos, PrimeNG (Aura, cssLayer) +
+Tailwind. Pantallas: login, forgot/reset-password, dashboard (ApexCharts mock),
+403, 404. `pnpm run build` OK, `pnpm audit` 0 vulnerabilidades.
+
+### Fase 2 — Auth end-to-end (commits 75b6e5f, 794b253)
+- `refresh.interceptor`: rota el refresh token ante 401 con single-flight + cola
+  de requests concurrentes (orden auth → refresh → error).
+- `session.init` + `provideAppInitializer`: rehidrata sesión al boot (/users/me).
+- `auth.service.loadCurrentUser`: mapea `globalRole` → `role` (MeResponse).
+- Backend: CORS para `http://localhost:4200` (dev).
+- Ruta de referencia `/app/companies` con `roleGuard`.
+- Verificado end-to-end: login, /users/me, refresh+rotación, reuse detection,
+  logout, header CORS :4200.
+
+### Fase 3 — CRUD de Empresas (commit 3d9958c)
+Primer módulo de negocio (patrón de referencia): `core/http/pagination.ts`
+(PageQuery/PaginatedResult/toHttpParams), company.models + company.service,
+tabla PrimeNG lazy (paginación/orden server-side) + diálogo Reactive Forms +
+borrado con confirmación. Locale es-CO (DatePipe en español). Verificado e2e.
+
+### Fase 3.2 — CRUD de Copropiedades, multi-tenant (commit 6492919)
+property.models + property.service + módulo. SUPERADMIN ve todas y elige empresa
+al crear (p-select con filtro); COMPANY_ADMIN acotado a su companyId. Nombre de
+empresa resuelto con lookup desde CompanyService. `coefficientTotal` Decimal
+(string en JSON) con InputNumber. Ruta con roleGuard(SUPERADMIN, COMPANY_ADMIN).
+Verificado e2e.
+
+### Fase 3.3 — CRUD de Torres, anidado (commits b4cbea1 fix, 80c8821 feat)
+- **Fix backend**: `GET /towers` usaba `@Param("propertyId")` en ruta sin ese
+  path param → propertyId undefined (listado sin acotar + control de acceso por
+  tenant evaluado contra undefined). Nuevo `TowerQueryDto` exige propertyId por
+  query. 68 tests siguen verdes.
+- Frontend: selector de copropiedad + tabla lazy scoped + diálogo. Borrado
+  oculto a roles sin permiso real (solo SUPERADMIN/COMPANY_ADMIN). permissions:
+  towers.manage para COMPANY_ADMIN y PROPERTY_ADMIN. Verificado e2e.
+
+### Fase 3.4 — CRUD de Unidades, anidado con cascada (commits d3d300d fix, 95da302 feat)
+- **Fix backend**: mismo bug que towers en `GET /units` → `UnitQueryDto`.
+- Frontend: selector de copropiedad + dropdown de torre en cascada (opcional) +
+  tabla lazy + diálogo (code, floor, number, area, coefficient con InputNumber).
+  `status` solo lectura (badge). status-badge extendido (OCCUPIED/VACANT/
+  RENTED/MAINTENANCE). Verificado e2e.
+- Auditado el resto de controllers: el bug `@Param` solo estaba en towers/units.
+
+### Fase 3.5 — Propietarios y residentes por unidad (commits 0f7d926 api, edad299 feat)
+- **Backend enriquecido**: `GET /users` paginado + scoped + búsqueda
+  (UserQueryDto, devuelve SafeUser sin password); `include` seguro del usuario
+  (select sin password, vía Prisma.validator) en owners/residents.
+- Frontend: cascada copropiedad → unidad → dos tablas (propietarios y
+  residentes) + diálogo único que vincula un usuario existente (p-select con
+  búsqueda) + estado. Sin edición (el backend no la expone). user.service +
+  people.service. Verificado e2e (incluido chequeo de no fuga de password).
+
+### Estado al cerrar la sección Administración
+Sección **Administración** completa: empresas → copropiedades → torres →
+unidades → personas. Rutas en `/app/*` con roleGuard. `pnpm run build` OK,
+68 tests del backend verdes. Pendiente: secciones **Finanzas** y **Operación**,
+pulido transversal (sidebar activo, breadcrumbs, dashboard real) y tests de
+frontend (vitest).
