@@ -1,10 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  Query,
+} from "@nestjs/common";
 import { UnitsService } from "./units.service";
 import { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
+import { PaginationDto } from "../../core/dto/pagination.dto";
 import { Request as ExpressRequest } from "express";
 
 @Controller("units")
@@ -24,8 +36,12 @@ export class UnitsController {
 
   @Get()
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
-  async findAll(@CurrentUser() user: any, @Param("propertyId") propertyId: string) {
-    return this.unitsService.findAll(user, propertyId);
+  async findAll(
+    @CurrentUser() user: any,
+    @Param("propertyId") propertyId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.unitsService.findAll(user, propertyId, pagination);
   }
 
   @Get(":id")

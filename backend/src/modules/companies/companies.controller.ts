@@ -1,14 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
 import { CompaniesService } from "./companies.service";
 import { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
-import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
-import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
+import { PaginationDto } from "../../core/dto/pagination.dto";
 import { Request as ExpressRequest } from "express";
 
 @Controller("companies")
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
@@ -24,8 +22,8 @@ export class CompaniesController {
 
   @Get()
   @Roles("SUPERADMIN", "COMPANY_ADMIN")
-  async findAll(@CurrentUser() user: any) {
-    return this.companiesService.findAll(user);
+  async findAll(@CurrentUser() user: any, @Query() pagination: PaginationDto) {
+    return this.companiesService.findAll(user, pagination);
   }
 
   @Get(":id")

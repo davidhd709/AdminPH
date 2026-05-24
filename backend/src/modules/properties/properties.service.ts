@@ -3,6 +3,8 @@ import { PrismaService } from "../prisma/prisma.service";
 import { Property } from "@prisma/client";
 import { CreatePropertyDto, UpdatePropertyDto } from "./dto/property.dto";
 import { AuditService } from "../audit/audit.service";
+import { PaginatedResult, PaginationDto } from "../../core/dto/pagination.dto";
+import { paginate } from "../../core/utils/paginate";
 
 @Injectable()
 export class PropertiesService {
@@ -34,7 +36,7 @@ export class PropertiesService {
     return property;
   }
 
-  async findAll(user: any): Promise<Property[]> {
+  async findAll(user: any, pagination: PaginationDto): Promise<PaginatedResult<Property>> {
     const where: any = { deletedAt: null };
 
     if (user.role === "SUPERADMIN") {
@@ -49,7 +51,7 @@ export class PropertiesService {
       where.id = { in: propertyUsers.map((pu) => pu.propertyId) };
     }
 
-    return this.prisma.property.findMany({ where });
+    return paginate<Property>(this.prisma.property, where, pagination);
   }
 
   async findOne(id: string, user: any): Promise<Property | null> {

@@ -3,6 +3,8 @@ import { PrismaService } from "../prisma/prisma.service";
 import { Company } from "@prisma/client";
 import { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
 import { AuditService } from "../audit/audit.service";
+import { PaginatedResult, PaginationDto } from "../../core/dto/pagination.dto";
+import { paginate } from "../../core/utils/paginate";
 
 @Injectable()
 export class CompaniesService {
@@ -29,16 +31,14 @@ export class CompaniesService {
     return company;
   }
 
-  async findAll(user: any): Promise<Company[]> {
-    const where: any = { deletedAt: null };
+  async findAll(user: any, pagination: PaginationDto): Promise<PaginatedResult<Company>> {
+    const where: Record<string, unknown> = { deletedAt: null };
 
     if (user.role !== "SUPERADMIN") {
       where.id = user.companyId;
     }
 
-    return this.prisma.company.findMany({
-      where,
-    });
+    return paginate<Company>(this.prisma.company, where, pagination);
   }
 
   async findOne(id: string, user: any): Promise<Company | null> {

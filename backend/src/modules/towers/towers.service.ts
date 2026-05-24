@@ -3,6 +3,8 @@ import { PrismaService } from "../prisma/prisma.service";
 import { Tower, Prisma } from "@prisma/client";
 import { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
 import { AuditService } from "../audit/audit.service";
+import { PaginatedResult, PaginationDto } from "../../core/dto/pagination.dto";
+import { paginate } from "../../core/utils/paginate";
 
 @Injectable()
 export class TowersService {
@@ -46,7 +48,11 @@ export class TowersService {
     return tower;
   }
 
-  async findAll(user: any, propertyId: string): Promise<Tower[]> {
+  async findAll(
+    user: any,
+    propertyId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Tower>> {
     // Validate access to property first
     if (user.role !== "SUPERADMIN") {
       const property = await this.prisma.property.findFirst({
@@ -65,9 +71,7 @@ export class TowersService {
       }
     }
 
-    return this.prisma.tower.findMany({
-      where: { propertyId, deletedAt: null },
-    });
+    return paginate<Tower>(this.prisma.tower, { propertyId, deletedAt: null }, pagination);
   }
 
   async findOne(

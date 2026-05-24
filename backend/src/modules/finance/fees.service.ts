@@ -3,6 +3,8 @@ import { PrismaService } from "../prisma/prisma.service";
 import { Fee } from "@prisma/client";
 import { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
 import { AuditService } from "../audit/audit.service";
+import { PaginatedResult, PaginationDto } from "../../core/dto/pagination.dto";
+import { paginate } from "../../core/utils/paginate";
 
 export interface GenerationSummary {
   totalUnits: number;
@@ -132,7 +134,11 @@ export class FeesService {
     return summary;
   }
 
-  async findAll(user: any, query: FeeQueryDto): Promise<Fee[]> {
+  async findAll(
+    user: any,
+    query: FeeQueryDto,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Fee>> {
     const where: any = { deletedAt: null };
 
     if (query.unitId) where.unitId = query.unitId;
@@ -148,10 +154,9 @@ export class FeesService {
       where.propertyId = { in: propertyUsers.map((pu) => pu.propertyId) };
     }
 
-    return this.prisma.fee.findMany({
-      where,
+    return paginate<Fee>(this.prisma.fee, where, pagination, {
       include: { unit: true, concept: true },
-      orderBy: { dueDate: "asc" },
+      defaultSortBy: "dueDate",
     });
   }
 
