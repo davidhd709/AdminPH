@@ -1,6 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, IsEnum } from "class-validator";
 
+/**
+ * Query de listado de conceptos: la copropiedad cuyos conceptos se piden.
+ * `propertyId` es obligatorio (los conceptos son por copropiedad; además
+ * habilita la validación de acceso por tenant en el service).
+ */
+export class FeeConceptQueryDto {
+  @ApiProperty({ description: "ID de la copropiedad cuyos conceptos se listan" })
+  @IsString()
+  @IsNotEmpty()
+  propertyId!: string;
+}
+
 export enum FeeConceptType {
   ADMINISTRATION = "ADMINISTRATION",
   EXTRAORDINARY = "EXTRAORDINARY",
