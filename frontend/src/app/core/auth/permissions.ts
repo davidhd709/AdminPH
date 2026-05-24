@@ -57,6 +57,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "properties.manage",
     "towers.manage",
     "concepts.manage",
+    "payments.manage",
     "people.manage",
     "reports.view",
     "announcements.manage",
@@ -68,6 +69,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "towers.manage",
     "units.manage",
     "concepts.manage",
+    "payments.manage",
     "people.manage",
     "pqr.manage",
     "reservations.manage",
@@ -77,7 +79,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ACCOUNTANT: [
     "dashboard.view",
     "finance.manage",
-    "payments.manage",
     "statements.view",
     "reports.view",
     "accounting.manage",

@@ -1396,3 +1396,32 @@ frontend (vitest).
   para ACCOUNTANT es un pase de RBAC dedicado pendiente.
 - Verificado e2e: sin propertyId→400, listar, crear, actualizar, enum
   inválido→400, soft-delete fuera del listado.
+
+### Fase 4.2 — Pagos y cuotas (commits backend + frontend)
+- **Backend — 4 cambios** (necesarios para el módulo):
+  1. **`GET /payments`** nuevo (no existía): listado paginado, scoped por tenant,
+     filtros unitId/status, include unit+user (select seguro). PaymentQueryDto.
+  2. **fix `fees.findAll`**: COMPANY_ADMIN no veía ninguna cuota (filtraba solo
+     por asignaciones propertyUser, que no tiene) → ahora scope por companyId.
+  3. **fix `GET /finance/fees`**: usaba dos `@Query()` (FeeQueryDto + PaginationDto)
+     y con forbidNonWhitelisted se rechazaban mutuamente ("property unitId should
+     not exist") → FeeQueryDto ahora extiende PaginationDto, un solo @Query.
+  4. **fix `generateMassFees`**: `dueDate` (@IsDate sin @Type) rechazaba la string
+     ISO → agregado `@Type(() => Date)`. Y se quitaron `bankName`/`paymentDate`
+     de CreatePaymentDto (no existen en el modelo Payment → reventaban el create
+     con PRISMA_VALIDATION).
+- **Frontend**: permiso payments.manage reasignado a SUPERADMIN/COMPANY_ADMIN/
+  PROPERTY_ADMIN (ACCOUNTANT diferido); nav "Pagos" → `/app/finance/payments`.
+  fee.models/service + payment.models/service. Módulo `payments`: cascada
+  copropiedad → unidad → tabla de cuotas + tabla de pagos; registrar pago
+  (queda en revisión), aprobar (asigna oldest-first en backend) y rechazar con
+  motivo. status-badge: PENDING_REVIEW y PARTIAL.
+- Verificado e2e: generar 15 cuotas, listar con filtros+paginación, registrar
+  pago, listar pagos (include sin password), aprobar con asignación oldest-first
+  (cuota más antigua → PARTIAL), rechazar con motivo, 401 sin auth.
+  68 tests del backend en verde.
+
+### Estado de la sección Finanzas
+Hechos: Cuotas y conceptos (4.1), Pagos (4.2). Pendientes: Contabilidad,
+Reportes. Deuda: generación de cuotas desde la UI (endpoint ya operativo),
+acceso de ACCOUNTANT a finanzas (requiere GET /properties para el rol).

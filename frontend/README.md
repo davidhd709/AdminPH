@@ -34,6 +34,11 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > **Fase 4.1 — Finanzas: conceptos ✅.** Módulo **Cuotas y conceptos** (conceptos
 > de cobro por copropiedad). Requirió exponer `FeeConceptsService` con un
 > controller nuevo en el backend. Inicia la sección Finanzas.
+>
+> **Fase 4.2 — Finanzas: pagos ✅.** Módulo **Pagos** (cuotas + pagos por unidad,
+> con aprobar/rechazar). Requirió agregar `GET /payments` y corregir 3 bugs del
+> backend de finanzas (scoping de cuotas, doble `@Query`, fechas y campos no
+> persistibles).
 
 ---
 
@@ -172,6 +177,7 @@ src/app/
 | `/app/units` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | CRUD de unidades (anidado, con torre opcional) |
 | `/app/people` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Propietarios y residentes por unidad |
 | `/app/finance/concepts` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Conceptos de cobro por copropiedad |
+| `/app/finance/payments` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Pagos y cuotas por unidad |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -189,7 +195,7 @@ src/app/
 - ~~**Fase 3.5:** Propietarios y residentes por unidad (con selector de usuario).~~ ✅ Completada.
   Cierra la sección **Administración** (empresas → copropiedades → torres →
   unidades → personas).
-- **Finanzas** (en curso): ~~conceptos~~ ✅ · pagos · contabilidad · reportes.
+- **Finanzas** (en curso): ~~conceptos~~ ✅ · ~~pagos~~ ✅ · contabilidad · reportes.
 - **Operación** (pendiente): PQR, comunicados, reservas, portería, asambleas,
   documentos.
 - Tests (vitest) de guards/store/servicios/interceptors.
