@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import { Observable, map, tap } from "rxjs";
 import { API } from "../config/api.config";
 import { TokenService } from "./token.service";
 import { AuthStore } from "./auth.store";
@@ -11,7 +11,17 @@ import {
   LoginResponse,
   ResetPasswordRequest,
   TokenPair,
+  UserRole,
 } from "./auth.models";
+
+/** Shape crudo de GET /users/me en el backend (usa `globalRole`). */
+interface MeResponse {
+  id: string;
+  email: string;
+  fullName: string;
+  globalRole: UserRole;
+  companyId?: string | null;
+}
 
 /**
  * Orquesta el flujo de autenticación contra el backend (/api/v1/auth).
@@ -59,9 +69,18 @@ export class AuthService {
 
   /** Carga el usuario actual (al rehidratar sesión desde un token guardado). */
   loadCurrentUser(): Observable<AuthUser> {
-    return this.http
-      .get<AuthUser>(this.url(API.users.me))
-      .pipe(tap((user) => this.store.setUser(user)));
+    return this.http.get<MeResponse>(this.url(API.users.me)).pipe(
+      map(
+        (me): AuthUser => ({
+          id: me.id,
+          email: me.email,
+          fullName: me.fullName,
+          role: me.globalRole,
+          companyId: me.companyId ?? null,
+        }),
+      ),
+      tap((user) => this.store.setUser(user)),
+    );
   }
 
   forgotPassword(payload: ForgotPasswordRequest): Observable<void> {

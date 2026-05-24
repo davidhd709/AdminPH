@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { authGuard } from "./core/guards/auth.guard";
 import { publicGuard } from "./core/guards/public.guard";
+import { roleGuard } from "./core/guards/role.guard";
 
 export const routes: Routes = [
   { path: "", pathMatch: "full", redirectTo: "app/dashboard" },
@@ -34,6 +35,13 @@ export const routes: Routes = [
       {
         path: "dashboard",
         loadComponent: () => import("./features/dashboard/dashboard").then((m) => m.Dashboard),
+      },
+      // Ruta de módulo de referencia: protegida por rol (solo SUPERADMIN).
+      // Patrón a replicar por los módulos de fases siguientes.
+      {
+        path: "companies",
+        canActivate: [roleGuard("SUPERADMIN")],
+        loadComponent: () => import("./features/companies/companies").then((m) => m.Companies),
       },
     ],
   },

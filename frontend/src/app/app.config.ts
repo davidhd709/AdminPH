@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from "@angular/core";
@@ -12,14 +13,18 @@ import Aura from "@primeuix/themes/aura";
 
 import { routes } from "./app.routes";
 import { authInterceptor } from "./core/interceptors/auth.interceptor";
+import { refreshInterceptor } from "./core/interceptors/refresh.interceptor";
 import { errorInterceptor } from "./core/interceptors/error.interceptor";
+import { initSession } from "./core/auth/session.init";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withInterceptors([authInterceptor, refreshInterceptor, errorInterceptor]),
+    ),
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
@@ -36,5 +41,6 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     MessageService,
+    provideAppInitializer(initSession),
   ],
 };
