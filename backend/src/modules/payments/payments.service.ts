@@ -110,12 +110,44 @@ export class PaymentsService {
       throw new ForbiddenException("Access denied to this company");
     }
 
-    return await this.prisma.$transaction(async (tx) => {
-      const amountToAllocate = Number(payment.amount);
-      let remaining = amountToAllocate;
-      const allocations = [];
+    return this.allocateAndApprove(payment, user.sub);
+  }
 
-      // Automatic Allocation Logic: Oldest pending fees first
+  /**
+   * Aprobación automática vía pasarela de pagos (webhook). El sistema confirma
+   * el pago sin intervención de un usuario administrador. La auditoría se
+   * atribuye a quien subió el pago (payment.userId) con reviewedBy="GATEWAY".
+   *
+   * @see PaymentGatewayService y el webhook en payments.controller.
+   */
+  async approveViaGateway(
+    paymentId: string,
+  ): Promise<{ payment: Payment; allocations: { feeId: string; amount: number }[] }> {
+    const payment = await this.prisma.payment.findFirst({
+      where: { id: paymentId, deletedAt: null },
+    });
+    if (!payment) throw new NotFoundException("Payment not found");
+    if (payment.status !== "PENDING_REVIEW") {
+      throw new BadRequestException("Payment is not in review status");
+    }
+    return this.allocateAndApprove(payment, payment.userId, "GATEWAY");
+  }
+
+  /**
+   * Lógica transaccional compartida de aprobación: asigna el monto del pago a
+   * las cuotas pendientes más antiguas primero (oldest-first), actualiza
+   * estados de las cuotas y del pago, y registra auditoría. Idéntica para
+   * aprobación manual (admin) y automática (gateway).
+   */
+  private allocateAndApprove(
+    payment: Payment,
+    auditUserId: string,
+    reviewedBy = "MANUAL",
+  ): Promise<{ payment: Payment; allocations: { feeId: string; amount: number }[] }> {
+    return this.prisma.$transaction(async (tx) => {
+      let remaining = Number(payment.amount);
+      const allocations: { feeId: string; amount: number }[] = [];
+
       const pendingFees = await tx.fee.findMany({
         where: {
           unitId: payment.unitId,
@@ -133,17 +165,12 @@ export class PaymentsService {
 
         if (allocationAmount > 0) {
           await tx.paymentAllocation.create({
-            data: {
-              paymentId: payment.id,
-              feeId: fee.id,
-              amountAllocated: allocationAmount,
-            },
+            data: { paymentId: payment.id, feeId: fee.id, amountAllocated: allocationAmount },
           });
 
           const newPaidAmount = Number(fee.paidAmount) + allocationAmount;
           const newPendingAmount = feePending - allocationAmount;
           let newStatus = fee.status;
-
           if (newPendingAmount === 0) newStatus = "PAID";
           else if (newPaidAmount > 0) newStatus = "PARTIAL";
 
@@ -164,16 +191,12 @@ export class PaymentsService {
       const finalStatus = remaining === 0 ? "APPROVED" : "PARTIAL";
       const updatedPayment = await tx.payment.update({
         where: { id: payment.id },
-        data: {
-          status: finalStatus,
-          reviewedBy: user.sub,
-          reviewedAt: new Date(),
-        },
+        data: { status: finalStatus, reviewedBy, reviewedAt: new Date() },
       });
 
       await tx.auditLog.create({
         data: {
-          userId: user.sub,
+          userId: auditUserId,
           companyId: payment.companyId,
           propertyId: payment.propertyId,
           entityName: "Payment",
