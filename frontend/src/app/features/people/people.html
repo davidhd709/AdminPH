@@ -1,0 +1,203 @@
+<app-page-header
+  title="Propietarios y residentes"
+  subtitle="Personas vinculadas a cada unidad."
+/>
+
+<!-- Selectores: copropiedad + unidad -->
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+    <p-select
+      [options]="properties()"
+      optionLabel="name"
+      optionValue="id"
+      [ngModel]="selectedPropertyId()"
+      (onChange)="onPropertyChange($event.value)"
+      placeholder="Selecciona una copropiedad"
+      [filter]="true"
+      filterBy="name"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+  <div>
+    <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad</label>
+    <p-select
+      [options]="units()"
+      optionLabel="code"
+      optionValue="id"
+      [ngModel]="selectedUnitId()"
+      (onChange)="onUnitChange($event.value)"
+      placeholder="Selecciona una unidad"
+      [filter]="true"
+      filterBy="code"
+      [disabled]="!units().length"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+</div>
+
+@if (!selectedUnitId()) {
+  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <app-empty-state
+      icon="pi pi-users"
+      title="Selecciona una unidad"
+      message="Elige una copropiedad y una unidad para ver sus propietarios y residentes."
+    />
+  </div>
+} @else {
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- Propietarios -->
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <h2 class="text-sm font-semibold text-gray-900">Propietarios</h2>
+        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openAdd('owner')" />
+      </div>
+      <p-table [value]="owners()" [loading]="loadingOwners()" dataKey="id" size="small">
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Principal</th>
+            <th>Estado</th>
+            <th class="w-16 text-right">Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-owner>
+          <tr>
+            <td class="font-medium text-gray-900">
+              {{ owner.user?.fullName ?? "Sin usuario" }}
+              @if (owner.user?.email) {
+                <span class="block text-xs font-normal text-gray-500">{{ owner.user.email }}</span>
+              }
+            </td>
+            <td class="text-gray-600">{{ owner.user?.document ?? "—" }}</td>
+            <td>
+              @if (owner.isPrimary) {
+                <i class="pi pi-check text-green-600" aria-label="Principal"></i>
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </td>
+            <td><app-status-badge [status]="owner.status" /></td>
+            <td class="text-right">
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                ariaLabel="Quitar"
+                (onClick)="confirmRemove('owner', owner)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5">
+              <app-empty-state icon="pi pi-user" title="Sin propietarios" message="Vincula el primero con “Agregar”." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Residentes -->
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <h2 class="text-sm font-semibold text-gray-900">Residentes</h2>
+        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openAdd('resident')" />
+      </div>
+      <p-table [value]="residents()" [loading]="loadingResidents()" dataKey="id" size="small">
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Estado</th>
+            <th class="w-16 text-right">Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-resident>
+          <tr>
+            <td class="font-medium text-gray-900">
+              {{ resident.user?.fullName ?? "Sin usuario" }}
+              @if (resident.user?.email) {
+                <span class="block text-xs font-normal text-gray-500">{{ resident.user.email }}</span>
+              }
+            </td>
+            <td class="text-gray-600">{{ resident.user?.document ?? "—" }}</td>
+            <td><app-status-badge [status]="resident.status" /></td>
+            <td class="text-right">
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                ariaLabel="Quitar"
+                (onClick)="confirmRemove('resident', resident)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="4">
+              <app-empty-state icon="pi pi-user" title="Sin residentes" message="Vincula el primero con “Agregar”." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+}
+
+<!-- Diálogo de alta (propietario o residente) -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '30rem' }"
+  [header]="dialogKind() === 'owner' ? 'Vincular propietario' : 'Vincular residente'"
+>
+  <form [formGroup]="form" (ngSubmit)="save()" class="space-y-5 pt-2">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Usuario</label>
+      <p-select
+        formControlName="userId"
+        [options]="userOptions()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecciona un usuario"
+        [filter]="true"
+        filterBy="label"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+      @if (form.controls.userId.touched && form.controls.userId.invalid) {
+        <small class="mt-1 block text-red-600">Selecciona un usuario.</small>
+      }
+    </div>
+
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Estado</label>
+      <p-select
+        formControlName="status"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button type="submit" label="Vincular" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog />

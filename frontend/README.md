@@ -25,6 +25,11 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > **Fase 3.4 — CRUD anidado con cascada ✅.** Módulo **Unidades**: selector de
 > copropiedad + dropdown de torre (cascada) + listado scoped. `status` es solo
 > lectura (lo define el backend).
+>
+> **Fase 3.5 — Relaciones por unidad ✅.** Módulo **Propietarios y residentes**:
+> cascada copropiedad → unidad → personas, con selector de usuario (requirió
+> enriquecer el backend: `GET /users` paginado e `include` del usuario en
+> owners/residents). Cierra la sección Administración.
 
 ---
 
@@ -161,6 +166,7 @@ src/app/
 | `/app/properties` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN")` | CRUD de copropiedades (multi-tenant) |
 | `/app/towers` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | CRUD de torres (anidado en copropiedad) |
 | `/app/units` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | CRUD de unidades (anidado, con torre opcional) |
+| `/app/people` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Propietarios y residentes por unidad |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -175,8 +181,11 @@ src/app/
 - ~~**Fase 3.2:** CRUD multi-tenant (Copropiedades) con scoping por empresa.~~ ✅ Completada.
 - ~~**Fase 3.3:** CRUD anidado (Torres) con selector de copropiedad.~~ ✅ Completada.
 - ~~**Fase 3.4:** CRUD anidado con cascada (Unidades) con dropdown de torre.~~ ✅ Completada.
-- CRUDs de los módulos restantes (personas, finanzas, PQR, etc.), replicando el
-  patrón de `features/*` (`*.models` + `*.service` + tabla lazy + diálogo
-  Reactive Forms).
+- ~~**Fase 3.5:** Propietarios y residentes por unidad (con selector de usuario).~~ ✅ Completada.
+  Cierra la sección **Administración** (empresas → copropiedades → torres →
+  unidades → personas).
+- Secciones siguientes: **Finanzas** (cuotas, pagos, contabilidad) y
+  **Operación** (PQR, comunicados, reservas, etc.), replicando el patrón de
+  `features/*`.
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

@@ -11,10 +11,15 @@ export const API = {
     resetPassword: "/auth/reset-password",
   },
   users: {
+    base: "/users",
     me: "/users/me",
   },
   companies: "/companies",
   properties: "/properties",
   towers: "/towers",
   units: "/units",
+  people: {
+    owners: "/people/owners",
+    residents: "/people/residents",
+  },
 } as const;
