@@ -449,7 +449,20 @@ Mockear `PrismaService` y `AuditService`.
 
 ---
 
-## Fase 6 — Completar funcionalidad de auth y seed
+## Fase 6 — Completar funcionalidad de auth y seed ✅ COMPLETA (2026-05-24, parcial)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen:
+> 6.1 password reset (modelo PasswordResetToken, MailService abstracto con
+> log-transport, forgot/reset endpoints anti user-enumeration, revoca
+> sesiones); 6.3 self-service (GET/PATCH /users/me + change-password que
+> revoca sesiones); 6.4 seed enriquecido idempotente (2 empresas, 4
+> copropiedades, 12 torres, 60 unidades, 120 cuotas, password demo
+> AdminPH2026!). **6.2 email verification:** infra lista (campo
+> emailVerifiedAt + MailService.sendEmailVerification), flujo completo
+> diferido como deuda (opcional MVP). Tag `v0.7.0-phase6-complete`.
+
+**Nota:** el MailService real (Resend/SendGrid/SMTP) se conecta en Fase 8.2;
+hoy usa log-transport (loguea el email en dev/CI).
 
 ### 6.1 Recuperación de contraseña
 

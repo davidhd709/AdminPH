@@ -1065,3 +1065,76 @@ Build OK, 27 unit + 5 e2e en verde. Tag `v0.6.0-phase5-complete`.
 
 Próximo paso: **Fase 6 — Auth completa + seed** (recuperación de password,
 verificación de email, /me + cambio de password, seed enriquecido).
+
+---
+
+## 2026-05-24 — Fase 6 del plan (auth completa + seed, parcial)
+
+### Fase 6.3 — Perfil propio + cambio de contraseña
+
+- `GET /api/v1/users/me` (ya existía).
+- `PATCH /api/v1/users/me` (`UpdateMeDto`: fullName, phone).
+- `POST /api/v1/users/me/change-password` (`ChangePasswordDto`): verifica
+  oldPassword, exige newPassword fuerte (`@IsStrongPassword`), hashea con
+  bcrypt y **revoca todas las sesiones** (forzar re-login). Audit
+  `CHANGE_PASSWORD`.
+- Rutas `/me` declaradas antes de `:id` para no colisionar con el param.
+- `UsersService.changePassword` no acopla a AuthService; el controller
+  orquesta el revoke vía `authService.revokeAllUserTokens`.
+
+### Fase 6.1 — Recuperación de contraseña
+
+- Modelo `PasswordResetToken` (tokenHash SHA-256 único, expiresAt 1h,
+  usedAt). Migración `20260524164251_password_reset_and_email_verified`.
+- `MailService` abstracto (`src/modules/mail`) con **log-transport**: en
+  dev/CI loguea el email en vez de enviarlo. La interface queda lista para
+  conectar Resend/SendGrid/SMTP en Fase 8.2 sin tocar el resto del código.
+  `MailModule` es `@Global`.
+- `POST /api/v1/auth/forgot-password`: SIEMPRE 204 (anti user-enumeration).
+  Genera token de un solo uso, invalida los previos, envía link con
+  `FRONTEND_URL`.
+- `POST /api/v1/auth/reset-password`: valida token (existe / no usado / no
+  expirado), actualiza password en `$transaction`, marca token usado,
+  resetea contadores de lockout y revoca todas las sesiones.
+- Error de dominio `PasswordResetInvalidError` → 401.
+
+Smoke end-to-end (log-transport captura el token):
+forgot → 204, reset → 204, login con nueva password → 200, reusar token → 401.
+
+### Fase 6.2 — Verificación de email (diferida)
+
+Infraestructura lista: campo `User.emailVerifiedAt` (en la misma migración)
+y `MailService.sendEmailVerification`. El flujo completo (modelo de token +
+endpoint verify + bloqueo opcional de login) queda como **deuda** — es
+"opcional MVP" y duplica el patrón de password reset.
+
+### Fase 6.4 — Seed enriquecido e idempotente
+
+`prisma/seed.ts` reescrito. Crea:
+- 1 SUPERADMIN (`admin@adminph.com`).
+- 2 empresas, 4 copropiedades (2 por empresa).
+- 6 admins: 1 COMPANY_ADMIN por empresa + 1 PROPERTY_ADMIN por copropiedad
+  (con su `PropertyUser`).
+- 12 torres (3 por copropiedad) × 5 unidades = 60 unidades.
+- 20 conceptos de cobro (5 por copropiedad), 4 `LateFeeConfig`.
+- 60 owners + 60 residents (1 por unidad).
+- 120 cuotas de administración (2 períodos × 60 unidades).
+- Password demo de todos: **AdminPH2026!**
+
+Idempotente (upsert por claves naturales; findFirst+create donde no hay
+unique). Verificado: 2da corrida no duplica (BD estable en
+2/4/12/60/120).
+
+### Estado al cerrar Fase 6
+
+Commit `f15a6ea` en `main`. build OK, 27 unit + 5 e2e verdes.
+Tag `v0.7.0-phase6-complete`.
+
+Deuda: flujo de email verification; conectar MailService real (Fase 8.2);
+E2E de reset/change-password.
+
+Próximo paso: las fases de fundamentos (1-6) están completas. Sigue
+**Fase 9 — Infra producción** (Dockerfile, secrets, Nginx, CI/CD deploy,
+backups) para poder lanzar, O **Fase 7** (módulos AdminPH: PQR, comunicados,
+reservas, etc.) para ampliar funcionalidad. Recomendado: Fase 9 antes de
+producción.
