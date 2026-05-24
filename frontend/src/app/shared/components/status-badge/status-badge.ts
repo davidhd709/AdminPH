@@ -8,8 +8,10 @@ const STATUS_SEVERITY: Record<string, TagSeverity> = {
   APPROVED: "success",
   PAID: "success",
   PENDING: "warn",
+  SUSPENDED: "warn",
   OVERDUE: "danger",
   REJECTED: "danger",
+  CANCELLED: "danger",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -17,8 +19,10 @@ const STATUS_LABEL: Record<string, string> = {
   APPROVED: "Aprobado",
   PAID: "Pagado",
   PENDING: "Pendiente",
+  SUSPENDED: "Suspendido",
   OVERDUE: "En mora",
   REJECTED: "Rechazado",
+  CANCELLED: "Cancelado",
 };
 
 @Component({

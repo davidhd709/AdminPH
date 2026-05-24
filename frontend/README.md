@@ -8,8 +8,11 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 >
 > **Fase 2 — Auth end-to-end ✅.** Login real contra el backend, rehidratación
 > de sesión al boot, refresh token transparente ante 401 y `roleGuard` aplicado
-> a una ruta de módulo de referencia. Los CRUDs de negocio llegan en las fases
-> siguientes.
+> a una ruta de módulo de referencia.
+>
+> **Fase 3 — Primer CRUD ✅.** Módulo **Empresas** conectado a la API: tabla con
+> paginación/ordenamiento server-side, alta/edición en diálogo (Reactive Forms)
+> y borrado con confirmación. Es el patrón de referencia para los demás módulos.
 
 ---
 
@@ -142,7 +145,7 @@ src/app/
 | `/reset-password?token=` | pública | Definir nueva contraseña |
 | `/app` | privada (authGuard) | Shell con layout |
 | `/app/dashboard` | privada | Dashboard con stats + gráfico |
-| `/app/companies` | privada + `roleGuard("SUPERADMIN")` | Módulo de referencia (placeholder) |
+| `/app/companies` | privada + `roleGuard("SUPERADMIN")` | CRUD de empresas (tabla + diálogo) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -152,7 +155,10 @@ src/app/
 
 - ~~**Fase 2:** login real end-to-end, rehidratación de sesión, refresh token
   automático, `roleGuard` en ruta de referencia.~~ ✅ Completada.
-- CRUDs de los módulos de negocio (companies, properties, units, finance, etc.),
-  replicando el patrón de ruta protegida de `features/companies`.
+- ~~**Fase 3:** primer CRUD real (Empresas) con paginación server-side, diálogo
+  de alta/edición y borrado con confirmación.~~ ✅ Completada.
+- CRUDs de los módulos restantes (properties, units, finance, etc.), replicando
+  el patrón de `features/companies` (`company.models` + `company.service` +
+  tabla lazy + diálogo Reactive Forms).
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

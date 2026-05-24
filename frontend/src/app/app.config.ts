@@ -1,5 +1,8 @@
+import { registerLocaleData } from "@angular/common";
+import localeEsCo from "@angular/common/locales/es-CO";
 import {
   ApplicationConfig,
+  LOCALE_ID,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
@@ -16,6 +19,8 @@ import { authInterceptor } from "./core/interceptors/auth.interceptor";
 import { refreshInterceptor } from "./core/interceptors/refresh.interceptor";
 import { errorInterceptor } from "./core/interceptors/error.interceptor";
 import { initSession } from "./core/auth/session.init";
+
+registerLocaleData(localeEsCo);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -41,6 +46,7 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     MessageService,
+    { provide: LOCALE_ID, useValue: "es-CO" },
     provideAppInitializer(initSession),
   ],
 };

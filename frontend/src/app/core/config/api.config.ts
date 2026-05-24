@@ -13,4 +13,5 @@ export const API = {
   users: {
     me: "/users/me",
   },
+  companies: "/companies",
 } as const;
