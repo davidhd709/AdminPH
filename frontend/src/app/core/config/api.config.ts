@@ -33,4 +33,5 @@ export const API = {
     transactions: "/accounting/transactions",
   },
   reports: "/reports",
+  pqr: "/pqr",
 } as const;

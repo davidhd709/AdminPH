@@ -1,0 +1,221 @@
+<app-page-header title="PQR" subtitle="Peticiones, quejas, reclamos y sugerencias.">
+  <p-button label="Nueva PQR" icon="pi pi-plus" (onClick)="openCreate()" />
+</app-page-header>
+
+<!-- Filtros -->
+<div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+  <p-select
+    [options]="properties()"
+    optionLabel="name"
+    optionValue="id"
+    [ngModel]="filterPropertyId()"
+    (onChange)="filterPropertyId.set($event.value); applyFilters()"
+    placeholder="Todas las copropiedades"
+    [showClear]="true"
+    [filter]="true"
+    filterBy="name"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+  <p-select
+    [options]="statusOptions"
+    optionLabel="label"
+    optionValue="value"
+    [ngModel]="filterStatus()"
+    (onChange)="filterStatus.set($event.value); applyFilters()"
+    placeholder="Todos los estados"
+    [showClear]="true"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+  <p-select
+    [options]="categoryOptions"
+    optionLabel="label"
+    optionValue="value"
+    [ngModel]="filterCategory()"
+    (onChange)="filterCategory.set($event.value); applyFilters()"
+    placeholder="Todas las categorías"
+    [showClear]="true"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <p-table
+    [value]="pqrs()"
+    [lazy]="true"
+    (onLazyLoad)="loadLazy($event)"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [loading]="loading()"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first}–{last} de {totalRecords}"
+    dataKey="id"
+    size="small"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Radicado</th>
+        <th pSortableColumn="subject">Asunto <p-sortIcon field="subject" /></th>
+        <th>Categoría</th>
+        <th>Estado</th>
+        <th pSortableColumn="createdAt">Fecha <p-sortIcon field="createdAt" /></th>
+        <th class="w-20 text-right">Acción</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-pqr>
+      <tr>
+        <td class="font-mono text-xs text-gray-600">{{ radicado(pqr) }}</td>
+        <td class="font-medium text-gray-900">{{ pqr.subject }}</td>
+        <td class="text-gray-600">{{ categoryLabel(pqr.category) }}</td>
+        <td><app-status-badge [status]="pqr.status" /></td>
+        <td class="text-gray-600">{{ pqr.createdAt | date: "mediumDate" }}</td>
+        <td class="text-right">
+          <p-button icon="pi pi-eye" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Ver" (onClick)="openDetail(pqr)" />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6">
+          <app-empty-state icon="pi pi-comments" title="Sin PQR" message="No hay solicitudes con los filtros actuales." />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Diálogo: crear PQR -->
+<p-dialog
+  [visible]="createVisible()"
+  (visibleChange)="createVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '34rem' }"
+  header="Nueva PQR"
+>
+  <form [formGroup]="createForm" (ngSubmit)="saveCreate()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+      <p-select
+        formControlName="propertyId"
+        [options]="properties()"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Selecciona"
+        [filter]="true"
+        filterBy="name"
+        (onChange)="onCreatePropertyChange($event.value)"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+      @if (createForm.controls.propertyId.touched && createForm.controls.propertyId.invalid) {
+        <small class="mt-1 block text-red-600">Selecciona la copropiedad.</small>
+      }
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Categoría</label>
+      <p-select formControlName="category" [options]="categoryOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div class="sm:col-span-2">
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">
+        Unidad <span class="text-gray-400">(opcional)</span>
+      </label>
+      <p-select formControlName="unitId" [options]="dialogUnits()" optionLabel="code" optionValue="id" placeholder="Sin unidad" [showClear]="true" [filter]="true" filterBy="code" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div class="sm:col-span-2">
+      <label for="subject" class="mb-1.5 block text-sm font-medium text-gray-700">Asunto</label>
+      <input pInputText id="subject" formControlName="subject" placeholder="Daño en zona común" class="w-full" [fluid]="true" />
+      @if (createForm.controls.subject.touched && createForm.controls.subject.invalid) {
+        <small class="mt-1 block text-red-600">El asunto es obligatorio (máx. 200).</small>
+      }
+    </div>
+    <div class="sm:col-span-2">
+      <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700">Descripción</label>
+      <textarea pTextarea id="description" formControlName="description" rows="4" placeholder="Describe la solicitud…" class="w-full" [fluid]="true"></textarea>
+      @if (createForm.controls.description.touched && createForm.controls.description.invalid) {
+        <small class="mt-1 block text-red-600">La descripción es obligatoria.</small>
+      }
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="createVisible.set(false)" />
+      <p-button type="submit" label="Crear" [loading]="savingCreate()" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Diálogo: detalle PQR -->
+<p-dialog
+  [visible]="detailVisible()"
+  (visibleChange)="detailVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '42rem' }"
+  [header]="detail() ? detail()!.radicado : 'Detalle PQR'"
+>
+  @if (loadingDetail()) {
+    <p class="py-8 text-center text-sm text-gray-500">Cargando…</p>
+  } @else if (detail(); as d) {
+    <div class="space-y-5 pt-1">
+      <!-- Encabezado -->
+      <div>
+        <div class="mb-1 flex items-center gap-2">
+          <h3 class="text-base font-semibold text-gray-900">{{ d.subject }}</h3>
+          <app-status-badge [status]="d.status" />
+        </div>
+        <p class="text-xs text-gray-500">
+          {{ categoryLabel(d.category) }} · {{ d.createdAt | date: "medium" }}
+        </p>
+        <p class="mt-3 whitespace-pre-line text-sm text-gray-700">{{ d.description }}</p>
+      </div>
+
+      <!-- Cambio de estado (staff) -->
+      <div class="flex items-end gap-2 rounded-lg bg-gray-50 p-3">
+        <div class="flex-1">
+          <label class="mb-1.5 block text-xs font-medium text-gray-700">Cambiar estado</label>
+          <p-select [formControl]="statusControl" [options]="statusOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+        </div>
+        <p-button label="Actualizar" icon="pi pi-check" [loading]="updatingStatus()" (onClick)="updateStatus()" />
+      </div>
+
+      <!-- Hilo de respuestas -->
+      <div>
+        <h4 class="mb-2 text-sm font-semibold text-gray-900">Respuestas</h4>
+        @if (d.responses.length === 0) {
+          <p class="text-sm text-gray-500">Aún no hay respuestas.</p>
+        } @else {
+          <div class="space-y-3">
+            @for (r of d.responses; track r.id) {
+              <div class="rounded-lg border border-gray-100 bg-white p-3">
+                <div class="mb-1 flex items-center justify-between">
+                  <span class="text-xs font-semibold" [class]="r.authorId === currentUserId ? 'text-indigo-600' : 'text-gray-700'">
+                    {{ r.authorId === currentUserId ? "Tú" : "Participante" }}
+                  </span>
+                  <span class="text-xs text-gray-400">{{ r.createdAt | date: "short" }}</span>
+                </div>
+                <p class="whitespace-pre-line text-sm text-gray-700">{{ r.message }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Responder -->
+      <form [formGroup]="respondForm" (ngSubmit)="submitResponse()" class="space-y-2">
+        <label for="message" class="block text-sm font-medium text-gray-700">Responder</label>
+        <textarea pTextarea id="message" formControlName="message" rows="3" placeholder="Escribe una respuesta…" class="w-full" [fluid]="true"></textarea>
+        <div class="flex justify-end">
+          <p-button type="submit" label="Enviar respuesta" icon="pi pi-send" [loading]="responding()" />
+        </div>
+      </form>
+    </div>
+  }
+</p-dialog>

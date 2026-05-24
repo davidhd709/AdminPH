@@ -60,6 +60,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "payments.manage",
     "people.manage",
     "reports.view",
+    "pqr.manage",
     "announcements.manage",
     "documents.view",
     "accounting.manage",

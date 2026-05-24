@@ -1470,3 +1470,21 @@ acceso de ACCOUNTANT a finanzas.
 Conceptos (4.1), Pagos (4.2), Contabilidad (4.3), Reportes (4.4). Deuda viva:
 UI de generación de cuotas; presupuestos + reporte income-expense de
 contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).
+
+## 2026-05-24 — Operación
+
+### Fase 5.1 — PQR (commits backend + frontend)
+- **Backend — fix**: `pqr.findAll` usaba doble `@Query()` (PqrQueryDto +
+  PaginationDto) → con forbidNonWhitelisted se rechazaban. PqrQueryDto ahora
+  extiende PaginationDto, un solo `@Query()`. 68 tests verdes.
+- **Frontend**: pqr.manage agregado a COMPANY_ADMIN (junto a SUPERADMIN/
+  PROPERTY_ADMIN = STAFF_ROLES del backend); status-badge con estados PQR
+  (OPEN/IN_PROGRESS/RESOLVED/CLOSED). pqr.models (+ buildRadicado espejo del
+  backend, labels ES) + pqr.service. Módulo `pqr`: lista lazy con filtros
+  (copropiedad/estado/categoría), crear (con unidad opcional en cascada),
+  detalle en diálogo con descripción, hilo de respuestas (marca "Tú" por
+  authorId), responder y cambiar estado (staff).
+- Ruta /app/pqr con roleGuard(SUPERADMIN, COMPANY_ADMIN, PROPERTY_ADMIN). La
+  vista de owners/residents ("Mis PQR") queda para la sección Mi cuenta.
+- Verificado e2e: listar con filtros, crear (ticket/radicado), responder
+  (auto IN_PROGRESS), cambiar estado, enum inválido→400.

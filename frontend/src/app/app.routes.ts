@@ -83,6 +83,11 @@ export const routes: Routes = [
         canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
         loadComponent: () => import("./features/reports/reports").then((m) => m.Reports),
       },
+      {
+        path: "pqr",
+        canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
+        loadComponent: () => import("./features/pqr/pqr").then((m) => m.PqrPage),
+      },
     ],
   },
 
