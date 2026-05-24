@@ -16,6 +16,7 @@ import {
   Min,
   ValidateNested,
 } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreateBankAccountDto {
   @ApiProperty({ description: "Copropiedad a la que pertenece la cuenta bancaria" })
@@ -131,7 +132,19 @@ export class CreateBudgetDto {
   items?: CreateBudgetItemDto[];
 }
 
-export class TransactionQueryDto {
+/**
+ * Query de listados scoped por copropiedad (cuentas bancarias, categorías).
+ * Extiende PaginationDto para validar todo con un único `@Query()`
+ * (forbidNonWhitelisted rechaza dos @Query con DTOs distintos).
+ */
+export class AccountingListQueryDto extends PaginationDto {
+  @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
+  @IsOptional()
+  @IsUUID()
+  propertyId?: string;
+}
+
+export class TransactionQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()

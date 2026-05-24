@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request as ExpressRequest } from "express";
 import { AccountingService } from "./accounting.service";
 import {
+  AccountingListQueryDto,
   CreateBankAccountDto,
   CreateBudgetDto,
   CreateCategoryDto,
@@ -21,7 +22,6 @@ import {
 } from "./dto/accounting.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("accounting")
@@ -39,12 +39,8 @@ export class AccountingController {
   }
 
   @Get("bank-accounts")
-  listBankAccounts(
-    @CurrentUser() user: AuthUser,
-    @Query("propertyId") propertyId: string | undefined,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.accountingService.listBankAccounts(user, propertyId, pagination);
+  listBankAccounts(@CurrentUser() user: AuthUser, @Query() query: AccountingListQueryDto) {
+    return this.accountingService.listBankAccounts(user, query.propertyId, query);
   }
 
   // ===== Category =====
@@ -55,12 +51,8 @@ export class AccountingController {
   }
 
   @Get("categories")
-  listCategories(
-    @CurrentUser() user: AuthUser,
-    @Query("propertyId") propertyId: string | undefined,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.accountingService.listCategories(user, propertyId, pagination);
+  listCategories(@CurrentUser() user: AuthUser, @Query() query: AccountingListQueryDto) {
+    return this.accountingService.listCategories(user, query.propertyId, query);
   }
 
   // ===== Transaction =====
@@ -75,12 +67,8 @@ export class AccountingController {
   }
 
   @Get("transactions")
-  listTransactions(
-    @CurrentUser() user: AuthUser,
-    @Query() query: TransactionQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.accountingService.listTransactions(user, query, pagination);
+  listTransactions(@CurrentUser() user: AuthUser, @Query() query: TransactionQueryDto) {
+    return this.accountingService.listTransactions(user, query, query);
   }
 
   @Delete("transactions/:id")
