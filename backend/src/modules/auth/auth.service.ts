@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
@@ -202,10 +202,17 @@ export class AuthService {
       secret: process.env.JWT_ACCESS_SECRET,
       expiresIn: process.env.JWT_ACCESS_EXPIRES_IN as any,
     });
-    const refresh_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN as any,
-    });
+    // `jti` aleatorio: garantiza que cada refresh token sea único aunque dos
+    // logins ocurran en el mismo segundo (el `iat` solo tiene resolución de
+    // segundos). Sin esto, dos logins simultáneos del mismo usuario producen
+    // el mismo JWT -> mismo tokenHash -> viola la constraint unique.
+    const refresh_token = this.jwtService.sign(
+      { ...payload, jti: randomUUID() },
+      {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN as any,
+      },
+    );
     return { access_token, refresh_token };
   }
 
