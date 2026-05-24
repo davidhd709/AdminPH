@@ -10,6 +10,14 @@ import {
   IsUUID,
   MaxLength,
 } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
+
+/** Query de listado de zonas comunes: paginación + copropiedad (requerida). */
+export class AreaListQueryDto extends PaginationDto {
+  @ApiProperty({ description: "Copropiedad cuyas zonas comunes se listan" })
+  @IsUUID()
+  propertyId!: string;
+}
 
 export class CreateCommonAreaDto {
   @ApiProperty({ description: "Copropiedad a la que pertenece la zona común" })
@@ -66,7 +74,7 @@ export class ReviewReservationDto {
   status!: ReviewableStatus;
 }
 
-export class ReservationQueryDto {
+export class ReservationQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()

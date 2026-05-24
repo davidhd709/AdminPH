@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request as ExpressRequest } from "express";
 import { ReservationsService } from "./reservations.service";
 import {
+  AreaListQueryDto,
   CreateCommonAreaDto,
   CreateReservationDto,
   ReservationQueryDto,
@@ -10,7 +11,6 @@ import {
 } from "./dto/reservation.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("reservations")
@@ -30,12 +30,8 @@ export class ReservationsController {
   }
 
   @Get("areas")
-  listAreas(
-    @CurrentUser() user: AuthUser,
-    @Query("propertyId") propertyId: string,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.reservationsService.listAreas(user, propertyId, pagination);
+  listAreas(@CurrentUser() user: AuthUser, @Query() query: AreaListQueryDto) {
+    return this.reservationsService.listAreas(user, query.propertyId, query);
   }
 
   @Post()
@@ -48,12 +44,8 @@ export class ReservationsController {
   }
 
   @Get()
-  listReservations(
-    @CurrentUser() user: AuthUser,
-    @Query() query: ReservationQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.reservationsService.listReservations(user, query, pagination);
+  listReservations(@CurrentUser() user: AuthUser, @Query() query: ReservationQueryDto) {
+    return this.reservationsService.listReservations(user, query, query);
   }
 
   @Patch(":id/review")
