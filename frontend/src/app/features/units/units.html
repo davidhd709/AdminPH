@@ -1,0 +1,200 @@
+<app-page-header title="Unidades" subtitle="Apartamentos, casas o locales de cada copropiedad.">
+  <p-button
+    label="Nueva unidad"
+    icon="pi pi-plus"
+    [disabled]="!selectedPropertyId()"
+    (onClick)="openCreate()"
+  />
+</app-page-header>
+
+<!-- Selector de copropiedad -->
+<div class="mb-4 max-w-md">
+  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+  <p-select
+    [options]="properties()"
+    optionLabel="name"
+    optionValue="id"
+    [ngModel]="selectedPropertyId()"
+    (onChange)="onPropertyChange($event.value)"
+    placeholder="Selecciona una copropiedad"
+    [filter]="true"
+    filterBy="name"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <p-table
+    [value]="units()"
+    [lazy]="true"
+    (onLazyLoad)="loadLazy($event)"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [loading]="loading()"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first}–{last} de {totalRecords}"
+    dataKey="id"
+    size="small"
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="code">Código <p-sortIcon field="code" /></th>
+        <th pSortableColumn="floor">Piso <p-sortIcon field="floor" /></th>
+        <th>Torre</th>
+        <th class="text-right">Área (m²)</th>
+        <th class="text-right">Coeficiente</th>
+        <th>Estado</th>
+        <th class="w-32 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-unit>
+      <tr>
+        <td class="font-medium text-gray-900">{{ unit.code }}</td>
+        <td class="text-gray-600">{{ unit.floor }}</td>
+        <td class="text-gray-600">{{ towerName(unit.towerId) }}</td>
+        <td class="text-right text-gray-600">{{ +unit.area | number: "1.0-2" }}</td>
+        <td class="text-right text-gray-600">{{ +unit.coefficient | number: "1.0-4" }}</td>
+        <td><app-status-badge [status]="unit.status" /></td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            ariaLabel="Editar"
+            (onClick)="openEdit(unit)"
+          />
+          @if (canDelete()) {
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              ariaLabel="Eliminar"
+              (onClick)="confirmDelete(unit)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">
+          <app-empty-state
+            icon="pi pi-home"
+            [title]="selectedPropertyId() ? 'Sin unidades' : 'Selecciona una copropiedad'"
+            [message]="
+              selectedPropertyId()
+                ? 'Esta copropiedad aún no tiene unidades. Crea la primera con “Nueva unidad”.'
+                : 'Elige una copropiedad arriba para ver sus unidades.'
+            "
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Diálogo de alta / edición -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '36rem' }"
+  [header]="editing() ? 'Editar unidad' : 'Nueva unidad'"
+>
+  <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <!-- Código -->
+    <div>
+      <label for="code" class="mb-1.5 block text-sm font-medium text-gray-700">Código</label>
+      <input pInputText id="code" formControlName="code" placeholder="A-101" class="w-full" [fluid]="true" />
+      @if (form.controls.code.touched && form.controls.code.invalid) {
+        <small class="mt-1 block text-red-600">El código es obligatorio (máx. 40).</small>
+      }
+    </div>
+
+    <!-- Torre (opcional) -->
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">
+        Torre <span class="text-gray-400">(opcional)</span>
+      </label>
+      <p-select
+        formControlName="towerId"
+        [options]="towers()"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Sin torre"
+        [showClear]="true"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+    </div>
+
+    <!-- Piso -->
+    <div>
+      <label for="floor" class="mb-1.5 block text-sm font-medium text-gray-700">Piso</label>
+      <p-inputNumber inputId="floor" formControlName="floor" [min]="0" styleClass="w-full" [fluid]="true" />
+      @if (form.controls.floor.touched && form.controls.floor.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un piso válido.</small>
+      }
+    </div>
+
+    <!-- Número -->
+    <div>
+      <label for="number" class="mb-1.5 block text-sm font-medium text-gray-700">Número</label>
+      <input pInputText id="number" formControlName="number" placeholder="101" class="w-full" [fluid]="true" />
+      @if (form.controls.number.touched && form.controls.number.invalid) {
+        <small class="mt-1 block text-red-600">El número es obligatorio.</small>
+      }
+    </div>
+
+    <!-- Área -->
+    <div>
+      <label for="area" class="mb-1.5 block text-sm font-medium text-gray-700">Área (m²)</label>
+      <p-inputNumber
+        inputId="area"
+        formControlName="area"
+        [minFractionDigits]="0"
+        [maxFractionDigits]="2"
+        [min]="0"
+        suffix=" m²"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+      @if (form.controls.area.touched && form.controls.area.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un área válida.</small>
+      }
+    </div>
+
+    <!-- Coeficiente -->
+    <div>
+      <label for="coefficient" class="mb-1.5 block text-sm font-medium text-gray-700">Coeficiente</label>
+      <p-inputNumber
+        inputId="coefficient"
+        formControlName="coefficient"
+        [minFractionDigits]="0"
+        [maxFractionDigits]="6"
+        [min]="0"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+      @if (form.controls.coefficient.touched && form.controls.coefficient.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un coeficiente válido.</small>
+      }
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog />

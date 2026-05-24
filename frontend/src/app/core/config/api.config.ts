@@ -16,4 +16,5 @@ export const API = {
   companies: "/companies",
   properties: "/properties",
   towers: "/towers",
+  units: "/units",
 } as const;
