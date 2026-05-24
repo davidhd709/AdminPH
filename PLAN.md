@@ -269,7 +269,15 @@ devuelve 423 (Locked) durante 30 min, registrado en AuditLog.
 
 ---
 
-## Fase 3 — Observabilidad
+## Fase 3 — Observabilidad ✅ COMPLETA (2026-05-24)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen:
+> 3.1 Pino structured logger (pretty dev / JSON prod, redact de secretos);
+> 3.2 Request ID / correlation id (header X-Request-Id end-to-end);
+> 3.3 health checks `/live` `/ready` `/health` con @nestjs/terminus;
+> 3.4 AllExceptionsFilter global con formato uniforme + traducción de errores
+> Prisma (P2002→409, P2025→404, P2003→400). 3.5 (error tracking Sentry/
+> Glitchtip) documentada como deuda — requiere DSN/infra. Tag `v0.4.0-phase3-complete`.
 
 **Objetivo:** poder responder "qué pasó" cuando algo falle en producción.
 

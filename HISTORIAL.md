@@ -835,3 +835,82 @@ Build, lint y formato OK. Smoke tests end-to-end pasaron en cada sub-fase.
 Próximo paso: tag `v0.3.0-phase2-complete` y arranque de **Fase 3:
 Observabilidad** (Pino logger, Request ID middleware, health checks,
 error tracking).
+
+---
+
+## 2026-05-24 — Fase 3 del plan completa (observabilidad)
+
+### Fase 3.1 — Pino structured logger
+
+- Instalados `nestjs-pino`, `pino`, `pino-http`, `pino-pretty` (dev).
+- `src/core/logging/logger.module.ts` (`AppLoggerModule`):
+  - dev: `pino-pretty` single-line legible; prod: JSON estructurado.
+  - `LOG_LEVEL` por env (default `info` prod / `debug` dev).
+  - `redact` con `remove: true` de `authorization`, `cookie`,
+    `body.password`, `body.refresh_token`, `set-cookie`.
+  - `autoLogging.ignore` salta `/health` `/live` `/ready` (sin ruido de probes).
+- `main.ts`: `NestFactory.create(AppModule, { bufferLogs: true })` +
+  `app.useLogger(app.get(PinoLogger))`. Pino reemplaza el logger default de
+  Nest en TODA la app.
+
+### Fase 3.2 — Request ID / correlation id
+
+- `genReqId` en Pino: usa `X-Request-Id` entrante o genera un UUID.
+- Se expone en el header de respuesta `X-Request-Id` (trazabilidad
+  cliente → logs → audit).
+- `customProps` inyecta `userId` en cada línea de log cuando hay `request.user`.
+- Combina con el `requestId` del AuditLog (Fase 2.3) para correlación total.
+
+### Fase 3.3 — Health checks (@nestjs/terminus)
+
+- `src/modules/health/`: `HealthModule`, `HealthController`,
+  `PrismaHealthIndicator`.
+- `GET /live`  → liveness (proceso vivo, sin tocar deps). k8s livenessProbe.
+- `GET /ready` → readiness (BD via `SELECT 1`). k8s readinessProbe.
+- `GET /health`→ BD + memoria heap (<512 MB). dashboards / uptime monitors.
+- Los 3 son `@Public()`.
+
+### Fase 3.4 — Exception filter global uniforme
+
+- `src/core/filters/all-exceptions.filter.ts` registrado como `APP_FILTER`.
+- Formato consistente: `{ statusCode, error, message, code?, requestId,
+  timestamp, path }`.
+- Traducción de errores Prisma:
+  - `P2002` (unique) → 409 Conflict con campo afectado.
+  - `P2025` (not found) → 404.
+  - `P2003` (FK) → 400.
+  - `PrismaClientValidationError` → 400.
+- 5xx se loguean como `error` (con stack); 4xx como `warn`. Ambos con requestId.
+
+### Fase 3.5 — Error tracking (documentado como deuda)
+
+Decisión del usuario: dejar documentado. El prerequisito (punto único de
+captura en `AllExceptionsFilter`) ya existe. Falta conectar un proveedor
+(Sentry cloud o Glitchtip self-hosted) — requiere DSN/infra. Cuando se
+decida, el hook de envío va en el bloque `if (body.statusCode >= 500)` del
+filter.
+
+### Verificación end-to-end (PORT=3030)
+
+- Logs en formato Pino pretty con `context`.
+- `GET /live`   → 200 `{ status: ok, timestamp }`.
+- `GET /health` → 200 `{ database: up, memory_heap: up }`.
+- `GET /ready`  → 200 `{ database: up }`.
+- Response incluye header `X-Request-Id` (UUID).
+- `GET /no-existe` → 404 con body uniforme + requestId + path.
+
+### Estado al cerrar Fase 3
+
+Commits en `main`:
+```
+<sha> feat(observability): Pino logger, request id, health checks, exception filter — Fase 3.1-3.4
+```
+
+Build, lint (140 warnings any, deuda conocida) y smoke OK.
+Tag `v0.4.0-phase3-complete`.
+
+Deuda explícita: error tracking (3.5) pendiente de proveedor; métricas
+Prometheus (3.6 opcional) no implementadas.
+
+Próximo paso: **Fase 4 — Testing y CI** (Jest unit/integration/e2e +
+GitHub Actions).
