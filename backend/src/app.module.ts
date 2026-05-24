@@ -22,6 +22,7 @@ import { FinanceModule } from "./modules/finance/finance.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { PqrModule } from "./modules/pqr/pqr.module";
 import { AnnouncementsModule } from "./modules/announcements/announcements.module";
+import { ReservationsModule } from "./modules/reservations/reservations.module";
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { AnnouncementsModule } from "./modules/announcements/announcements.modul
     PaymentsModule,
     PqrModule,
     AnnouncementsModule,
+    ReservationsModule,
   ],
   providers: [
     // Filtro global de excepciones: formato uniforme + traducción Prisma.

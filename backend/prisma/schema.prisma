@@ -99,6 +99,8 @@ model Company {
   payments      Payment[]
   pqrs          Pqr[]
   announcements Announcement[]
+  commonAreas   CommonArea[]
+  reservations  Reservation[]
 
   @@index([id])
 }
@@ -130,6 +132,8 @@ model Property {
   lateFeeConfig LateFeeConfig?
   pqrs          Pqr[]
   announcements Announcement[]
+  commonAreas   CommonArea[]
+  reservations  Reservation[]
 
   @@index([companyId])
   @@index([id])
@@ -190,6 +194,7 @@ model Unit {
   auditLogs     AuditLog[]
   pqrs          Pqr[]
   announcements Announcement[]
+  reservations  Reservation[]
 
   @@unique([propertyId, code])
   @@index([propertyId])
@@ -224,6 +229,8 @@ model User {
   pqrResponses         PqrResponse[]      @relation("PqrResponseAuthor")
   announcementsCreated Announcement[]     @relation("AnnouncementCreatedBy")
   announcementReads    AnnouncementRead[] @relation("AnnouncementReadBy")
+  reservationsMade     Reservation[]      @relation("ReservationRequestedBy")
+  reservationsReviewed Reservation[]      @relation("ReservationReviewedBy")
 
   @@index([email])
 }
@@ -514,4 +521,60 @@ model AnnouncementRead {
 
   @@unique([announcementId, userId])
   @@index([userId])
+}
+
+// ===================== Fase 7.3 — Reservas de zonas comunes =====================
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model CommonArea {
+  id          String    @id @default(uuid())
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name        String // Salón social, Piscina, BBQ, Gimnasio, Cancha, etc.
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  reservations Reservation[]
+
+  @@index([companyId])
+  @@index([propertyId])
+}
+
+model Reservation {
+  id            String            @id @default(uuid())
+  companyId     String
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId    String
+  property      Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  commonAreaId  String
+  commonArea    CommonArea        @relation(fields: [commonAreaId], references: [id], onDelete: Cascade)
+  unitId        String?
+  unit          Unit?             @relation(fields: [unitId], references: [id])
+  requestedById String
+  requestedBy   User              @relation("ReservationRequestedBy", fields: [requestedById], references: [id])
+  startTime     DateTime
+  endTime       DateTime
+  status        ReservationStatus @default(PENDING)
+  notes         String?
+  reviewedById  String?
+  reviewedBy    User?             @relation("ReservationReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  deletedAt     DateTime?
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([commonAreaId, startTime])
 }
