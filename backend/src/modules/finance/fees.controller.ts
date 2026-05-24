@@ -6,7 +6,6 @@ import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 
 @ApiTags("fees")
 @ApiBearerAuth()
@@ -27,12 +26,8 @@ export class FeesController {
 
   @Get()
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT", "OWNER", "RESIDENT")
-  async findAll(
-    @Query() query: FeeQueryDto,
-    @CurrentUser() user: any,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.feesService.findAll(user, query, pagination);
+  async findAll(@Query() query: FeeQueryDto, @CurrentUser() user: any) {
+    return this.feesService.findAll(user, query, query);
   }
 
   @Get(":id")

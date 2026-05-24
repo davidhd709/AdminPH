@@ -145,13 +145,18 @@ export class FeesService {
     if (query.period) where.period = query.period;
     if (query.status) where.status = query.status;
 
-    // Multi-tenancy: If not superadmin, we must filter by their assigned properties
+    // Multi-tenancy: COMPANY_ADMIN ve toda su empresa; los demás roles no-super
+    // (PROPERTY_ADMIN, etc.) solo las copropiedades a las que están asignados.
     if (user.role !== "SUPERADMIN") {
-      const propertyUsers = await this.prisma.propertyUser.findMany({
-        where: { userId: user.sub },
-        select: { propertyId: true },
-      });
-      where.propertyId = { in: propertyUsers.map((pu) => pu.propertyId) };
+      if (user.role === "COMPANY_ADMIN") {
+        where.companyId = user.companyId;
+      } else {
+        const propertyUsers = await this.prisma.propertyUser.findMany({
+          where: { userId: user.sub },
+          select: { propertyId: true },
+        });
+        where.propertyId = { in: propertyUsers.map((pu) => pu.propertyId) };
+      }
     }
 
     return paginate<Fee>(this.prisma.fee, where, pagination, {

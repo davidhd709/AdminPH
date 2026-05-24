@@ -1,5 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString, IsNumber, IsDate } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsNumber } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
+
+/** Query de listado de pagos: paginación + filtros opcionales por unidad/estado. */
+export class PaymentQueryDto extends PaginationDto {
+  @ApiPropertyOptional({ description: "Filtrar por ID de unidad" })
+  @IsOptional()
+  @IsString()
+  unitId?: string;
+
+  @ApiPropertyOptional({ description: "Filtrar por estado", example: "PENDING_REVIEW" })
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
 
 export class CreatePaymentDto {
   @ApiProperty({ description: "ID de la unidad que realiza el pago", example: "clx123abc" })
@@ -12,20 +26,10 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   amount!: number;
 
-  @ApiPropertyOptional({ description: "Nombre del banco", example: "Bancolombia" })
-  @IsString()
-  @IsOptional()
-  bankName?: string;
-
   @ApiProperty({ description: "Referencia bancaria del pago", example: "REF-2026-0001" })
   @IsString()
   @IsNotEmpty()
   bankReference!: string;
-
-  @ApiPropertyOptional({ description: "Fecha del pago", example: "2026-05-10T00:00:00.000Z" })
-  @IsDate()
-  @IsOptional()
-  paymentDate?: Date;
 
   @ApiProperty({
     description: "URL del comprobante de pago",

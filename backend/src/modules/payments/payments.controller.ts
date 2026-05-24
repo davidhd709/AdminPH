@@ -2,16 +2,23 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Headers,
   Param,
   Patch,
   Post,
+  Query,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PaymentsService } from "./payments.service";
 import { PaymentGatewayService } from "./payment-gateway.service";
-import { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
+import {
+  CreatePaymentDto,
+  ApprovePaymentDto,
+  PaymentQueryDto,
+  RejectPaymentDto,
+} from "./dto/payment.dto";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { Public } from "../../core/decorators/public.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
@@ -24,6 +31,12 @@ export class PaymentsController {
     private readonly paymentsService: PaymentsService,
     private readonly gateway: PaymentGatewayService,
   ) {}
+
+  @Get()
+  @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT")
+  async findAll(@CurrentUser() user: any, @Query() query: PaymentQueryDto) {
+    return this.paymentsService.findAll(user, query);
+  }
 
   @Post()
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN", "ACCOUNTANT", "OWNER", "RESIDENT")

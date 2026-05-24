@@ -6,8 +6,15 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { Payment } from "@prisma/client";
-import { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
+import {
+  CreatePaymentDto,
+  ApprovePaymentDto,
+  PaymentQueryDto,
+  RejectPaymentDto,
+} from "./dto/payment.dto";
 import { AuditService } from "../audit/audit.service";
+import { PaginatedResult } from "../../core/dto/pagination.dto";
+import { paginate } from "../../core/utils/paginate";
 
 @Injectable()
 export class PaymentsService {
@@ -15,6 +22,37 @@ export class PaymentsService {
     private prisma: PrismaService,
     private auditService: AuditService,
   ) {}
+
+  /**
+   * Lista pagos paginados, scoped por tenant: SUPERADMIN todos; COMPANY_ADMIN
+   * su empresa; el resto sus copropiedades asignadas. Filtros opcionales por
+   * unidad y estado. Incluye unidad (código) y usuario (id, nombre).
+   */
+  async findAll(user: any, query: PaymentQueryDto): Promise<PaginatedResult<Payment>> {
+    const where: Record<string, unknown> = { deletedAt: null };
+    if (query.unitId) where.unitId = query.unitId;
+    if (query.status) where.status = query.status;
+
+    if (user.role !== "SUPERADMIN") {
+      if (user.role === "COMPANY_ADMIN") {
+        where.companyId = user.companyId;
+      } else {
+        const propertyUsers = await this.prisma.propertyUser.findMany({
+          where: { userId: user.sub },
+          select: { propertyId: true },
+        });
+        where.propertyId = { in: propertyUsers.map((pu) => pu.propertyId) };
+      }
+    }
+
+    return paginate<Payment>(this.prisma.payment, where, query, {
+      include: {
+        unit: { select: { id: true, code: true } },
+        user: { select: { id: true, fullName: true } },
+      },
+      defaultSortBy: "createdAt",
+    });
+  }
 
   async createPayment(dto: CreatePaymentDto, user: any, request: any): Promise<Payment> {
     const unit = await this.prisma.unit.findFirst({
