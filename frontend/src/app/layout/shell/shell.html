@@ -1,0 +1,10 @@
+<div class="flex h-screen overflow-hidden bg-[var(--app-bg)]">
+  <app-sidebar class="hidden md:block" />
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <app-topbar />
+    <main class="flex-1 overflow-y-auto p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>

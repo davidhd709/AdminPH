@@ -1,0 +1,37 @@
+<aside class="flex h-full w-64 flex-col border-r border-gray-200 bg-white">
+  <!-- Brand -->
+  <div class="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
+    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
+      <i class="pi pi-building text-sm"></i>
+    </span>
+    <span class="text-lg font-semibold tracking-tight text-gray-900">AdminPH</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 overflow-y-auto px-3 py-4">
+    @for (section of sections(); track section.title || $index) {
+      <div class="mb-5">
+        @if (section.title) {
+          <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            {{ section.title }}
+          </p>
+        }
+        <ul class="space-y-1">
+          @for (item of section.items; track item.route) {
+            <li>
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="bg-indigo-50 text-indigo-700 font-medium"
+                [routerLinkActiveOptions]="{ exact: false }"
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+              >
+                <i [class]="item.icon + ' text-base'"></i>
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </nav>
+</aside>

@@ -1,0 +1,38 @@
+<header
+  class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6"
+>
+  <div class="flex items-center gap-3">
+    <h1 class="text-sm font-medium text-gray-500">Panel de administración</h1>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <button
+      type="button"
+      class="relative text-gray-400 transition-colors hover:text-gray-600"
+      aria-label="Notificaciones"
+    >
+      <i class="pi pi-bell text-lg"></i>
+    </button>
+
+    <div class="h-6 w-px bg-gray-200"></div>
+
+    <button
+      type="button"
+      class="flex items-center gap-3"
+      (click)="menu.toggle($event)"
+      aria-label="Menú de usuario"
+    >
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700"
+      >
+        {{ initials() || "U" }}
+      </span>
+      <span class="hidden text-left sm:block">
+        <span class="block text-sm font-medium text-gray-900">{{ user()?.fullName }}</span>
+        <span class="block text-xs text-gray-500">{{ roleLabel() }}</span>
+      </span>
+      <i class="pi pi-angle-down text-xs text-gray-400"></i>
+    </button>
+    <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+  </div>
+</header>
