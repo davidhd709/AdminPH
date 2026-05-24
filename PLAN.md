@@ -383,7 +383,19 @@ Mockear `PrismaService` y `AuditService`.
 
 ---
 
-## Fase 5 — API surface completa para MVP
+## Fase 5 — API surface completa para MVP ✅ COMPLETA (2026-05-24, parcial)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen:
+> 5.1 paginación estándar (PaginationDto + helper paginate) aplicada a
+> companies/properties/towers/units/fees; 5.3 Swagger completo (@ApiTags,
+> @ApiProperty, @ApiBearerAuth) en 12 controllers + 12 DTOs; 5.4 versionado
+> URI /api/v1 + configureApp compartido; 5.6 errores uniformes (hecho en
+> Fase 3.4).
+> **Diferido:** 5.2 file upload de comprobantes → Fase 9 (requiere decisión
+> de storage R2/MinIO). 5.5 response DTOs → cerrado como suficiente: el único
+> secreto (User.password) ya está cubierto por SafeUser (Fase 2.5) y
+> refreshToken vive en tabla aparte; ClassSerializerInterceptor global queda
+> como mejora incremental. Tag `v0.6.0-phase5-complete`.
 
 **Objetivo:** que el MVP del contexto AdminPH (sección 6) sea consumible por un frontend.
 

@@ -1002,3 +1002,66 @@ Deuda: subir coverage incrementalmente; agregar tests de payments.service
 Próximo paso: **Fase 5 — API surface completa** (paginación, file upload,
 Swagger con @ApiProperty, versionado, DTOs de respuesta, exception filter
 ya hecho en Fase 3).
+
+---
+
+## 2026-05-24 — Fase 5 del plan (API surface, parcial)
+
+### Fase 5.4 — Versionado API /api/v1
+
+- `setGlobalPrefix("api", { exclude: ["health","live","ready"] })` +
+  `enableVersioning({ type: URI, defaultVersion: "1" })`.
+- Rutas pasan de `/auth/login` a `/api/v1/auth/login`.
+- Health version-neutral y sin prefijo (`/health`, `/live`, `/ready`).
+- Refactor DRY: config compartida (prefix + versioning + ValidationPipe) en
+  `src/app-setup.ts` (`configureApp`), usada por main.ts Y por los E2E.
+  Antes los E2E no aplicaban prefix/versioning → probaban rutas que en prod
+  no existían. Ahora prueban la misma superficie.
+
+### Fase 5.1 — Paginación estándar
+
+- `src/core/dto/pagination.dto.ts`: `PaginationDto` (page≥1, pageSize 1-100,
+  sortBy, sortOrder, defaults 1/20/desc) + `PaginatedResult<T>`.
+- `src/core/utils/paginate.ts`: helper que hace findMany + count en paralelo.
+- Aplicado a `findAll` de companies, properties, towers, units, fees
+  (preservando toda la lógica de tenancy). Respuesta pasa de array plano a
+  `{ items, meta: { total, page, pageSize, totalPages } }`.
+- Pendiente incremental: people (owners/residents) y audit logs.
+
+### Fase 5.3 — Swagger / OpenAPI completo
+
+- 12 controllers con `@ApiTags`; `@ApiBearerAuth` en los protegidos.
+- 12 DTOs con `@ApiProperty` / `@ApiPropertyOptional` (description, example,
+  `enum:` para FeeConceptType/CalculationType/InterestType).
+- `PaginationDto` documentado.
+- Swagger UI en `/api/docs` muestra esquemas completos + auth Bearer.
+
+### Fase 5.6 — Errores uniformes
+
+Ya implementado en Fase 3.4 (`AllExceptionsFilter` con formato uniforme +
+traducción de errores Prisma).
+
+### Decisiones de alcance (consultadas al usuario)
+
+- **5.2 File upload de comprobantes → DIFERIDO a Fase 9.** Requiere decisión
+  de storage (Cloudflare R2 vs MinIO self-hosted). Se retoma cuando se monte
+  la infraestructura.
+- **5.5 Response DTOs → CERRADO como suficiente.** El único dato sensible
+  (User.password) ya está cubierto por `SafeUser` (Fase 2.5); `refreshToken`
+  vive en tabla aparte. Un `ClassSerializerInterceptor` global con response
+  DTOs por entidad queda como mejora incremental (bajo retorno ahora, no hay
+  más secretos que ocultar).
+
+### Estado al cerrar Fase 5
+
+Commits en `main`:
+```
+<sha> docs(api): enrich OpenAPI ... — Fase 5.3
+<sha> feat(api): standard pagination on list endpoints — Fase 5.1
+4ef1914 feat(api): URI versioning /api/v1 + shared app config — Fase 5.4
+```
+
+Build OK, 27 unit + 5 e2e en verde. Tag `v0.6.0-phase5-complete`.
+
+Próximo paso: **Fase 6 — Auth completa + seed** (recuperación de password,
+verificación de email, /me + cambio de password, seed enriquecido).
