@@ -13,6 +13,7 @@
     "incremental": true,
     "strict": true,
     "skipLibCheck": true,
+    "types": ["node", "jest"],
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
