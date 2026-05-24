@@ -1503,3 +1503,19 @@ contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).
   PROPERTY_ADMIN). La vista de owners ("Comunicados" en Mi cuenta) queda pendiente.
 - Verificado e2e: listar, crear PROPERTY/TOWER, TOWER sin towerId→400,
   markAsRead, listado ordenado por publishedAt.
+
+### Fase 5.3 — Reservas (commits backend + frontend)
+- **Backend — fix de 2 listados**: `listAreas` usaba `@Query("propertyId")` +
+  PaginationDto y `listReservations` doble `@Query()`; ambos con
+  forbidNonWhitelisted fallaban. Ahora `AreaListQueryDto` (propertyId requerido)
+  y `ReservationQueryDto` extienden PaginationDto, un solo `@Query()` cada uno.
+  68 tests verdes.
+- **Frontend**: reservations.manage agregado a COMPANY_ADMIN (= STAFF_ROLES).
+  reservation.models + reservation.service. Módulo `reservations`: selector de
+  copropiedad + dos bloques — Reservas (filtros por zona/estado; crear con
+  zona, inicio/fin con p-datepicker showTime, unidad opcional y notas;
+  aprobar/rechazar/cancelar con guard de doble click via actingId) y Zonas
+  comunes (crear+listar). status-badge ya cubría los estados.
+- Ruta /app/reservations con roleGuard(SUPERADMIN, COMPANY_ADMIN, PROPERTY_ADMIN).
+- Verificado e2e: ambos listados, crear zona, crear reserva, solapamiento→409,
+  inicio≥fin→400, aprobar (reviewedAt), cancelar.

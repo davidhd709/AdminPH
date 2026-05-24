@@ -35,4 +35,8 @@ export const API = {
   reports: "/reports",
   pqr: "/pqr",
   announcements: "/announcements",
+  reservations: {
+    base: "/reservations",
+    areas: "/reservations/areas",
+  },
 } as const;

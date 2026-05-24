@@ -94,6 +94,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import("./features/announcements/announcements").then((m) => m.Announcements),
       },
+      {
+        path: "reservations",
+        canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
+        loadComponent: () =>
+          import("./features/reservations/reservations").then((m) => m.Reservations),
+      },
     ],
   },
 
