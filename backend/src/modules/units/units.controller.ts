@@ -12,12 +12,11 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { UnitsService } from "./units.service";
-import { CreateUnitDto, UpdateUnitDto } from "./dto/unit.dto";
+import { CreateUnitDto, UnitQueryDto, UpdateUnitDto } from "./dto/unit.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
 import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { Request as ExpressRequest } from "express";
 
 @ApiTags("units")
@@ -39,12 +38,8 @@ export class UnitsController {
 
   @Get()
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
-  async findAll(
-    @CurrentUser() user: any,
-    @Param("propertyId") propertyId: string,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.unitsService.findAll(user, propertyId, pagination);
+  async findAll(@CurrentUser() user: any, @Query() query: UnitQueryDto) {
+    return this.unitsService.findAll(user, query.propertyId, query);
   }
 
   @Get(":id")

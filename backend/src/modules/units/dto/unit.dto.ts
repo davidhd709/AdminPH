@@ -1,5 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional, IsString, IsNumber } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
+
+/**
+ * Query de listado de unidades: paginación + la copropiedad cuya lista se pide.
+ * `propertyId` es obligatorio (las unidades siempre se listan dentro de una
+ * copropiedad; además habilita la validación de acceso por tenant).
+ */
+export class UnitQueryDto extends PaginationDto {
+  @ApiProperty({ description: "ID de la copropiedad cuyas unidades se listan" })
+  @IsString()
+  @IsNotEmpty()
+  propertyId!: string;
+}
 
 export class CreateUnitDto {
   @ApiProperty({ description: "ID de la propiedad", example: "clx123abc" })
