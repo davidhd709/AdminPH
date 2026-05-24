@@ -1488,3 +1488,18 @@ contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).
   vista de owners/residents ("Mis PQR") queda para la sección Mi cuenta.
 - Verificado e2e: listar con filtros, crear (ticket/radicado), responder
   (auto IN_PROGRESS), cambiar estado, enum inválido→400.
+
+### Fase 5.2 — Comunicados (commits backend + frontend)
+- **Backend — fix**: `announcements.findAll` con doble `@Query()` →
+  AnnouncementQueryDto ahora extiende PaginationDto, un solo `@Query()`.
+  68 tests verdes. (Sin cambios de permisos: announcements.manage ya estaba
+  en los 3 roles staff.)
+- **Frontend**: announcement.models (labels ES de alcance) + announcement.service.
+  Módulo `announcements`: lista lazy filtrable por copropiedad; crear con
+  alcance PROPERTY/TOWER/UNIT (selector de torre/unidad en cascada y
+  condicional al scope, con validación de destino requerido); detalle del
+  cuerpo en diálogo. El listado ya trae el body, no requiere findOne.
+- Ruta /app/announcements con roleGuard(SUPERADMIN, COMPANY_ADMIN,
+  PROPERTY_ADMIN). La vista de owners ("Comunicados" en Mi cuenta) queda pendiente.
+- Verificado e2e: listar, crear PROPERTY/TOWER, TOWER sin towerId→400,
+  markAsRead, listado ordenado por publishedAt.

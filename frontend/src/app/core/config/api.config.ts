@@ -34,4 +34,5 @@ export const API = {
   },
   reports: "/reports",
   pqr: "/pqr",
+  announcements: "/announcements",
 } as const;
