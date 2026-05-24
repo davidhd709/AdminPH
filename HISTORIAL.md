@@ -1138,3 +1138,63 @@ Próximo paso: las fases de fundamentos (1-6) están completas. Sigue
 backups) para poder lanzar, O **Fase 7** (módulos AdminPH: PQR, comunicados,
 reservas, etc.) para ampliar funcionalidad. Recomendado: Fase 9 antes de
 producción.
+
+---
+
+## 2026-05-24 — Fase 9 del plan completa (infraestructura producción)
+
+### 9.1 — Dockerfile multi-stage
+- `backend/Dockerfile`: stages deps → builder (`prisma generate` + `nest build`
+  + `npm prune --omit=dev`) → runner (`node:22-alpine`, usuario no-root,
+  `HEALTHCHECK` a /health).
+- Placeholder `DATABASE_URL` en builder: `prisma.config.ts` exige la var pero
+  `generate` no conecta a BD; el runtime usa el valor real.
+- `backend/.dockerignore`.
+- **FIX:** `package.json` `start` apuntaba a `dist/main.js`; la ruta real
+  compilada es `dist/src/main.js`. Corregido + `start:prod` + `prisma:deploy`.
+- Verificado end-to-end: la imagen construye, el container arranca en
+  `NODE_ENV=production` (logs JSON) y `/health` responde 200 contra la BD.
+- Imagen ~769MB (deuda: optimizar; el grueso son los engines de Prisma).
+
+### 9.2 — docker-compose
+- `docker-compose.yml` (dev): postgres + **minio** (S3 para comprobantes) +
+  **mailhog** (captura emails). Backend fuera (corre con `start:dev`).
+- `docker-compose.prod.yml`: postgres + backend dockerizado + nginx, secrets
+  vía `.env.production`, healthchecks, red dedicada.
+- Ambos validados con `docker compose config`.
+
+### 9.4 — Nginx reverse proxy
+- `infra/nginx/adminph.conf`: HTTP→HTTPS, TLS 1.2/1.3, HSTS + headers de
+  seguridad, `limit_req` de edge, gzip, `client_max_body_size 10m`, health
+  checks sin rate limit, proxy a `backend:3000`.
+
+### 9.6 — Backups
+- `infra/scripts/backup-db.sh`: `pg_dump -Fc` con retención configurable,
+  subida opcional a R2/MinIO (rclone), referencia de restore. Apto para cron.
+
+### 9.5 — Deploy CI/CD
+- `.github/workflows/deploy.yml`: build imagen → push GHCR → SSH al VPS →
+  `prisma migrate deploy` → `docker compose up`. Deshabilitado por defecto
+  (`workflow_dispatch` + guard `DEPLOY_ENABLED`) hasta configurar secrets.
+
+### 9.3 — Secrets
+- `backend/.env.production.example` (plantilla, sin valores reales).
+  `.env.production` en `.gitignore` (verificado con `git check-ignore`).
+
+### 9.7 — Uptime
+- Documentado: UptimeRobot/Healthchecks.io a `/health` cada 5 min.
+
+### Runbooks (docs/runbooks/)
+- `deploy.md`, `restore-from-backup.md`, `rotate-secrets.md`.
+
+### Estado al cerrar Fase 9
+Commit `93e544d`. Tag `v0.8.0-phase9-complete`.
+
+**Hito: las fases de "backend al 100%" (1-6 + 9) están completas.** El
+backend está listo para producción salvo conectar la infra real (VPS, DNS,
+TLS, registry) y los servicios externos diferidos (file upload, email real).
+
+Próximo paso: **Fase 7** (módulos AdminPH: PQR, comunicados, reservas,
+portería, mascotas/vehículos, asambleas, votaciones, contabilidad) y
+**Fase 8** (integraciones: pasarela, email real, WhatsApp, PDF). Ambas son
+expansión funcional, no bloqueантes del "100% backend".

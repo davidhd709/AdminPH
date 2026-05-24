@@ -529,7 +529,16 @@ DTOs → tests → docs. Ninguno antes de tener MVP financiero estable.
 
 ---
 
-## Fase 9 — Infraestructura producción
+## Fase 9 — Infraestructura producción ✅ COMPLETA (2026-05-24)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen:
+> 9.1 Dockerfile multi-stage (verificado: imagen construye, container arranca
+> en prod, /health 200); 9.2 docker-compose dev (postgres+minio+mailhog) +
+> prod (postgres+backend+nginx); 9.4 Nginx con TLS/HSTS/rate-limit;
+> 9.6 backup-db.sh (pg_dump -Fc + retención + rclone); 9.5 deploy.yml
+> (GHCR + SSH, guarded); 9.3 .env.production.example; 9.7 uptime documentado.
+> Runbooks: deploy, restore, rotate-secrets. Tag `v0.8.0-phase9-complete`.
+> Deuda: optimizar tamaño de imagen (~769MB por engines Prisma).
 
 ### 9.1 Dockerfile multi-stage
 
