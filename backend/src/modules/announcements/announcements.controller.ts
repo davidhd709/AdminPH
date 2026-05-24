@@ -5,7 +5,6 @@ import { AnnouncementsService } from "./announcements.service";
 import { AnnouncementQueryDto, CreateAnnouncementDto } from "./dto/announcement.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("announcements")
@@ -25,12 +24,8 @@ export class AnnouncementsController {
   }
 
   @Get()
-  findAll(
-    @CurrentUser() user: AuthUser,
-    @Query() query: AnnouncementQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.announcementsService.findAll(user, query, pagination);
+  findAll(@CurrentUser() user: AuthUser, @Query() query: AnnouncementQueryDto) {
+    return this.announcementsService.findAll(user, query, query);
   }
 
   @Get(":id")

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { AnnouncementScope } from "@prisma/client";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreateAnnouncementDto {
   @ApiProperty({ description: "Copropiedad a la que pertenece el comunicado" })
@@ -34,7 +35,7 @@ export class CreateAnnouncementDto {
   body!: string;
 }
 
-export class AnnouncementQueryDto {
+export class AnnouncementQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()
