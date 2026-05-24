@@ -1,15 +1,20 @@
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
-import { Logger, ValidationPipe } from "@nestjs/common";
+import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { Logger as PinoLogger } from "nestjs-pino";
 import helmet from "helmet";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  // Pino como logger de toda la app (reemplaza el logger default de Nest).
+  app.useLogger(app.get(PinoLogger));
+  const logger = app.get(PinoLogger);
   const configService = app.get(ConfigService);
-  const logger = new Logger("Bootstrap");
   const isProd = configService.get<string>("NODE_ENV") === "production";
 
   // Detrás de Nginx/CDN: confiar en X-Forwarded-* del primer hop.
