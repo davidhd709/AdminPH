@@ -10,6 +10,6 @@ import { LateFeeController } from "./late-fee.controller";
 @Module({
   providers: [FeeConceptsService, FeesService, LateFeeService, AccountStatementService],
   controllers: [AccountStatementController, FeesController, LateFeeController],
-  exports: [FeesService],
+  exports: [FeesService, AccountStatementService],
 })
 export class FinanceModule {}

@@ -28,6 +28,7 @@ import { RegistryModule } from "./modules/registry/registry.module";
 import { AssembliesModule } from "./modules/assemblies/assemblies.module";
 import { DocumentsModule } from "./modules/documents/documents.module";
 import { AccountingModule } from "./modules/accounting/accounting.module";
+import { ReportsModule } from "./modules/reports/reports.module";
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { AccountingModule } from "./modules/accounting/accounting.module";
     AssembliesModule,
     DocumentsModule,
     AccountingModule,
+    ReportsModule,
   ],
   providers: [
     // Filtro global de excepciones: formato uniforme + traducción Prisma.
