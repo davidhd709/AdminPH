@@ -25,6 +25,7 @@ import { AnnouncementsModule } from "./modules/announcements/announcements.modul
 import { ReservationsModule } from "./modules/reservations/reservations.module";
 import { VisitorsModule } from "./modules/visitors/visitors.module";
 import { RegistryModule } from "./modules/registry/registry.module";
+import { AssembliesModule } from "./modules/assemblies/assemblies.module";
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { RegistryModule } from "./modules/registry/registry.module";
     ReservationsModule,
     VisitorsModule,
     RegistryModule,
+    AssembliesModule,
   ],
   providers: [
     // Filtro global de excepciones: formato uniforme + traducción Prisma.

@@ -104,6 +104,7 @@ model Company {
   visitors      Visitor[]
   pets          Pet[]
   vehicles      Vehicle[]
+  assemblies    Assembly[]
 
   @@index([id])
 }
@@ -140,6 +141,7 @@ model Property {
   visitors      Visitor[]
   pets          Pet[]
   vehicles      Vehicle[]
+  assemblies    Assembly[]
 
   @@index([companyId])
   @@index([id])
@@ -204,6 +206,8 @@ model Unit {
   visitors      Visitor[]
   pets          Pet[]
   vehicles      Vehicle[]
+  attendances   AssemblyAttendance[]
+  votes         Vote[]
 
   @@unique([propertyId, code])
   @@index([propertyId])
@@ -238,9 +242,12 @@ model User {
   pqrResponses         PqrResponse[]      @relation("PqrResponseAuthor")
   announcementsCreated Announcement[]     @relation("AnnouncementCreatedBy")
   announcementReads    AnnouncementRead[] @relation("AnnouncementReadBy")
-  reservationsMade     Reservation[]      @relation("ReservationRequestedBy")
-  reservationsReviewed Reservation[]      @relation("ReservationReviewedBy")
-  visitorsRegistered   Visitor[]          @relation("VisitorRegisteredBy")
+  reservationsMade     Reservation[]        @relation("ReservationRequestedBy")
+  reservationsReviewed Reservation[]        @relation("ReservationReviewedBy")
+  visitorsRegistered   Visitor[]            @relation("VisitorRegisteredBy")
+  assembliesCreated    Assembly[]           @relation("AssemblyCreatedBy")
+  attendanceProxies    AssemblyAttendance[] @relation("AttendanceProxy")
+  votesCast            Vote[]               @relation("VoteCastBy")
 
   @@index([email])
 }
@@ -672,4 +679,106 @@ model Vehicle {
   @@unique([propertyId, plate])
   @@index([propertyId])
   @@index([unitId])
+}
+
+// ===================== Fase 7.6/7.7 — Asambleas y Votaciones =====================
+
+enum AssemblyType {
+  ORDINARY
+  EXTRAORDINARY
+}
+
+enum AssemblyStatus {
+  SCHEDULED
+  IN_PROGRESS
+  CLOSED
+}
+
+enum VotingType {
+  SIMPLE // mayoría por número de votos
+  COEFFICIENT // mayoría por coeficiente de copropiedad
+}
+
+enum VotingStatus {
+  OPEN
+  CLOSED
+}
+
+enum VoteChoice {
+  YES
+  NO
+  ABSTAIN
+  BLANK
+}
+
+model Assembly {
+  id            String         @id @default(uuid())
+  companyId     String
+  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId    String
+  property      Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdById   String
+  createdBy     User           @relation("AssemblyCreatedBy", fields: [createdById], references: [id])
+  title         String
+  type          AssemblyType   @default(ORDINARY)
+  agenda        String?
+  scheduledAt   DateTime
+  quorumPercent Decimal?       @db.Decimal(5, 2)
+  status        AssemblyStatus @default(SCHEDULED)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+
+  attendances AssemblyAttendance[]
+  votings     Voting[]
+
+  @@index([companyId])
+  @@index([propertyId])
+}
+
+model AssemblyAttendance {
+  id           String   @id @default(uuid())
+  assemblyId   String
+  assembly     Assembly @relation(fields: [assemblyId], references: [id], onDelete: Cascade)
+  unitId       String
+  unit         Unit     @relation(fields: [unitId], references: [id])
+  coefficient  Decimal  @db.Decimal(18, 8) // snapshot del coeficiente al registrar
+  present       Boolean  @default(true)
+  proxyUserId  String? // poder/representación
+  proxyUser    User?    @relation("AttendanceProxy", fields: [proxyUserId], references: [id])
+  registeredAt DateTime @default(now())
+
+  @@unique([assemblyId, unitId])
+  @@index([assemblyId])
+}
+
+model Voting {
+  id         String       @id @default(uuid())
+  assemblyId String
+  assembly   Assembly     @relation(fields: [assemblyId], references: [id], onDelete: Cascade)
+  question   String
+  type       VotingType   @default(COEFFICIENT)
+  status     VotingStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+  closedAt   DateTime?
+
+  votes Vote[]
+
+  @@index([assemblyId])
+}
+
+model Vote {
+  id          String     @id @default(uuid())
+  votingId    String
+  voting      Voting     @relation(fields: [votingId], references: [id], onDelete: Cascade)
+  unitId      String
+  unit        Unit       @relation(fields: [unitId], references: [id])
+  castById    String
+  castBy      User       @relation("VoteCastBy", fields: [castById], references: [id])
+  choice      VoteChoice
+  coefficient Decimal    @db.Decimal(18, 8) // snapshot al votar
+  createdAt   DateTime   @default(now())
+
+  @@unique([votingId, unitId])
+  @@index([votingId])
 }
