@@ -94,10 +94,11 @@ model Company {
   properties  Property[]
   users       User[]
   auditLogs   AuditLog[]
-  feeConcepts FeeConcept[]
-  fees        Fee[]
-  payments    Payment[]
-  pqrs        Pqr[]
+  feeConcepts   FeeConcept[]
+  fees          Fee[]
+  payments      Payment[]
+  pqrs          Pqr[]
+  announcements Announcement[]
 
   @@index([id])
 }
@@ -128,6 +129,7 @@ model Property {
   feeConcepts   FeeConcept[]
   lateFeeConfig LateFeeConfig?
   pqrs          Pqr[]
+  announcements Announcement[]
 
   @@index([companyId])
   @@index([id])
@@ -159,7 +161,8 @@ model Tower {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  units Unit[]
+  units         Unit[]
+  announcements Announcement[]
 
   @@index([propertyId])
 }
@@ -180,12 +183,13 @@ model Unit {
   updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
 
-  owners    Owner[]
-  residents Resident[]
-  fees      Fee[]
-  payments  Payment[]
-  auditLogs AuditLog[]
-  pqrs      Pqr[]
+  owners        Owner[]
+  residents     Resident[]
+  fees          Fee[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  pqrs          Pqr[]
+  announcements Announcement[]
 
   @@unique([propertyId, code])
   @@index([propertyId])
@@ -216,8 +220,10 @@ model User {
   passwordResetTokens PasswordResetToken[]
   owners              Owner[]
   residents           Resident[]
-  pqrsCreated         Pqr[]                @relation("PqrCreatedBy")
-  pqrResponses        PqrResponse[]        @relation("PqrResponseAuthor")
+  pqrsCreated          Pqr[]              @relation("PqrCreatedBy")
+  pqrResponses         PqrResponse[]      @relation("PqrResponseAuthor")
+  announcementsCreated Announcement[]     @relation("AnnouncementCreatedBy")
+  announcementReads    AnnouncementRead[] @relation("AnnouncementReadBy")
 
   @@index([email])
 }
@@ -462,4 +468,50 @@ model PqrResponse {
   createdAt DateTime @default(now())
 
   @@index([pqrId])
+}
+
+// ===================== Fase 7.2 — Comunicados =====================
+
+enum AnnouncementScope {
+  PROPERTY // toda la copropiedad
+  TOWER // una torre
+  UNIT // una unidad específica
+}
+
+model Announcement {
+  id          String            @id @default(uuid())
+  companyId   String
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  towerId     String?
+  tower       Tower?            @relation(fields: [towerId], references: [id])
+  unitId      String?
+  unit        Unit?             @relation(fields: [unitId], references: [id])
+  createdById String
+  createdBy   User              @relation("AnnouncementCreatedBy", fields: [createdById], references: [id])
+  scope       AnnouncementScope @default(PROPERTY)
+  title       String
+  body        String
+  publishedAt DateTime          @default(now())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deletedAt   DateTime?
+
+  reads AnnouncementRead[]
+
+  @@index([companyId])
+  @@index([propertyId])
+}
+
+model AnnouncementRead {
+  id             String       @id @default(uuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation("AnnouncementReadBy", fields: [userId], references: [id])
+  readAt         DateTime     @default(now())
+
+  @@unique([announcementId, userId])
+  @@index([userId])
 }

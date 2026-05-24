@@ -21,6 +21,7 @@ import { AuditModule } from "./modules/audit/audit.module";
 import { FinanceModule } from "./modules/finance/finance.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { PqrModule } from "./modules/pqr/pqr.module";
+import { AnnouncementsModule } from "./modules/announcements/announcements.module";
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PqrModule } from "./modules/pqr/pqr.module";
     FinanceModule,
     PaymentsModule,
     PqrModule,
+    AnnouncementsModule,
   ],
   providers: [
     // Filtro global de excepciones: formato uniforme + traducción Prisma.
