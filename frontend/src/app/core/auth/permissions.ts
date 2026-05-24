@@ -76,12 +76,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "announcements.manage",
     "documents.view",
     "accounting.manage",
+    "reports.view",
   ],
   ACCOUNTANT: [
     "dashboard.view",
     "finance.manage",
     "statements.view",
-    "reports.view",
   ],
   SECURITY: ["dashboard.view", "security.manage"],
   OWNER: [

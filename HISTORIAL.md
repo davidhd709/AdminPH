@@ -1448,3 +1448,25 @@ Hechos: Cuotas y conceptos (4.1), Pagos (4.2), Contabilidad (4.3). Pendiente:
 Reportes (endpoints PDF/Excel ya existen en el backend). Deuda: UI de
 generación de cuotas; presupuestos y reporte income-expense de contabilidad;
 acceso de ACCOUNTANT a finanzas.
+
+### Fase 4.4 — Reportes (solo frontend)
+- **Sin cambios de backend**: los endpoints de reportes ya existían y devuelven
+  archivos por @Param (sin el bug de @Query). 68 tests siguen vigentes.
+- **Frontend**: reports.view reasignado a SUPERADMIN/COMPANY_ADMIN/PROPERTY_ADMIN
+  (ACCOUNTANT diferido); nav "Reportes" → `/app/finance/reports`.
+  - `core/http/download.ts`: util downloadBlob (crea object URL + ancla).
+  - report.service: descarga como Blob (responseType "blob") — necesario porque
+    los reportes van autenticados con Bearer (no sirve `<a href>` plano).
+  - módulo `reports`: selector copropiedad + unidad; botones Estado de cuenta y
+    Paz y salvo (PDF, por unidad) y Cartera (Excel, por copropiedad), con
+    loading por botón.
+  - errorInterceptor: en descargas (responseType blob) omite el toast genérico;
+    el módulo lee el mensaje real del blob (ej. paz y salvo de unidad con deuda
+    → "la unidad tiene deuda pendiente" en vez de "Acceso denegado").
+- Verificado e2e: estado de cuenta (PDF, %PDF), cartera (Excel, PK/zip), 401 sin
+  auth; paz y salvo devuelve 403 con mensaje de negocio cuando hay deuda (correcto).
+
+### 🏁 Sección Finanzas COMPLETA
+Conceptos (4.1), Pagos (4.2), Contabilidad (4.3), Reportes (4.4). Deuda viva:
+UI de generación de cuotas; presupuestos + reporte income-expense de
+contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).

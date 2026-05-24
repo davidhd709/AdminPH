@@ -32,4 +32,5 @@ export const API = {
     categories: "/accounting/categories",
     transactions: "/accounting/transactions",
   },
+  reports: "/reports",
 } as const;

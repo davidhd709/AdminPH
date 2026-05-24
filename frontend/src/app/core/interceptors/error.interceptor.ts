@@ -13,6 +13,10 @@ import { API } from "../config/api.config";
  *  - 403: toast de acceso denegado.
  *  - 5xx / red: toast genérico.
  * Muestra mensajes con PrimeNG MessageService (toast global).
+ *
+ * En descargas (responseType "blob") el cuerpo del error es un Blob, así que el
+ * toast genérico (salvo el 401) se omite y lo maneja quien hace la descarga
+ * (lee el mensaje real del blob). Ver features/reports.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
@@ -23,11 +27,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const isLoginCall = req.url.endsWith(API.auth.login);
+      const isBlob = req.responseType === "blob";
 
       if (error.status === 401 && !isLoginCall) {
         tokens.clear();
         store.clear();
         void router.navigate(["/login"]);
+      } else if (isBlob) {
+        // El feature de descarga maneja su propio error (lee el mensaje del blob).
       } else if (error.status === 403) {
         messages.add({
           severity: "warn",
