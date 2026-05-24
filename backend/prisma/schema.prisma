@@ -101,6 +101,9 @@ model Company {
   announcements Announcement[]
   commonAreas   CommonArea[]
   reservations  Reservation[]
+  visitors      Visitor[]
+  pets          Pet[]
+  vehicles      Vehicle[]
 
   @@index([id])
 }
@@ -134,6 +137,9 @@ model Property {
   announcements Announcement[]
   commonAreas   CommonArea[]
   reservations  Reservation[]
+  visitors      Visitor[]
+  pets          Pet[]
+  vehicles      Vehicle[]
 
   @@index([companyId])
   @@index([id])
@@ -195,6 +201,9 @@ model Unit {
   pqrs          Pqr[]
   announcements Announcement[]
   reservations  Reservation[]
+  visitors      Visitor[]
+  pets          Pet[]
+  vehicles      Vehicle[]
 
   @@unique([propertyId, code])
   @@index([propertyId])
@@ -231,6 +240,7 @@ model User {
   announcementReads    AnnouncementRead[] @relation("AnnouncementReadBy")
   reservationsMade     Reservation[]      @relation("ReservationRequestedBy")
   reservationsReviewed Reservation[]      @relation("ReservationReviewedBy")
+  visitorsRegistered   Visitor[]          @relation("VisitorRegisteredBy")
 
   @@index([email])
 }
@@ -577,4 +587,89 @@ model Reservation {
   @@index([companyId])
   @@index([propertyId])
   @@index([commonAreaId, startTime])
+}
+
+// ===================== Fase 7.4 — Visitantes / Portería =====================
+
+enum VisitorType {
+  VISITOR
+  DELIVERY
+  PROVIDER
+  TECHNICIAN
+  OTHER
+}
+
+model Visitor {
+  id             String      @id @default(uuid())
+  companyId      String
+  company        Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId     String
+  property       Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId         String?
+  unit           Unit?       @relation(fields: [unitId], references: [id])
+  registeredById String
+  registeredBy   User        @relation("VisitorRegisteredBy", fields: [registeredById], references: [id])
+  fullName       String
+  document       String?
+  type           VisitorType @default(VISITOR)
+  entryAt        DateTime    @default(now())
+  exitAt         DateTime?
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([propertyId, entryAt])
+}
+
+// ===================== Fase 7.5 — Mascotas y Vehículos =====================
+
+enum VehicleType {
+  CAR
+  MOTORCYCLE
+  BICYCLE
+  OTHER
+}
+
+model Pet {
+  id         String    @id @default(uuid())
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId     String
+  unit       Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  name       String
+  species    String // perro, gato, etc.
+  breed      String?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  @@index([propertyId])
+  @@index([unitId])
+}
+
+model Vehicle {
+  id          String      @id @default(uuid())
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId      String
+  unit        Unit        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  plate       String
+  type        VehicleType @default(CAR)
+  brand       String?
+  color       String?
+  parkingSpot String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([propertyId, plate])
+  @@index([propertyId])
+  @@index([unitId])
 }

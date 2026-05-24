@@ -23,6 +23,8 @@ import { PaymentsModule } from "./modules/payments/payments.module";
 import { PqrModule } from "./modules/pqr/pqr.module";
 import { AnnouncementsModule } from "./modules/announcements/announcements.module";
 import { ReservationsModule } from "./modules/reservations/reservations.module";
+import { VisitorsModule } from "./modules/visitors/visitors.module";
+import { RegistryModule } from "./modules/registry/registry.module";
 
 @Module({
   imports: [
@@ -56,6 +58,8 @@ import { ReservationsModule } from "./modules/reservations/reservations.module";
     PqrModule,
     AnnouncementsModule,
     ReservationsModule,
+    VisitorsModule,
+    RegistryModule,
   ],
   providers: [
     // Filtro global de excepciones: formato uniforme + traducción Prisma.
