@@ -1421,7 +1421,30 @@ frontend (vitest).
   (cuota más antigua → PARTIAL), rechazar con motivo, 401 sin auth.
   68 tests del backend en verde.
 
-### Estado de la sección Finanzas
+### Estado de la sección Finanzas (tras 4.2)
 Hechos: Cuotas y conceptos (4.1), Pagos (4.2). Pendientes: Contabilidad,
 Reportes. Deuda: generación de cuotas desde la UI (endpoint ya operativo),
 acceso de ACCOUNTANT a finanzas (requiere GET /properties para el rol).
+
+### Fase 4.3 — Contabilidad (commits backend + frontend)
+- **Backend — fix de listados**: los 3 GET de accounting (bank-accounts,
+  categories, transactions) usaban `@Query("propertyId")`/doble `@Query()` +
+  PaginationDto; con forbidNonWhitelisted se rechazaban ("property propertyId
+  should not exist"). Solución: `AccountingListQueryDto` y `TransactionQueryDto`
+  ahora extienden PaginationDto y el controller usa un único `@Query()`. El
+  service (scoping por rol, ya correcto) no se tocó. 68 tests verdes.
+- **Frontend**: accounting.manage reasignado a SUPERADMIN/COMPANY_ADMIN/
+  PROPERTY_ADMIN (ACCOUNTANT diferido); nav "Contabilidad" →
+  `/app/finance/accounting`. accounting.models + accounting.service. Módulo
+  `accounting`: selector de copropiedad + 3 bloques — Movimientos (crear con
+  tipo/monto/fecha/categoría/cuenta, eliminar; ingresos verde / egresos rojo),
+  Categorías (crear+listar) y Cuentas bancarias (crear+listar). El backend no
+  expone edición/borrado de categorías ni cuentas, así que solo listar+crear.
+- Verificado e2e: listados con propertyId+paginación (los 3), crear cuenta,
+  categoría y movimiento (date ISO), eliminar movimiento, enum inválido→400.
+
+### Estado de la sección Finanzas (tras 4.3)
+Hechos: Cuotas y conceptos (4.1), Pagos (4.2), Contabilidad (4.3). Pendiente:
+Reportes (endpoints PDF/Excel ya existen en el backend). Deuda: UI de
+generación de cuotas; presupuestos y reporte income-expense de contabilidad;
+acceso de ACCOUNTANT a finanzas.

@@ -1,0 +1,267 @@
+<app-page-header title="Contabilidad" subtitle="Movimientos, categorías y cuentas por copropiedad." />
+
+<!-- Selector de copropiedad -->
+<div class="mb-6 max-w-md">
+  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+  <p-select
+    [options]="properties()"
+    optionLabel="name"
+    optionValue="id"
+    [ngModel]="selectedPropertyId()"
+    (onChange)="onPropertyChange($event.value)"
+    placeholder="Selecciona una copropiedad"
+    [filter]="true"
+    filterBy="name"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+</div>
+
+@if (!selectedPropertyId()) {
+  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <app-empty-state icon="pi pi-calculator" title="Selecciona una copropiedad" message="Elige una copropiedad para ver su contabilidad." />
+  </div>
+} @else {
+  <!-- Movimientos -->
+  <div class="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+      <h2 class="text-sm font-semibold text-gray-900">Movimientos</h2>
+      <p-button label="Registrar movimiento" icon="pi pi-plus" size="small" (onClick)="openTx()" />
+    </div>
+    <p-table
+      [value]="transactions()"
+      [loading]="loadingTx()"
+      [paginator]="transactions().length > 10"
+      [rows]="10"
+      dataKey="id"
+      size="small"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Categoría</th>
+          <th>Descripción</th>
+          <th class="text-right">Monto</th>
+          <th class="w-16 text-right">Acción</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-tx>
+        <tr>
+          <td class="text-gray-600">{{ tx.date | date: "mediumDate" }}</td>
+          <td>
+            <span
+              class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+              [class]="tx.type === 'INCOME' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+            >
+              {{ tx.type === "INCOME" ? "Ingreso" : "Egreso" }}
+            </span>
+          </td>
+          <td class="text-gray-600">{{ categoryName(tx.categoryId) }}</td>
+          <td class="text-gray-900">{{ tx.description }}</td>
+          <td
+            class="text-right font-medium"
+            [class]="tx.type === 'INCOME' ? 'text-green-700' : 'text-red-700'"
+          >
+            {{ tx.type === "INCOME" ? "+" : "−" }}{{ +tx.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}
+          </td>
+          <td class="text-right">
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Eliminar" (onClick)="confirmDeleteTx(tx)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6">
+            <app-empty-state icon="pi pi-receipt" title="Sin movimientos" message="Registra el primer ingreso o egreso con “Registrar movimiento”." />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- Categorías -->
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <h2 class="text-sm font-semibold text-gray-900">Categorías</h2>
+        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openCat()" />
+      </div>
+      <p-table [value]="categories()" dataKey="id" size="small">
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-cat>
+          <tr>
+            <td class="font-medium text-gray-900">{{ cat.name }}</td>
+            <td class="text-gray-600">{{ cat.type === "INCOME" ? "Ingreso" : "Egreso" }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="2">
+              <app-empty-state icon="pi pi-tags" title="Sin categorías" message="Agrega la primera categoría." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Cuentas bancarias -->
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <h2 class="text-sm font-semibold text-gray-900">Cuentas bancarias</h2>
+        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openBank()" />
+      </div>
+      <p-table [value]="bankAccounts()" dataKey="id" size="small">
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Banco</th>
+            <th>Número</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-acc>
+          <tr>
+            <td class="font-medium text-gray-900">{{ acc.name }}</td>
+            <td class="text-gray-600">{{ acc.bank }}</td>
+            <td class="text-gray-600">{{ acc.accountNumber }}</td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="3">
+              <app-empty-state icon="pi pi-building-columns" title="Sin cuentas" message="Agrega la primera cuenta bancaria." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+}
+
+<!-- Diálogo: registrar movimiento -->
+<p-dialog
+  [visible]="txVisible()"
+  (visibleChange)="txVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '34rem' }"
+  header="Registrar movimiento"
+>
+  <form [formGroup]="txForm" (ngSubmit)="saveTx()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div>
+      <label for="amount" class="mb-1.5 block text-sm font-medium text-gray-700">Monto</label>
+      <p-inputNumber inputId="amount" formControlName="amount" mode="currency" currency="COP" [minFractionDigits]="0" [maxFractionDigits]="2" [min]="0" styleClass="w-full" [fluid]="true" />
+      @if (txForm.controls.amount.touched && txForm.controls.amount.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un monto mayor a 0.</small>
+      }
+    </div>
+    <div class="sm:col-span-2">
+      <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700">Descripción</label>
+      <input pInputText id="description" formControlName="description" placeholder="Pago factura energía" class="w-full" [fluid]="true" />
+      @if (txForm.controls.description.touched && txForm.controls.description.invalid) {
+        <small class="mt-1 block text-red-600">La descripción es obligatoria.</small>
+      }
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Fecha</label>
+      <p-datepicker formControlName="date" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">
+        Categoría <span class="text-gray-400">(opcional)</span>
+      </label>
+      <p-select formControlName="categoryId" [options]="categories()" optionLabel="name" optionValue="id" placeholder="Sin categoría" [showClear]="true" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div class="sm:col-span-2">
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">
+        Cuenta bancaria <span class="text-gray-400">(opcional)</span>
+      </label>
+      <p-select formControlName="bankAccountId" [options]="bankAccounts()" optionLabel="name" optionValue="id" placeholder="Sin cuenta" [showClear]="true" styleClass="w-full" [fluid]="true" />
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="txVisible.set(false)" />
+      <p-button type="submit" label="Registrar" [loading]="savingTx()" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Diálogo: nueva categoría -->
+<p-dialog
+  [visible]="catVisible()"
+  (visibleChange)="catVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '26rem' }"
+  header="Nueva categoría"
+>
+  <form [formGroup]="catForm" (ngSubmit)="saveCat()" class="space-y-5 pt-2">
+    <div>
+      <label for="catName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <input pInputText id="catName" formControlName="name" placeholder="Mantenimiento ascensores" class="w-full" [fluid]="true" />
+      @if (catForm.controls.name.touched && catForm.controls.name.invalid) {
+        <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
+      }
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="catVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="savingCat()" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Diálogo: nueva cuenta bancaria -->
+<p-dialog
+  [visible]="bankVisible()"
+  (visibleChange)="bankVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '28rem' }"
+  header="Nueva cuenta bancaria"
+>
+  <form [formGroup]="bankForm" (ngSubmit)="saveBank()" class="space-y-5 pt-2">
+    <div>
+      <label for="bankAccName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <input pInputText id="bankAccName" formControlName="name" placeholder="Cuenta de ahorros principal" class="w-full" [fluid]="true" />
+      @if (bankForm.controls.name.touched && bankForm.controls.name.invalid) {
+        <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
+      }
+    </div>
+    <div>
+      <label for="bankEntity" class="mb-1.5 block text-sm font-medium text-gray-700">Banco</label>
+      <input pInputText id="bankEntity" formControlName="bank" placeholder="Bancolombia" class="w-full" [fluid]="true" />
+      @if (bankForm.controls.bank.touched && bankForm.controls.bank.invalid) {
+        <small class="mt-1 block text-red-600">El banco es obligatorio.</small>
+      }
+    </div>
+    <div>
+      <label for="accNumber" class="mb-1.5 block text-sm font-medium text-gray-700">Número de cuenta</label>
+      <input pInputText id="accNumber" formControlName="accountNumber" placeholder="1234567890" class="w-full" [fluid]="true" />
+      @if (bankForm.controls.accountNumber.touched && bankForm.controls.accountNumber.invalid) {
+        <small class="mt-1 block text-red-600">El número es obligatorio.</small>
+      }
+    </div>
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="bankVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="savingBank()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog />

@@ -27,4 +27,9 @@ export const API = {
     fees: "/finance/fees",
   },
   payments: "/payments",
+  accounting: {
+    bankAccounts: "/accounting/bank-accounts",
+    categories: "/accounting/categories",
+    transactions: "/accounting/transactions",
+  },
 } as const;
