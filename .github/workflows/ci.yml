@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: adminph
+          POSTGRES_PASSWORD: adminph_password
+          POSTGRES_DB: adminph_db
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U adminph -d adminph_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://adminph:adminph_password@localhost:5434/adminph_db?schema=public"
+      JWT_ACCESS_SECRET: "ci-access-secret"
+      JWT_REFRESH_SECRET: "ci-refresh-secret"
+      JWT_ACCESS_EXPIRES_IN: "15m"
+      JWT_REFRESH_EXPIRES_IN: "7d"
+      CORS_ORIGINS: "http://localhost:3000"
+      NODE_ENV: "test"
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Unit tests (with coverage)
+        run: npm run test:cov
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: backend/coverage/
+          retention-days: 7
