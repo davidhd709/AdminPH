@@ -3,9 +3,13 @@
 Frontend del SaaS **AdminPH** (administración de propiedad horizontal en
 Colombia). Consume la API del backend NestJS en `/api/v1`.
 
-> **Fase 1 — Base.** Esta fase entrega la arquitectura, el layout, la
-> autenticación base y las pantallas mínimas (login, dashboard, errores). Los
-> módulos de negocio (CRUDs) se construyen en fases siguientes.
+> **Fase 1 — Base.** Arquitectura, layout, autenticación base y pantallas
+> mínimas (login, dashboard, errores).
+>
+> **Fase 2 — Auth end-to-end ✅.** Login real contra el backend, rehidratación
+> de sesión al boot, refresh token transparente ante 401 y `roleGuard` aplicado
+> a una ruta de módulo de referencia. Los CRUDs de negocio llegan en las fases
+> siguientes.
 
 ---
 
@@ -109,9 +113,14 @@ src/app/
   `hasRole(...)` — todo reactivo, compatible con zoneless.
 - **Multi-tenancy listo:** `AuthUser.companyId` y `AuthStore.companyId()` están
   disponibles desde el inicio para scoping futuro.
-- **Interceptors funcionales:** el `authInterceptor` agrega el Bearer solo a la
-  API y omite endpoints de login/refresh; el `errorInterceptor` centraliza
-  401 (limpia sesión → /login), 403/5xx (toast).
+- **Interceptors funcionales (orden: auth → refresh → error):** `authInterceptor`
+  agrega el Bearer solo a la API y omite endpoints de login/refresh;
+  `refreshInterceptor` rota el refresh token ante un 401 con **single-flight**
+  (las requests concurrentes esperan en cola y se reanudan con el token nuevo);
+  `errorInterceptor` centraliza 401 (limpia sesión → /login), 403/5xx (toast).
+- **Rehidratación al boot:** `provideAppInitializer(initSession)` carga
+  `/users/me` cuando hay un token guardado, repoblando el `AuthStore` antes de
+  renderizar la app.
 - **Lazy loading** en todas las rutas (`loadComponent`).
 
 ---
@@ -133,6 +142,7 @@ src/app/
 | `/reset-password?token=` | pública | Definir nueva contraseña |
 | `/app` | privada (authGuard) | Shell con layout |
 | `/app/dashboard` | privada | Dashboard con stats + gráfico |
+| `/app/companies` | privada + `roleGuard("SUPERADMIN")` | Módulo de referencia (placeholder) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -140,9 +150,9 @@ src/app/
 
 ## Pendientes / próxima fase
 
-- **Fase 2:** conectar login real end-to-end, rehidratación de sesión
-  (`loadCurrentUser` al boot), refresh token automático en el interceptor.
-- CRUDs de los módulos de negocio (companies, properties, units, finance, etc.).
-- `roleGuard` aplicado a rutas de cada módulo.
-- Tests (vitest) de guards/store/servicios.
+- ~~**Fase 2:** login real end-to-end, rehidratación de sesión, refresh token
+  automático, `roleGuard` en ruta de referencia.~~ ✅ Completada.
+- CRUDs de los módulos de negocio (companies, properties, units, finance, etc.),
+  replicando el patrón de ruta protegida de `features/companies`.
+- Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).
