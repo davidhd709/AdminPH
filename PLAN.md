@@ -501,7 +501,19 @@ hoy usa log-transport (loguea el email en dev/CI).
 
 ---
 
-## Fase 7 — Módulos faltantes (post-MVP, según AdminPH contexto)
+## Fase 7 — Módulos faltantes (post-MVP, según AdminPH contexto) ✅ COMPLETA (2026-05-24)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Los 9 módulos de negocio
+> implementados con el mismo patrón (schema + migración + service con
+> tenancy/audit + controller versionado + DTOs Swagger + tests unitarios):
+> 7.1 PQR (radicado, hilo de respuestas), 7.2 Comunicados (read receipts),
+> 7.3 Reservas (overlap check), 7.4 Visitantes/portería, 7.5 Mascotas/
+> Vehículos, 7.6 Asambleas, 7.7 Votaciones por coeficiente (tally byCount +
+> byCoefficient), 7.8 Documentos (versionamiento), 7.9 Contabilidad
+> (ejecución presupuestal + reporte ingresos/egresos). 68 unit tests verdes,
+> 13 suites. Tag `v0.9.0-phase7-complete`.
+> Pendiente: file upload real para documentos (Fase 9/8); más tests e2e por
+> módulo.
 
 ### 7.1 PQR (sección 5.6 del contexto)
 ### 7.2 Comunicados (sección 5.7)

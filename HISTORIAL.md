@@ -1198,3 +1198,48 @@ Próximo paso: **Fase 7** (módulos AdminPH: PQR, comunicados, reservas,
 portería, mascotas/vehículos, asambleas, votaciones, contabilidad) y
 **Fase 8** (integraciones: pasarela, email real, WhatsApp, PDF). Ambas son
 expansión funcional, no bloqueантes del "100% backend".
+
+---
+
+## 2026-05-24 — Fase 7 del plan completa (módulos de negocio AdminPH)
+
+Los 9 módulos de negocio del contexto AdminPH implementados con un patrón
+uniforme establecido por PQR: modelo Prisma + migración (relaciones inversas
+en los modelos core) → service con multi-tenancy + audit → controller
+versionado (/api/v1) con @ApiTags/@ApiBearerAuth → DTOs con class-validator +
+Swagger → tests unitarios con mocks. Cada uno en su propio commit.
+
+- **7.1 PQR** (`pqr_module`): peticiones/quejas/reclamos con radicado
+  legible (PQR-YYYY-NNNNNN desde ticketNumber autoincrement), hilo de
+  respuestas, estados, scoping por rol (autor ve las suyas). 6 tests.
+- **7.2 Comunicados** (`announcements_module`): scope PROPERTY/TOWER/UNIT,
+  confirmación de lectura (AnnouncementRead, upsert idempotente). 4 tests.
+- **7.3 Reservas** (`reservations_module`): zonas comunes + reservas con
+  **overlap check** (anti doble-booking) + re-chequeo al aprobar. 5 tests.
+- **7.4 Visitantes/Portería** (`visitors_pets_vehicles`): bitácora de
+  ingreso/salida, rol SECURITY, OWNER/RESIDENT sin acceso. 4 tests.
+- **7.5 Mascotas/Vehículos** (mismo migration): registro por unidad,
+  assertUnitAccess (owner/resident de la unit). 6 tests.
+- **7.6 Asambleas** (`assemblies_voting`): ordinaria/extraordinaria,
+  asistencia con snapshot de coeficiente + poder, quorum. 
+- **7.7 Votaciones por coeficiente** (mismo migration): voto único por
+  unidad con snapshot, tally byCount + byCoefficient + totals. 7 tests
+  (incluye verificación de la matemática del coeficiente).
+- **7.8 Documentos** (`documents_accounting`): repositorio (reglamento,
+  actas, etc.) con versionamiento por filas (version+1). 4 tests.
+- **7.9 Contabilidad** (mismo migration): cuentas bancarias, categorías,
+  transacciones (ingreso/egreso), presupuesto + **ejecución presupuestal**
+  (planned vs executed vs variance) y reporte ingresos/egresos. Solo roles
+  financieros. 5 tests.
+
+### Estado al cerrar Fase 7
+68 unit tests verdes (13 suites). 5 migraciones nuevas. Build OK, lint 0
+errors. Tag `v0.9.0-phase7-complete`.
+
+Deuda: file upload real para Document.fileUrl (Fase 8/9); tests e2e por
+módulo; el seed no incluye datos de estos módulos nuevos.
+
+### Progreso global
+Fases 1-7 + 9 completas (8 de 10). Solo queda **Fase 8** (integraciones
+externas: pasarela de pagos, email real, WhatsApp, PDF/Excel), que depende
+de servicios/cuentas externas.
