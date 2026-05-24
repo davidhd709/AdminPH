@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { PqrCategory, PqrStatus } from "@prisma/client";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreatePqrDto {
   @ApiProperty({ description: "Copropiedad a la que pertenece la PQR" })
@@ -43,7 +44,7 @@ export class RespondPqrDto {
   message!: string;
 }
 
-export class PqrQueryDto {
+export class PqrQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()

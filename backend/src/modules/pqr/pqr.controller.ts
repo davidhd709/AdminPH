@@ -5,7 +5,6 @@ import { PqrService } from "./pqr.service";
 import { CreatePqrDto, PqrQueryDto, RespondPqrDto, UpdatePqrStatusDto } from "./dto/pqr.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("pqr")
@@ -20,12 +19,8 @@ export class PqrController {
   }
 
   @Get()
-  findAll(
-    @CurrentUser() user: AuthUser,
-    @Query() query: PqrQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.pqrService.findAll(user, query, pagination);
+  findAll(@CurrentUser() user: AuthUser, @Query() query: PqrQueryDto) {
+    return this.pqrService.findAll(user, query, query);
   }
 
   @Get(":id")
