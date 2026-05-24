@@ -53,6 +53,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   COMPANY_ADMIN: [
     "dashboard.view",
     "properties.manage",
+    "towers.manage",
     "people.manage",
     "reports.view",
     "announcements.manage",
@@ -61,6 +62,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ],
   PROPERTY_ADMIN: [
     "dashboard.view",
+    "towers.manage",
     "units.manage",
     "people.manage",
     "pqr.manage",

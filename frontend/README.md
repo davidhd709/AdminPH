@@ -17,6 +17,10 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > **Fase 3.2 — CRUD multi-tenant ✅.** Módulo **Copropiedades**: replica el
 > patrón con scoping por empresa (SUPERADMIN elige empresa al crear y ve todas;
 > COMPANY_ADMIN queda acotado a la suya).
+>
+> **Fase 3.3 — CRUD anidado ✅.** Módulo **Torres**: selector de copropiedad +
+> listado scoped (`GET /towers?propertyId=`). El borrado se oculta a roles sin
+> permiso real en el backend (solo SUPERADMIN/COMPANY_ADMIN).
 
 ---
 
@@ -151,6 +155,7 @@ src/app/
 | `/app/dashboard` | privada | Dashboard con stats + gráfico |
 | `/app/companies` | privada + `roleGuard("SUPERADMIN")` | CRUD de empresas (tabla + diálogo) |
 | `/app/properties` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN")` | CRUD de copropiedades (multi-tenant) |
+| `/app/towers` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | CRUD de torres (anidado en copropiedad) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -163,8 +168,9 @@ src/app/
 - ~~**Fase 3:** primer CRUD real (Empresas) con paginación server-side, diálogo
   de alta/edición y borrado con confirmación.~~ ✅ Completada.
 - ~~**Fase 3.2:** CRUD multi-tenant (Copropiedades) con scoping por empresa.~~ ✅ Completada.
-- CRUDs de los módulos restantes (towers, units, finance, etc.), replicando el
-  patrón de `features/companies` / `features/properties` (`*.models` +
+- ~~**Fase 3.3:** CRUD anidado (Torres) con selector de copropiedad.~~ ✅ Completada.
+- CRUDs de los módulos restantes (units, finance, etc.), replicando el patrón de
+  `features/companies` / `features/properties` / `features/towers` (`*.models` +
   `*.service` + tabla lazy + diálogo Reactive Forms).
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

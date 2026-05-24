@@ -15,4 +15,5 @@ export const API = {
   },
   companies: "/companies",
   properties: "/properties",
+  towers: "/towers",
 } as const;
