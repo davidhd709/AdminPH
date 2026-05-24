@@ -105,6 +105,11 @@ model Company {
   pets          Pet[]
   vehicles      Vehicle[]
   assemblies    Assembly[]
+  documents     Document[]
+  bankAccounts  BankAccount[]
+  acctCategories AccountingCategory[]
+  transactions  Transaction[]
+  budgets       Budget[]
 
   @@index([id])
 }
@@ -142,6 +147,11 @@ model Property {
   pets          Pet[]
   vehicles      Vehicle[]
   assemblies    Assembly[]
+  documents     Document[]
+  bankAccounts  BankAccount[]
+  acctCategories AccountingCategory[]
+  transactions  Transaction[]
+  budgets       Budget[]
 
   @@index([companyId])
   @@index([id])
@@ -248,6 +258,8 @@ model User {
   assembliesCreated    Assembly[]           @relation("AssemblyCreatedBy")
   attendanceProxies    AssemblyAttendance[] @relation("AttendanceProxy")
   votesCast            Vote[]               @relation("VoteCastBy")
+  documentsUploaded    Document[]           @relation("DocumentUploadedBy")
+  transactionsCreated  Transaction[]        @relation("TransactionCreatedBy")
 
   @@index([email])
 }
@@ -781,4 +793,138 @@ model Vote {
 
   @@unique([votingId, unitId])
   @@index([votingId])
+}
+
+// ===================== Fase 7.8 — Actas y Documentos =====================
+
+enum DocumentType {
+  REGULATION // reglamento de propiedad horizontal
+  MINUTES // acta
+  CONTRACT
+  FINANCIAL_STATEMENT
+  BUDGET
+  POLICY // póliza
+  CERTIFICATE
+  COMMUNICATION
+  OTHER
+}
+
+model Document {
+  id           String       @id @default(uuid())
+  companyId    String
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId   String
+  property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User         @relation("DocumentUploadedBy", fields: [uploadedById], references: [id])
+  type         DocumentType @default(OTHER)
+  title        String
+  description  String?
+  fileUrl      String // path/URL en el storage (R2/MinIO — Fase 9)
+  version      Int          @default(1)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([propertyId, type])
+}
+
+// ===================== Fase 7.9 — Contabilidad administrativa =====================
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model BankAccount {
+  id            String    @id @default(uuid())
+  companyId     String
+  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name          String
+  bank          String
+  accountNumber String
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  transactions Transaction[]
+
+  @@index([propertyId])
+}
+
+model AccountingCategory {
+  id         String          @id @default(uuid())
+  companyId  String
+  company    Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name       String
+  type       TransactionType
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  deletedAt  DateTime?
+
+  transactions Transaction[]
+  budgetItems  BudgetItem[]
+
+  @@index([propertyId, type])
+}
+
+model Transaction {
+  id            String              @id @default(uuid())
+  companyId     String
+  company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId    String
+  property      Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bankAccountId String?
+  bankAccount   BankAccount?        @relation(fields: [bankAccountId], references: [id])
+  categoryId    String?
+  category      AccountingCategory? @relation(fields: [categoryId], references: [id])
+  createdById   String
+  createdBy     User                @relation("TransactionCreatedBy", fields: [createdById], references: [id])
+  type          TransactionType
+  amount        Decimal             @db.Decimal(18, 2)
+  description   String
+  date          DateTime
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([propertyId, date])
+}
+
+model Budget {
+  id         String    @id @default(uuid())
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  year       Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  items BudgetItem[]
+
+  @@unique([propertyId, year])
+  @@index([propertyId])
+}
+
+model BudgetItem {
+  id            String             @id @default(uuid())
+  budgetId      String
+  budget        Budget             @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      AccountingCategory @relation(fields: [categoryId], references: [id])
+  plannedAmount Decimal            @db.Decimal(18, 2)
+
+  @@unique([budgetId, categoryId])
+  @@index([budgetId])
 }
