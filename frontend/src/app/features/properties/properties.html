@@ -1,0 +1,202 @@
+<app-page-header title="Copropiedades" subtitle="Conjuntos y edificios administrados.">
+  <p-button label="Nueva copropiedad" icon="pi pi-plus" (onClick)="openCreate()" />
+</app-page-header>
+
+<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <p-table
+    [value]="properties()"
+    [lazy]="true"
+    (onLazyLoad)="loadLazy($event)"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [loading]="loading()"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first}–{last} de {totalRecords}"
+    dataKey="id"
+    size="small"
+  >
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="name">Nombre <p-sortIcon field="name" /></th>
+        @if (isSuperadmin()) {
+          <th>Empresa</th>
+        }
+        <th>Ciudad</th>
+        <th class="text-right">Coef. total</th>
+        <th>Estado</th>
+        <th pSortableColumn="createdAt">Creada <p-sortIcon field="createdAt" /></th>
+        <th class="w-32 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-property>
+      <tr>
+        <td class="font-medium text-gray-900">{{ property.name }}</td>
+        @if (isSuperadmin()) {
+          <td class="text-gray-600">{{ companyName(property.companyId) }}</td>
+        }
+        <td class="text-gray-600">{{ property.city }}, {{ property.department }}</td>
+        <td class="text-right text-gray-600">{{ +property.coefficientTotal | number: "1.0-2" }}</td>
+        <td><app-status-badge [status]="property.status" /></td>
+        <td class="text-gray-600">{{ property.createdAt | date: "mediumDate" }}</td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            ariaLabel="Editar"
+            (onClick)="openEdit(property)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [rounded]="true"
+            ariaLabel="Eliminar"
+            (onClick)="confirmDelete(property)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td [attr.colspan]="isSuperadmin() ? 7 : 6">
+          <app-empty-state
+            icon="pi pi-building-columns"
+            title="Sin copropiedades"
+            message="Aún no hay copropiedades registradas. Crea la primera con el botón “Nueva copropiedad”."
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Diálogo de alta / edición -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '40rem' }"
+  [header]="editing() ? 'Editar copropiedad' : 'Nueva copropiedad'"
+>
+  <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <!-- Empresa -->
+    <div class="sm:col-span-2">
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Empresa</label>
+      @if (!editing() && isSuperadmin()) {
+        <p-select
+          formControlName="companyId"
+          [options]="companies()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Selecciona una empresa"
+          [filter]="true"
+          filterBy="name"
+          styleClass="w-full"
+          [fluid]="true"
+        />
+        @if (form.controls.companyId.touched && form.controls.companyId.invalid) {
+          <small class="mt-1 block text-red-600">Selecciona la empresa.</small>
+        }
+      } @else {
+        <p class="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+          {{ companyName(form.controls.companyId.value) }}
+        </p>
+      }
+    </div>
+
+    <!-- Nombre -->
+    <div class="sm:col-span-2">
+      <label for="name" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <input pInputText id="name" formControlName="name" placeholder="Conjunto Los Robles" class="w-full" [fluid]="true" />
+      @if (form.controls.name.touched && form.controls.name.invalid) {
+        <small class="mt-1 block text-red-600">El nombre es obligatorio (máx. 120).</small>
+      }
+    </div>
+
+    <!-- Dirección -->
+    <div class="sm:col-span-2">
+      <label for="address" class="mb-1.5 block text-sm font-medium text-gray-700">Dirección</label>
+      <input pInputText id="address" formControlName="address" placeholder="Calle 123 #45-67" class="w-full" [fluid]="true" />
+      @if (form.controls.address.touched && form.controls.address.invalid) {
+        <small class="mt-1 block text-red-600">La dirección es obligatoria.</small>
+      }
+    </div>
+
+    <!-- Ciudad -->
+    <div>
+      <label for="city" class="mb-1.5 block text-sm font-medium text-gray-700">Ciudad</label>
+      <input pInputText id="city" formControlName="city" placeholder="Bogotá" class="w-full" [fluid]="true" />
+      @if (form.controls.city.touched && form.controls.city.invalid) {
+        <small class="mt-1 block text-red-600">La ciudad es obligatoria.</small>
+      }
+    </div>
+
+    <!-- Departamento -->
+    <div>
+      <label for="department" class="mb-1.5 block text-sm font-medium text-gray-700">Departamento</label>
+      <input pInputText id="department" formControlName="department" placeholder="Cundinamarca" class="w-full" [fluid]="true" />
+      @if (form.controls.department.touched && form.controls.department.invalid) {
+        <small class="mt-1 block text-red-600">El departamento es obligatorio.</small>
+      }
+    </div>
+
+    <!-- NIT -->
+    <div>
+      <label for="nit" class="mb-1.5 block text-sm font-medium text-gray-700">
+        NIT <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="nit" formControlName="nit" placeholder="901234567-8" class="w-full" [fluid]="true" />
+    </div>
+
+    <!-- Coeficiente total -->
+    <div>
+      <label for="coefficientTotal" class="mb-1.5 block text-sm font-medium text-gray-700">Coeficiente total</label>
+      <p-inputNumber
+        inputId="coefficientTotal"
+        formControlName="coefficientTotal"
+        [minFractionDigits]="0"
+        [maxFractionDigits]="2"
+        [min]="0"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+      @if (form.controls.coefficientTotal.touched && form.controls.coefficientTotal.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un coeficiente válido.</small>
+      }
+    </div>
+
+    <!-- Teléfono -->
+    <div>
+      <label for="phone" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Teléfono <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="phone" formControlName="phone" placeholder="6011234567" class="w-full" [fluid]="true" />
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label for="email" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Email <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="email" type="email" formControlName="email" placeholder="admin@losrobles.com" class="w-full" [fluid]="true" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un email válido.</small>
+      }
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog />
