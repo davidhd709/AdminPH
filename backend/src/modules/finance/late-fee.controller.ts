@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Body, Param, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { LateFeeService } from "./late-fee.service";
 import { CreateLateFeeConfigDto } from "./dto/late-fee.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
@@ -6,6 +7,8 @@ import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 
+@ApiTags("late-fee")
+@ApiBearerAuth()
 @Controller("finance/late-fees")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class LateFeeController {

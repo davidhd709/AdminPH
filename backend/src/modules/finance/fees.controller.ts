@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Patch, Body, Query, Param, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { FeesService } from "./fees.service";
 import { GenerateFeesDto, FeeQueryDto } from "./dto/fees.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
@@ -7,6 +8,8 @@ import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { PaginationDto } from "../../core/dto/pagination.dto";
 
+@ApiTags("fees")
+@ApiBearerAuth()
 @Controller("finance/fees")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class FeesController {

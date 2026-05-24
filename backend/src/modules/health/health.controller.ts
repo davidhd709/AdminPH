@@ -1,8 +1,10 @@
 import { Controller, Get, VERSION_NEUTRAL } from "@nestjs/common";
 import { HealthCheck, HealthCheckService, MemoryHealthIndicator } from "@nestjs/terminus";
+import { ApiTags } from "@nestjs/swagger";
 import { PrismaHealthIndicator } from "./prisma.health";
 import { Public } from "../../core/decorators/public.decorator";
 
+@ApiTags("health")
 @Controller({ version: VERSION_NEUTRAL })
 export class HealthController {
   constructor(

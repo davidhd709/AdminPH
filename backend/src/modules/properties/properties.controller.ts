@@ -10,6 +10,7 @@ import {
   Req,
   Query,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PropertiesService } from "./properties.service";
 import { CreatePropertyDto, UpdatePropertyDto } from "./dto/property.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
@@ -19,6 +20,8 @@ import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { PaginationDto } from "../../core/dto/pagination.dto";
 import { Request as ExpressRequest } from "express";
 
+@ApiTags("properties")
+@ApiBearerAuth()
 @Controller("properties")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PropertiesController {

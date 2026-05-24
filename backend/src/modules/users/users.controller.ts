@@ -10,6 +10,7 @@ import {
   Post,
   Req,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request as ExpressRequest } from "express";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -19,6 +20,8 @@ import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { AuthUser } from "../../core/types/auth-user";
 
+@ApiTags("users")
+@ApiBearerAuth()
 @Controller("users")
 export class UsersController {
   constructor(

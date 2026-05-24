@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Patch, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PaymentsService } from "./payments.service";
 import { CreatePaymentDto, ApprovePaymentDto, RejectPaymentDto } from "./dto/payment.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
@@ -6,6 +7,8 @@ import { RolesGuard } from "../../core/guards/roles.guard";
 import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 
+@ApiTags("payments")
+@ApiBearerAuth()
 @Controller("payments")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentsController {

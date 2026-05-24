@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { CompaniesService } from "./companies.service";
 import { CreateCompanyDto, UpdateCompanyDto } from "./dto/company.dto";
 import { Roles } from "../../core/decorators/roles.decorator";
@@ -6,6 +7,8 @@ import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { PaginationDto } from "../../core/dto/pagination.dto";
 import { Request as ExpressRequest } from "express";
 
+@ApiTags("companies")
+@ApiBearerAuth()
 @Controller("companies")
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}

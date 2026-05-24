@@ -11,6 +11,7 @@ import {
 import { Request } from "express";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Throttle } from "@nestjs/throttler";
+import { ApiBearerAuth, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { AuthService, RefreshTokenExpiredError, RefreshTokenReuseError } from "./auth.service";
 import { AuditService } from "../audit/audit.service";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
@@ -18,20 +19,25 @@ import { Public } from "../../core/decorators/public.decorator";
 import { AuthUser } from "../../core/types/auth-user";
 
 class LoginDto {
+  @ApiProperty({ description: "Email del usuario", example: "admin@example.com" })
   @IsEmail()
   email!: string;
 
+  @ApiProperty({ description: "Contraseña del usuario", example: "S3cr3t!Pass" })
   @IsString()
   @IsNotEmpty()
   password!: string;
 }
 
 class RefreshDto {
+  @ApiProperty({ description: "Refresh token vigente a rotar" })
   @IsString()
   @IsNotEmpty()
   refresh_token!: string;
 }
 
+@ApiTags("auth")
+@ApiBearerAuth()
 @Controller("auth")
 export class AuthController {
   constructor(

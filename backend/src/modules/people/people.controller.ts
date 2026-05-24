@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { PeopleService } from "./people.service";
 import { CreateOwnerDto, CreateResidentDto } from "./dto/people.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
@@ -7,6 +8,8 @@ import { Roles } from "../../core/decorators/roles.decorator";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Request as ExpressRequest } from "express";
 
+@ApiTags("people")
+@ApiBearerAuth()
 @Controller("people")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PeopleController {

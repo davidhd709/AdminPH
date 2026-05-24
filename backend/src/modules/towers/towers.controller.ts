@@ -10,6 +10,7 @@ import {
   Req,
   Query,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { TowersService } from "./towers.service";
 import { CreateTowerDto, UpdateTowerDto } from "./dto/tower.dto";
 import { JwtAuthGuard } from "../../core/guards/jwt-auth.guard";
@@ -19,6 +20,8 @@ import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { PaginationDto } from "../../core/dto/pagination.dto";
 import { Request as ExpressRequest } from "express";
 
+@ApiTags("towers")
+@ApiBearerAuth()
 @Controller("towers")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class TowersController {
