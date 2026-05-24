@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.log
+.git
+.husky
+test
+**/*.spec.ts
+**/*.e2e-spec.ts
+.eslintcache
+*.tsbuildinfo

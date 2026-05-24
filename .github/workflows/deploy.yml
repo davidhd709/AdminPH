@@ -1,0 +1,58 @@
+name: Deploy
+
+# Despliegue a VPS por SSH al hacer push de un tag de versión (vX.Y.Z) o
+# manualmente. Requiere configurar estos SECRETS en GitHub:
+#   SSH_HOST, SSH_USER, SSH_KEY (clave privada), DEPLOY_PATH
+#
+# Estrategia: build de la imagen en CI -> push a registry (GHCR) -> SSH al
+# VPS -> pull -> migrate deploy -> up -d. Migraciones ANTES de cambiar el
+# contenedor para evitar incompatibilidades de schema.
+#
+# Está deshabilitado por defecto (solo workflow_dispatch) hasta que se
+# configuren los secrets y el registry. Quitar el comentario de `tags`
+# cuando esté listo.
+
+on:
+  workflow_dispatch:
+  # push:
+  #   tags:
+  #     - "v*.*.*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Evita ejecuciones accidentales sin secrets configurados.
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Build image
+        run: docker build -t ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ./backend
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: docker push ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            export BACKEND_IMAGE=ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+            docker pull "$BACKEND_IMAGE"
+            # Migraciones ANTES de levantar la nueva versión.
+            docker run --rm --env-file .env.production "$BACKEND_IMAGE" npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+            docker image prune -f

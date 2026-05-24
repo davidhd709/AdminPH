@@ -1,4 +1,6 @@
-version: "3.8"
+# Stack de DESARROLLO. El backend NO va aquí: se corre con
+# `cd backend && npm run start:dev` para conservar hot-reload.
+# Este compose levanta solo las dependencias de infraestructura.
 services:
   postgres:
     image: postgres:16
@@ -12,6 +14,42 @@ services:
       - "5434:5432"
     volumes:
       - adminph_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adminph -d adminph_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Almacenamiento S3-compatible para comprobantes de pago (Fase 5.2/9).
+  minio:
+    image: minio/minio:latest
+    container_name: adminph_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: adminph
+      MINIO_ROOT_PASSWORD: adminph_minio_password
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # Consola web
+    volumes:
+      - adminph_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Captura de emails en dev: el MailService (cuando use SMTP) apunta acá.
+  # UI en http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: adminph_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
 
 volumes:
   adminph_postgres_data:
+  adminph_minio_data:
