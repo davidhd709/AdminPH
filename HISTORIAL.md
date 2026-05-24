@@ -914,3 +914,91 @@ Prometheus (3.6 opcional) no implementadas.
 
 Próximo paso: **Fase 4 — Testing y CI** (Jest unit/integration/e2e +
 GitHub Actions).
+
+---
+
+## 2026-05-24 — Fase 4 del plan completa (testing y CI)
+
+### Fase 4.1 — Configurar Jest
+
+- Instalados `jest@30`, `@types/jest`, `ts-jest`, `supertest`,
+  `@types/supertest`.
+- `jest.config.ts`: unit tests (`*.spec.ts` en `src/`), ts-jest,
+  moduleNameMapper `src/*`, coverage, threshold anti-regresión.
+- `test/jest-e2e.config.ts`: para `*.e2e-spec.ts`.
+- `tsconfig.build.json` nuevo: excluye specs/test del build de producción
+  (antes los `.spec.js` se colaban en `dist/`).
+- `tsconfig.json`: `types: ["node", "jest"]`.
+- Scripts: `test`, `test:watch`, `test:cov`, `test:e2e`.
+
+### Fase 4.2 — Tests unitarios (27 tests, 5 suites)
+
+- `auth.service.spec.ts` (9): validateUser (invalid / locked / lockout en
+  5to intento / reset al login ok), rotateRefreshToken (reuse detection ×2
+  + rotación feliz), hashRefreshToken determinístico.
+- `is-strong-password.validator.spec.ts` (9): política + casos borde.
+- `fees.service.spec.ts` (4): NotFound, generación FIXED, skip duplicados,
+  findOne not found.
+- `late-fee.service.spec.ts` (3): getConfig null, guardas config inactiva.
+- `account-statement.service.spec.ts` (2): paz y salvo true/false.
+
+Patrón: mock manual de PrismaService/AuditService con `jest.fn()`,
+instanciación directa (sin TestingModule), bcrypt vía `jest.mock`.
+
+Coverage de services testeados: auth 76%, account-statement 78%,
+is-strong-password 90%, fees 44%, late-fee 22%. El threshold global es un
+**piso anti-regresión** (statements 14 / branches 11 / functions 13 /
+lines 14); el CI falla si la cobertura baja de ahí. Meta: subir
+incrementalmente a 70% en services críticos.
+
+### Fase 4.4 — Tests E2E (5 tests) + FIX de bug de producción
+
+`test/auth.e2e-spec.ts` contra la BD real (puerto 5434):
+- login válido → 200 con tokens, sin password.
+- login password incorrecto → 401.
+- GET /companies sin token → 401.
+- GET /companies con token → 200.
+- refresh rota el token; reusar el viejo → 401.
+
+**BUG DE PRODUCCIÓN descubierto por el E2E:** dos logins del mismo usuario
+en el MISMO segundo generaban JWTs de refresh idénticos (el claim `iat`
+solo tiene resolución de segundos) → mismo `tokenHash` SHA-256 → violación
+de constraint unique → 409 Conflict espurio. Un usuario con doble-click en
+login o un cliente con retry rápido lo dispararía.
+
+Fix: `signTokenPair()` agrega `jti: randomUUID()` al payload del refresh
+token. Garantiza unicidad. Los 27 unit tests siguen pasando tras el cambio.
+
+(Fase 4.3 — integración dedicada con BD — quedó cubierta por estos E2E,
+que ya ejercitan la app completa contra PostgreSQL real.)
+
+### Fase 4.5 — GitHub Actions CI
+
+`.github/workflows/ci.yml` en push/PR a `main`:
+- Postgres 16 service container (healthcheck).
+- Node 22 + cache npm.
+- `npm ci` → `prisma generate` → `lint` → `build` → `migrate deploy` →
+  `test:cov` → `test:e2e` → upload coverage artifact.
+- Env de CI con secrets dummy.
+
+Quality gate: PR con lint/build/test roto o coverage bajo el piso no
+mergea (cuando se configure branch protection en GitHub).
+
+### Estado al cerrar Fase 4
+
+Commits en `main`:
+```
+7535746 ci: add GitHub Actions workflow — Fase 4.5
+84b4904 test(e2e): auth flow e2e + fix refresh token uniqueness bug — Fase 4.4
+<sha>   test: configure Jest + unit tests for critical services — Fase 4.1-4.2
+```
+
+32 tests totales (27 unit + 5 e2e) en verde. Build OK. Tag
+`v0.5.0-phase4-complete`.
+
+Deuda: subir coverage incrementalmente; agregar tests de payments.service
+(flujo de aprobación con $transaction) y multi-tenancy e2e con 2 empresas.
+
+Próximo paso: **Fase 5 — API surface completa** (paginación, file upload,
+Swagger con @ApiProperty, versionado, DTOs de respuesta, exception filter
+ya hecho en Fase 3).

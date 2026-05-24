@@ -318,7 +318,16 @@ devuelve 423 (Locked) durante 30 min, registrado en AuditLog.
 
 ---
 
-## Fase 4 — Testing y CI
+## Fase 4 — Testing y CI ✅ COMPLETA (2026-05-24)
+
+> Detalle en [HISTORIAL.md](HISTORIAL.md). Resumen:
+> 4.1 Jest + ts-jest configurado (unit + e2e configs, tsconfig.build excluye
+> specs); 4.2 27 unit tests en 5 suites (auth, fees, late-fee,
+> account-statement, password validator); 4.4 5 E2E de auth flow contra BD
+> real (login, 401, tenancy, refresh rotation) — descubrió y arregló bug de
+> producción (refresh token duplicado en mismo segundo → `jti`); 4.5 GitHub
+> Actions CI (Postgres service, lint+build+migrate+unit+e2e+coverage).
+> 4.3 (integración dedicada) cubierta por los E2E. Tag `v0.5.0-phase4-complete`.
 
 **Objetivo:** evitar regresiones en cada cambio.
 
