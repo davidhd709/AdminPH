@@ -1375,3 +1375,24 @@ unidades → personas. Rutas en `/app/*` con roleGuard. `pnpm run build` OK,
 68 tests del backend verdes. Pendiente: secciones **Finanzas** y **Operación**,
 pulido transversal (sidebar activo, breadcrumbs, dashboard real) y tests de
 frontend (vitest).
+
+## 2026-05-24 — Finanzas
+
+### Fase 4.1 — Cuotas y conceptos (commits backend + frontend)
+- **Backend**: `FeeConceptsService` ya existía completo pero **sin controller**
+  (no expuesto por HTTP). Se creó `fee-concepts.controller.ts`
+  (`/finance/fee-concepts`) y se registró en `finance.module.ts`. Listado por
+  query con `FeeConceptQueryDto` (propertyId requerido). Roles: crear/leer/
+  actualizar SUPERADMIN/COMPANY_ADMIN/PROPERTY_ADMIN; borrar SUPERADMIN/
+  COMPANY_ADMIN. 68 tests siguen verdes.
+- **Frontend**: nuevo permiso `concepts.manage` (SUPERADMIN, COMPANY_ADMIN,
+  PROPERTY_ADMIN); nav "Cuotas y conceptos" → `/app/finance/concepts`.
+  concept.models (+ labels ES de tipo y cálculo) + concept.service. Módulo
+  `concepts`: selector de copropiedad + tabla (no paginada) + diálogo Reactive
+  Forms (nombre, descripción, tipo, tipo de cálculo, monto en COP con
+  InputNumber, activo con Checkbox). status-badge: agregado INACTIVE.
+- **Decisión de alcance**: ACCOUNTANT queda fuera por ahora — el backend no le
+  permite `GET /properties` (no podría cargar el selector). Habilitar finanzas
+  para ACCOUNTANT es un pase de RBAC dedicado pendiente.
+- Verificado e2e: sin propertyId→400, listar, crear, actualizar, enum
+  inválido→400, soft-delete fuera del listado.

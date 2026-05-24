@@ -35,7 +35,7 @@ export const NAVIGATION: NavSection[] = [
   {
     title: "Finanzas",
     items: [
-      { label: "Cuotas y conceptos", icon: "pi pi-wallet", route: "/app/finance", permission: "finance.manage" },
+      { label: "Cuotas y conceptos", icon: "pi pi-wallet", route: "/app/finance/concepts", permission: "concepts.manage" },
       { label: "Pagos", icon: "pi pi-credit-card", route: "/app/payments", permission: "payments.manage" },
       { label: "Contabilidad", icon: "pi pi-calculator", route: "/app/accounting", permission: "accounting.manage" },
       { label: "Reportes", icon: "pi pi-chart-bar", route: "/app/reports", permission: "reports.view" },

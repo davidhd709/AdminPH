@@ -30,6 +30,10 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > cascada copropiedad → unidad → personas, con selector de usuario (requirió
 > enriquecer el backend: `GET /users` paginado e `include` del usuario en
 > owners/residents). Cierra la sección Administración.
+>
+> **Fase 4.1 — Finanzas: conceptos ✅.** Módulo **Cuotas y conceptos** (conceptos
+> de cobro por copropiedad). Requirió exponer `FeeConceptsService` con un
+> controller nuevo en el backend. Inicia la sección Finanzas.
 
 ---
 
@@ -167,6 +171,7 @@ src/app/
 | `/app/towers` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | CRUD de torres (anidado en copropiedad) |
 | `/app/units` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | CRUD de unidades (anidado, con torre opcional) |
 | `/app/people` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Propietarios y residentes por unidad |
+| `/app/finance/concepts` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Conceptos de cobro por copropiedad |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -184,8 +189,8 @@ src/app/
 - ~~**Fase 3.5:** Propietarios y residentes por unidad (con selector de usuario).~~ ✅ Completada.
   Cierra la sección **Administración** (empresas → copropiedades → torres →
   unidades → personas).
-- Secciones siguientes: **Finanzas** (cuotas, pagos, contabilidad) y
-  **Operación** (PQR, comunicados, reservas, etc.), replicando el patrón de
-  `features/*`.
+- **Finanzas** (en curso): ~~conceptos~~ ✅ · pagos · contabilidad · reportes.
+- **Operación** (pendiente): PQR, comunicados, reservas, portería, asambleas,
+  documentos.
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

@@ -1,0 +1,169 @@
+<app-page-header title="Cuotas y conceptos" subtitle="Conceptos de cobro de cada copropiedad.">
+  <p-button
+    label="Nuevo concepto"
+    icon="pi pi-plus"
+    [disabled]="!selectedPropertyId()"
+    (onClick)="openCreate()"
+  />
+</app-page-header>
+
+<!-- Selector de copropiedad -->
+<div class="mb-4 max-w-md">
+  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+  <p-select
+    [options]="properties()"
+    optionLabel="name"
+    optionValue="id"
+    [ngModel]="selectedPropertyId()"
+    (onChange)="onPropertyChange($event.value)"
+    placeholder="Selecciona una copropiedad"
+    [filter]="true"
+    filterBy="name"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <p-table [value]="concepts()" [loading]="loading()" dataKey="id" size="small">
+    <ng-template #header>
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Cálculo</th>
+        <th class="text-right">Monto por defecto</th>
+        <th>Estado</th>
+        <th class="w-32 text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-concept>
+      <tr>
+        <td class="font-medium text-gray-900">
+          {{ concept.name }}
+          @if (concept.description) {
+            <span class="block text-xs font-normal text-gray-500">{{ concept.description }}</span>
+          }
+        </td>
+        <td class="text-gray-600">{{ typeLabel(concept.type) }}</td>
+        <td class="text-gray-600">{{ calcLabel(concept.calculationType) }}</td>
+        <td class="text-right text-gray-600">
+          {{ +concept.defaultAmount | currency: "COP" : "symbol-narrow" : "1.0-0" }}
+        </td>
+        <td><app-status-badge [status]="concept.active ? 'ACTIVE' : 'INACTIVE'" /></td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            ariaLabel="Editar"
+            (onClick)="openEdit(concept)"
+          />
+          @if (canDelete()) {
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              ariaLabel="Eliminar"
+              (onClick)="confirmDelete(concept)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6">
+          <app-empty-state
+            icon="pi pi-wallet"
+            [title]="selectedPropertyId() ? 'Sin conceptos' : 'Selecciona una copropiedad'"
+            [message]="
+              selectedPropertyId()
+                ? 'Esta copropiedad aún no tiene conceptos de cobro. Crea el primero con “Nuevo concepto”.'
+                : 'Elige una copropiedad arriba para ver sus conceptos.'
+            "
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Diálogo de alta / edición -->
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '34rem' }"
+  [header]="editing() ? 'Editar concepto' : 'Nuevo concepto'"
+>
+  <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <!-- Nombre -->
+    <div class="sm:col-span-2">
+      <label for="name" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <input pInputText id="name" formControlName="name" placeholder="Administración" class="w-full" [fluid]="true" />
+      @if (form.controls.name.touched && form.controls.name.invalid) {
+        <small class="mt-1 block text-red-600">El nombre es obligatorio (máx. 120).</small>
+      }
+    </div>
+
+    <!-- Descripción -->
+    <div class="sm:col-span-2">
+      <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Descripción <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="description" formControlName="description" placeholder="Cuota mensual ordinaria" class="w-full" [fluid]="true" />
+    </div>
+
+    <!-- Tipo -->
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+
+    <!-- Tipo de cálculo -->
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo de cálculo</label>
+      <p-select formControlName="calculationType" [options]="calcOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+
+    <!-- Monto por defecto -->
+    <div>
+      <label for="defaultAmount" class="mb-1.5 block text-sm font-medium text-gray-700">Monto por defecto</label>
+      <p-inputNumber
+        inputId="defaultAmount"
+        formControlName="defaultAmount"
+        mode="currency"
+        currency="COP"
+        [minFractionDigits]="0"
+        [maxFractionDigits]="0"
+        [min]="0"
+        styleClass="w-full"
+        [fluid]="true"
+      />
+      @if (form.controls.defaultAmount.touched && form.controls.defaultAmount.invalid) {
+        <small class="mt-1 block text-red-600">Ingresa un monto válido.</small>
+      }
+    </div>
+
+    <!-- Activo -->
+    <div class="flex items-end pb-2">
+      <div class="flex items-center gap-2">
+        <p-checkbox formControlName="active" [binary]="true" inputId="active" />
+        <label for="active" class="text-sm font-medium text-gray-700">Concepto activo</label>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="dialogVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog />

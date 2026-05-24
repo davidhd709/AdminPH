@@ -22,4 +22,7 @@ export const API = {
     owners: "/people/owners",
     residents: "/people/residents",
   },
+  finance: {
+    concepts: "/finance/fee-concepts",
+  },
 } as const;

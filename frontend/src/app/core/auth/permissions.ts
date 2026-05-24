@@ -13,6 +13,7 @@ export type Permission =
   | "units.manage"
   | "people.manage"
   | "finance.manage"
+  | "concepts.manage"
   | "payments.manage"
   | "payments.submit"
   | "statements.view"
@@ -39,6 +40,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "units.manage",
     "people.manage",
     "finance.manage",
+    "concepts.manage",
     "payments.manage",
     "statements.view",
     "reports.view",
@@ -54,6 +56,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "dashboard.view",
     "properties.manage",
     "towers.manage",
+    "concepts.manage",
     "people.manage",
     "reports.view",
     "announcements.manage",
@@ -64,6 +67,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "dashboard.view",
     "towers.manage",
     "units.manage",
+    "concepts.manage",
     "people.manage",
     "pqr.manage",
     "reservations.manage",
