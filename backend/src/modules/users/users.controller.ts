@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
@@ -15,6 +16,7 @@ import { Request as ExpressRequest } from "express";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateMeDto } from "./dto/update-me.dto";
+import { UserQueryDto } from "./dto/user-query.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { AuthService } from "../auth/auth.service";
 import { AuditService } from "../audit/audit.service";
@@ -40,6 +42,16 @@ export class UsersController {
     @Req() request: ExpressRequest,
   ) {
     return this.usersService.create(dto, user, request);
+  }
+
+  /**
+   * Listado paginado de usuarios (scoped por empresa salvo SUPERADMIN).
+   * Habilita selectores como el de vincular usuario a propietario/residente.
+   */
+  @Get()
+  @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
+  async findAll(@CurrentUser() user: any, @Query() query: UserQueryDto) {
+    return this.usersService.findAll(user, query);
   }
 
   @Get("me")

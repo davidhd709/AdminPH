@@ -4,12 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateMeDto } from "./dto/update-me.dto";
+import { UserQueryDto } from "./dto/user-query.dto";
 import { AuditService } from "../audit/audit.service";
+import { PaginatedResult } from "../../core/dto/pagination.dto";
+import { paginate } from "../../core/utils/paginate";
 
 /**
  * Vista pública de User: sin password, sin contadores de lockout.
@@ -62,6 +65,33 @@ export class UsersService {
     });
 
     return safe;
+  }
+
+  /**
+   * Lista usuarios paginados. SUPERADMIN ve todos; el resto solo los de su
+   * empresa. `search` filtra por nombre, email o documento. Devuelve SafeUser
+   * (sin password ni campos de lockout).
+   */
+  async findAll(user: any, query: UserQueryDto): Promise<PaginatedResult<SafeUser>> {
+    const where: Prisma.UserWhereInput = { deletedAt: null };
+
+    if (user.role !== "SUPERADMIN") {
+      where.companyId = user.companyId;
+    }
+
+    if (query.search?.trim()) {
+      const term = query.search.trim();
+      where.OR = [
+        { fullName: { contains: term, mode: "insensitive" } },
+        { email: { contains: term, mode: "insensitive" } },
+        { document: { contains: term, mode: "insensitive" } },
+      ];
+    }
+
+    const result = await paginate<User>(this.prisma.user, where, query, {
+      defaultSortBy: "fullName",
+    });
+    return { ...result, items: result.items.map((u) => UsersService.toSafeUser(u)) };
   }
 
   async findOne(id: string, user: any): Promise<SafeUser> {

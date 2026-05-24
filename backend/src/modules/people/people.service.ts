@@ -1,8 +1,26 @@
 import { Injectable, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { Owner, Resident } from "@prisma/client";
+import { Owner, Prisma, Resident } from "@prisma/client";
 import { CreateOwnerDto, CreateResidentDto } from "./dto/people.dto";
 import { AuditService } from "../audit/audit.service";
+
+/**
+ * Datos públicos del usuario vinculado (sin password ni campos de lockout).
+ * Se usa al listar owners/residents para mostrar nombre/email en el frontend.
+ */
+const userPublicSelect = Prisma.validator<Prisma.UserDefaultArgs>()({
+  select: { id: true, fullName: true, email: true, document: true, phone: true, globalRole: true },
+});
+
+const ownerWithUser = Prisma.validator<Prisma.OwnerDefaultArgs>()({
+  include: { user: userPublicSelect },
+});
+const residentWithUser = Prisma.validator<Prisma.ResidentDefaultArgs>()({
+  include: { user: userPublicSelect },
+});
+
+export type OwnerWithUser = Prisma.OwnerGetPayload<typeof ownerWithUser>;
+export type ResidentWithUser = Prisma.ResidentGetPayload<typeof residentWithUser>;
 
 @Injectable()
 export class PeopleService {
@@ -48,7 +66,7 @@ export class PeopleService {
     return owner;
   }
 
-  async findOwnersByUnit(unitId: string, user: any): Promise<Owner[]> {
+  async findOwnersByUnit(unitId: string, user: any): Promise<OwnerWithUser[]> {
     const unit = await this.prisma.unit.findFirst({
       where: { id: unitId, deletedAt: null },
       include: { property: true },
@@ -70,6 +88,7 @@ export class PeopleService {
 
     return this.prisma.owner.findMany({
       where: { unitId, deletedAt: null },
+      ...ownerWithUser,
     });
   }
 
@@ -145,7 +164,7 @@ export class PeopleService {
     return resident;
   }
 
-  async findResidentsByUnit(unitId: string, user: any): Promise<Resident[]> {
+  async findResidentsByUnit(unitId: string, user: any): Promise<ResidentWithUser[]> {
     const unit = await this.prisma.unit.findFirst({
       where: { id: unitId, deletedAt: null },
       include: { property: true },
@@ -167,6 +186,7 @@ export class PeopleService {
 
     return this.prisma.resident.findMany({
       where: { unitId, deletedAt: null },
+      ...residentWithUser,
     });
   }
 
