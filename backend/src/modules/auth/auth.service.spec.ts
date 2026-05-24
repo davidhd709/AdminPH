@@ -2,6 +2,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { AuthService, RefreshTokenReuseError } from "./auth.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { MailService } from "../mail/mail.service";
 
 jest.mock("bcrypt", () => ({
   hash: jest.fn().mockResolvedValue("hashed"),
@@ -57,7 +58,16 @@ describe("AuthService", () => {
   beforeEach(() => {
     prisma = buildPrismaMock();
     jwt = { sign: jest.fn().mockReturnValue("signed.jwt.token"), verifyAsync: jest.fn() };
-    service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const mail = {
+      send: jest.fn(),
+      sendPasswordReset: jest.fn(),
+      sendEmailVerification: jest.fn(),
+    };
+    service = new AuthService(
+      prisma as unknown as PrismaService,
+      jwt as unknown as JwtService,
+      mail as unknown as MailService,
+    );
   });
 
   afterEach(() => jest.restoreAllMocks());

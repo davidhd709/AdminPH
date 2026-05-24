@@ -12,11 +12,17 @@ import { Request } from "express";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Throttle } from "@nestjs/throttler";
 import { ApiBearerAuth, ApiProperty, ApiTags } from "@nestjs/swagger";
-import { AuthService, RefreshTokenExpiredError, RefreshTokenReuseError } from "./auth.service";
+import {
+  AuthService,
+  PasswordResetInvalidError,
+  RefreshTokenExpiredError,
+  RefreshTokenReuseError,
+} from "./auth.service";
 import { AuditService } from "../audit/audit.service";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Public } from "../../core/decorators/public.decorator";
 import { AuthUser } from "../../core/types/auth-user";
+import { IsStrongPassword } from "../../core/validators/is-strong-password.validator";
 
 class LoginDto {
   @ApiProperty({ description: "Email del usuario", example: "admin@example.com" })
@@ -34,6 +40,23 @@ class RefreshDto {
   @IsString()
   @IsNotEmpty()
   refresh_token!: string;
+}
+
+class ForgotPasswordDto {
+  @ApiProperty({ description: "Email de la cuenta", example: "admin@example.com" })
+  @IsEmail()
+  email!: string;
+}
+
+class ResetPasswordDto {
+  @ApiProperty({ description: "Token recibido por email" })
+  @IsString()
+  @IsNotEmpty()
+  token!: string;
+
+  @ApiProperty({ description: "Nueva contraseña fuerte", example: "N3w!Str0ngPass" })
+  @IsStrongPassword()
+  newPassword!: string;
 }
 
 @ApiTags("auth")
@@ -112,6 +135,37 @@ export class AuthController {
         throw new UnauthorizedException("Refresh token expired. Re-login required.");
       }
       throw new UnauthorizedException("Invalid refresh token");
+    }
+  }
+
+  /**
+   * Inicia reset de contraseña. Responde 204 SIEMPRE (exista o no el email)
+   * para no revelar qué correos están registrados.
+   */
+  @Public()
+  @Throttle({ sensitive: { limit: 30, ttl: 60_000 } })
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
+    await this.authService.requestPasswordReset(dto.email);
+  }
+
+  /**
+   * Completa el reset con el token recibido por email. Revoca todas las
+   * sesiones activas del usuario.
+   */
+  @Public()
+  @Throttle({ sensitive: { limit: 30, ttl: 60_000 } })
+  @Post("reset-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
+    try {
+      await this.authService.resetPassword(dto.token, dto.newPassword);
+    } catch (err) {
+      if (err instanceof PasswordResetInvalidError) {
+        throw new UnauthorizedException("Invalid or expired reset token");
+      }
+      throw err;
     }
   }
 

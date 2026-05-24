@@ -199,20 +199,34 @@ model User {
   failedLoginCount  Int       @default(0)
   lastFailedLoginAt DateTime?
   lockedUntil       DateTime?
+  emailVerifiedAt   DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
 
-  companyId     String?
-  company       Company?       @relation(fields: [companyId], references: [id])
-  propertyUsers PropertyUser[]
-  payments      Payment[]
-  auditLogs     AuditLog[]
-  refreshTokens RefreshToken[]
-  owners        Owner[]
-  residents     Resident[]
+  companyId           String?
+  company             Company?             @relation(fields: [companyId], references: [id])
+  propertyUsers       PropertyUser[]
+  payments            Payment[]
+  auditLogs           AuditLog[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  owners              Owner[]
+  residents           Resident[]
 
   @@index([email])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique // SHA-256 hex del token enviado por email
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model RefreshToken {

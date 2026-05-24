@@ -14,6 +14,8 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Request as ExpressRequest } from "express";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateMeDto } from "./dto/update-me.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { AuthService } from "../auth/auth.service";
 import { AuditService } from "../audit/audit.service";
 import { Roles } from "../../core/decorators/roles.decorator";
@@ -43,6 +45,30 @@ export class UsersController {
   @Get("me")
   async getMe(@CurrentUser() user: any) {
     return this.usersService.findOne(user.sub, user);
+  }
+
+  @Patch("me")
+  async updateMe(
+    @Body() dto: UpdateMeDto,
+    @CurrentUser() user: AuthUser,
+    @Req() request: ExpressRequest,
+  ) {
+    return this.usersService.updateMe(user.sub, dto, request);
+  }
+
+  /**
+   * Cambia la propia contraseña y revoca todas las sesiones (refresh tokens)
+   * para forzar re-login en todos los dispositivos.
+   */
+  @Post("me/change-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async changePassword(
+    @Body() dto: ChangePasswordDto,
+    @CurrentUser() user: AuthUser,
+    @Req() request: ExpressRequest,
+  ): Promise<void> {
+    await this.usersService.changePassword(user.sub, dto.oldPassword, dto.newPassword, request);
+    await this.authService.revokeAllUserTokens(user.sub);
   }
 
   @Patch(":id")

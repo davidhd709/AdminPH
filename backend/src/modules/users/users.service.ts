@@ -1,8 +1,14 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateMeDto } from "./dto/update-me.dto";
 import { AuditService } from "../audit/audit.service";
 
 /**
@@ -80,6 +86,58 @@ export class UsersService {
    */
   async findRawById(id: string): Promise<User | null> {
     return this.prisma.user.findFirst({ where: { id, deletedAt: null } });
+  }
+
+  /** El propio usuario edita su perfil (fullName, phone). */
+  async updateMe(userId: string, dto: UpdateMeDto, request: any): Promise<SafeUser> {
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: dto,
+    });
+    const safe = UsersService.toSafeUser(updated);
+    await this.auditService.log({
+      userId,
+      companyId: updated.companyId,
+      entityName: "User",
+      entityId: userId,
+      action: "UPDATE",
+      newValue: safe,
+      request,
+    });
+    return safe;
+  }
+
+  /**
+   * Cambia la contraseña del propio usuario. Verifica la contraseña actual,
+   * persiste la nueva hasheada y registra CHANGE_PASSWORD. NO revoca tokens
+   * (eso lo orquesta el controller para evitar acoplar a AuthService).
+   */
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+    request: any,
+  ): Promise<void> {
+    const user = await this.findRawById(userId);
+    if (!user) throw new NotFoundException("User not found");
+
+    const matches = await bcrypt.compare(oldPassword, user.password);
+    if (!matches) throw new BadRequestException("Current password is incorrect");
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
+
+    await this.auditService.log({
+      userId,
+      companyId: user.companyId,
+      entityName: "User",
+      entityId: userId,
+      action: "CHANGE_PASSWORD",
+      request,
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {

@@ -8,6 +8,7 @@ import { JwtAuthGuard } from "./core/guards/jwt-auth.guard";
 import { RolesGuard } from "./core/guards/roles.guard";
 import { TenancyGuard } from "./core/guards/tenancy.guard";
 import { HealthModule } from "./modules/health/health.module";
+import { MailModule } from "./modules/mail/mail.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
@@ -26,6 +27,7 @@ import { PaymentsModule } from "./modules/payments/payments.module";
       isGlobal: true,
     }),
     AppLoggerModule,
+    MailModule,
     HealthModule,
     // Multiples policies de throttling. Cada @Throttle() en un endpoint puede
     // elegir cuál aplicar via @SkipThrottle / @Throttle({ short: ... }).

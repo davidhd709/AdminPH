@@ -1,10 +1,12 @@
-import { createHash, randomUUID } from "crypto";
+import { createHash, randomBytes } from "crypto";
+import { randomUUID } from "crypto";
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import { RefreshToken, User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
+import { MailService } from "../mail/mail.service";
 
 export interface TokenPair {
   access_token: string;
@@ -16,6 +18,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mail: MailService,
   ) {}
 
   // ===== Password helpers =====
@@ -189,6 +192,72 @@ export class AuthService {
     return this.revokeAllUserTokens(userId);
   }
 
+  // ===== Password reset =====
+
+  static readonly RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hora
+
+  /**
+   * Inicia el flujo de reset. SIEMPRE retorna void sin revelar si el email
+   * existe (previene user enumeration). Si existe, genera token de un solo
+   * uso, lo persiste hasheado y envía el link por email.
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.findByEmail(email);
+    if (!user) return;
+
+    // Invalida tokens previos no usados del usuario.
+    await this.prisma.passwordResetToken.updateMany({
+      where: { userId: user.id, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+
+    const rawToken = randomBytes(32).toString("hex");
+    const tokenHash = AuthService.hashRefreshToken(rawToken);
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + AuthService.RESET_TOKEN_TTL_MS),
+      },
+    });
+
+    const base = process.env.FRONTEND_URL ?? "http://localhost:3001";
+    const resetUrl = `${base}/reset-password?token=${rawToken}`;
+    await this.mail.sendPasswordReset(user.email, resetUrl);
+  }
+
+  /**
+   * Completa el reset: valida el token (existe, no usado, no expirado),
+   * actualiza la contraseña, marca el token como usado y revoca todas las
+   * sesiones. Lanza PasswordResetInvalidError si el token no es válido.
+   */
+  async resetPassword(rawToken: string, newPassword: string): Promise<void> {
+    const tokenHash = AuthService.hashRefreshToken(rawToken);
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new PasswordResetInvalidError();
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: record.userId },
+        data: { password: hashed, failedLoginCount: 0, lockedUntil: null },
+      }),
+      this.prisma.passwordResetToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+      this.prisma.refreshToken.updateMany({
+        where: { userId: record.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
+  }
+
   // ===== Private helpers =====
 
   private signTokenPair(user: User): TokenPair {
@@ -285,5 +354,11 @@ export class RefreshTokenReuseError extends Error {
 export class RefreshTokenExpiredError extends Error {
   constructor() {
     super("Refresh token expired");
+  }
+}
+
+export class PasswordResetInvalidError extends Error {
+  constructor() {
+    super("Password reset token is invalid, used or expired");
   }
 }
