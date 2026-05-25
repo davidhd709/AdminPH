@@ -13,6 +13,7 @@ import { PasswordModule } from "primeng/password";
 import { MessageService } from "primeng/api";
 
 import { PageHeader } from "../../shared/components/page-header/page-header";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { AuthService } from "../../core/auth/auth.service";
 import { AppUser } from "../users/user.models";
 import { ProfileService } from "./profile.service";
@@ -32,7 +33,7 @@ function strongPassword(control: AbstractControl): ValidationErrors | null {
  */
 @Component({
   selector: "app-profile",
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, PasswordModule, PageHeader],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, PasswordModule, PageHeader, SectionCard],
   templateUrl: "./profile.html",
 })
 export class Profile implements OnInit {

@@ -1,14 +1,18 @@
-<app-page-header title="Reservar" subtitle="Reserva zonas comunes y gestiona tus solicitudes.">
+<app-page-header
+  title="Reservar"
+  subtitle="Reserva zonas comunes y gestiona tus solicitudes."
+  [breadcrumbs]="[{ label: 'Mi cuenta' }, { label: 'Reservar' }]"
+>
   <p-button label="Nueva reserva" icon="pi pi-plus" [disabled]="!areas().length" (onClick)="openCreate()" />
 </app-page-header>
 
 @if (!areas().length && !loading()) {
-  <p class="mb-4 text-sm text-gray-500">
+  <p class="mb-4 text-sm text-slate-500">
     No hay zonas comunes disponibles en tu copropiedad.
   </p>
 }
 
-<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+<app-section-card [bodyPadding]="false">
   <p-table
     [value]="reservations()"
     [loading]="loading()"
@@ -28,15 +32,15 @@
     </ng-template>
     <ng-template #body let-r>
       <tr>
-        <td class="font-medium text-gray-900">{{ areaName(r.commonAreaId) }}</td>
-        <td class="text-gray-600">{{ r.startTime | date: "short" }}</td>
-        <td class="text-gray-600">{{ r.endTime | date: "short" }}</td>
+        <td class="font-medium text-slate-900">{{ areaName(r.commonAreaId) }}</td>
+        <td class="text-slate-600">{{ r.startTime | date: "short" }}</td>
+        <td class="text-slate-600">{{ r.endTime | date: "short" }}</td>
         <td><app-status-badge [status]="r.status" /></td>
         <td class="text-right">
           @if (r.status === "PENDING" || r.status === "APPROVED") {
             <p-button label="Cancelar" icon="pi pi-ban" severity="secondary" [text]="true" size="small" [disabled]="actingId() === r.id" (onClick)="cancel(r)" />
           } @else {
-            <span class="text-gray-300">—</span>
+            <span class="text-slate-300">—</span>
           }
         </td>
       </tr>
@@ -49,7 +53,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
+</app-section-card>
 
 <!-- Diálogo: nueva reserva -->
 <p-dialog
@@ -63,29 +67,29 @@
 >
   <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
     <div class="sm:col-span-2">
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Zona común</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Zona común</label>
       <p-select formControlName="commonAreaId" [options]="areas()" optionLabel="name" optionValue="id" placeholder="Selecciona la zona" [filter]="true" filterBy="name" styleClass="w-full" [fluid]="true" />
       @if (form.controls.commonAreaId.touched && form.controls.commonAreaId.invalid) {
         <small class="mt-1 block text-red-600">Selecciona la zona común.</small>
       }
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Inicio</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Inicio</label>
       <p-datepicker formControlName="startTime" [showTime]="true" hourFormat="24" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" [fluid]="true" />
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Fin</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Fin</label>
       <p-datepicker formControlName="endTime" [showTime]="true" hourFormat="24" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="sm:col-span-2">
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">
-        Unidad <span class="text-gray-400">(opcional)</span>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+        Unidad <span class="text-slate-400">(opcional)</span>
       </label>
       <p-select formControlName="unitId" [options]="myUnits()" optionLabel="code" optionValue="id" placeholder="Sin unidad" [showClear]="true" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="sm:col-span-2">
-      <label for="notes" class="mb-1.5 block text-sm font-medium text-gray-700">
-        Notas <span class="text-gray-400">(opcional)</span>
+      <label for="notes" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Notas <span class="text-slate-400">(opcional)</span>
       </label>
       <textarea pTextarea id="notes" formControlName="notes" rows="2" placeholder="Motivo, número de asistentes…" class="w-full" [fluid]="true"></textarea>
     </div>

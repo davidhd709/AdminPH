@@ -12,6 +12,7 @@ import { MessageService } from "primeng/api";
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
 import { StatusBadge } from "../../shared/components/status-badge/status-badge";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { UnitService } from "../units/unit.service";
 import { MyUnit } from "../units/unit.models";
 import { ReservationService } from "../reservations/reservation.service";
@@ -37,6 +38,7 @@ import { CommonArea, Reservation } from "../reservations/reservation.models";
     PageHeader,
     EmptyState,
     StatusBadge,
+    SectionCard,
   ],
   templateUrl: "./my-reservations.html",
 })

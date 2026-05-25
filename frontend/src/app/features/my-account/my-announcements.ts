@@ -6,6 +6,7 @@ import { DialogModule } from "primeng/dialog";
 
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { AnnouncementService } from "../announcements/announcement.service";
 import { Announcement, announcementScopeLabel } from "../announcements/announcement.models";
 
@@ -16,7 +17,7 @@ import { Announcement, announcementScopeLabel } from "../announcements/announcem
  */
 @Component({
   selector: "app-my-announcements",
-  imports: [DatePipe, TableModule, ButtonModule, DialogModule, PageHeader, EmptyState],
+  imports: [DatePipe, TableModule, ButtonModule, DialogModule, PageHeader, EmptyState, SectionCard],
   templateUrl: "./my-announcements.html",
 })
 export class MyAnnouncementsPage implements OnInit {

@@ -1,34 +1,36 @@
-<app-page-header title="Mi perfil" subtitle="Gestiona tus datos y tu contraseña." />
+<app-page-header
+  title="Mi perfil"
+  subtitle="Gestiona tus datos y tu contraseña."
+  [breadcrumbs]="[{ label: 'Mi perfil' }]"
+/>
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
   <!-- Datos de la cuenta -->
-  <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-    <h2 class="mb-4 text-sm font-semibold text-gray-900">Datos de la cuenta</h2>
-
+  <app-section-card title="Datos de la cuenta">
     @if (me(); as u) {
       <dl class="mb-5 grid grid-cols-2 gap-3 text-sm">
         <div>
-          <dt class="text-gray-500">Correo</dt>
-          <dd class="font-medium text-gray-900">{{ u.email }}</dd>
+          <dt class="text-slate-500">Correo</dt>
+          <dd class="font-medium text-slate-900">{{ u.email }}</dd>
         </div>
         <div>
-          <dt class="text-gray-500">Documento</dt>
-          <dd class="font-medium text-gray-900">{{ u.document || "—" }}</dd>
+          <dt class="text-slate-500">Documento</dt>
+          <dd class="font-medium text-slate-900">{{ u.document || "—" }}</dd>
         </div>
       </dl>
     }
 
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-4">
       <div>
-        <label for="fullName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre completo</label>
+        <label for="fullName" class="mb-1.5 block text-sm font-medium text-slate-700">Nombre completo</label>
         <input pInputText id="fullName" formControlName="fullName" class="w-full" [fluid]="true" autocomplete="name" />
         @if (profileForm.controls.fullName.touched && profileForm.controls.fullName.invalid) {
           <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
         }
       </div>
       <div>
-        <label for="phone" class="mb-1.5 block text-sm font-medium text-gray-700">
-          Teléfono <span class="text-gray-400">(opcional)</span>
+        <label for="phone" class="mb-1.5 block text-sm font-medium text-slate-700">
+          Teléfono <span class="text-slate-400">(opcional)</span>
         </label>
         <input pInputText id="phone" formControlName="phone" placeholder="3001234567" class="w-full" [fluid]="true" autocomplete="tel" />
       </div>
@@ -36,19 +38,18 @@
         <p-button type="submit" label="Guardar cambios" [loading]="savingProfile()" />
       </div>
     </form>
-  </div>
+  </app-section-card>
 
   <!-- Cambiar contraseña -->
-  <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-    <h2 class="mb-1 text-sm font-semibold text-gray-900">Cambiar contraseña</h2>
-    <p class="mb-4 text-xs text-gray-500">
+  <app-section-card title="Cambiar contraseña">
+    <p class="mb-4 text-xs text-slate-500">
       Mínimo 10 caracteres con mayúscula, minúscula, número y símbolo. Al cambiarla
       se cerrará tu sesión.
     </p>
 
     <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="space-y-4">
       <div>
-        <label for="oldPassword" class="mb-1.5 block text-sm font-medium text-gray-700">Contraseña actual</label>
+        <label for="oldPassword" class="mb-1.5 block text-sm font-medium text-slate-700">Contraseña actual</label>
         <p-password
           inputId="oldPassword"
           formControlName="oldPassword"
@@ -64,7 +65,7 @@
         }
       </div>
       <div>
-        <label for="newPassword" class="mb-1.5 block text-sm font-medium text-gray-700">Nueva contraseña</label>
+        <label for="newPassword" class="mb-1.5 block text-sm font-medium text-slate-700">Nueva contraseña</label>
         <p-password
           inputId="newPassword"
           formControlName="newPassword"
@@ -84,5 +85,5 @@
         <p-button type="submit" label="Cambiar contraseña" severity="contrast" [loading]="savingPassword()" />
       </div>
     </form>
-  </div>
+  </app-section-card>
 </div>
