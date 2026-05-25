@@ -1593,3 +1593,16 @@ GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
 - El sidebar ya marcaba el ítem activo (`routerLinkActive`) — sin cambios.
 - Verificado: properties pageSize=1 → meta.total=4 (no 1); gráfico refleja los
   conteos reales por estado.
+
+### Fase 6.2 — Tests de frontend (vitest) — solo frontend
+- El builder `@angular/build:unit-test` con vitest 4 + jsdom 28 ya estaba listo
+  (tsconfig.spec.json con `vitest/globals`); no hizo falta tocar angular.json.
+- **26 tests en 6 archivos**, todos verdes: pagination (toHttpParams),
+  permissions (roleHasPermission + cobertura de roles), token.service
+  (localStorage), auth.store (signals), guards (authGuard→/login con returnUrl,
+  publicGuard→dashboard, roleGuard→/403, con runInInjectionContext +
+  provideRouter) e interceptors (authInterceptor agrega/omite Bearer;
+  errorInterceptor en 401 limpia sesión y navega a /login, con
+  HttpTestingController).
+- Script `test:ci` = `ng test --watch=false`. Build de producción intacto
+  (tsconfig.app excluye `*.spec.ts`). Falta: specs de componentes y servicios CRUD.
