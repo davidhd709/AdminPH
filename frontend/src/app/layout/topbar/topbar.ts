@@ -42,7 +42,7 @@ export class Topbar {
   });
 
   readonly menuItems: MenuItem[] = [
-    { label: "Mi perfil", icon: "pi pi-user", disabled: true },
+    { label: "Mi perfil", icon: "pi pi-user", command: () => void this.router.navigate(["/app/profile"]) },
     { separator: true },
     { label: "Cerrar sesión", icon: "pi pi-sign-out", command: () => this.logout() },
   ];

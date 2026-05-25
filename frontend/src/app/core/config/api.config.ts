@@ -13,6 +13,7 @@ export const API = {
   users: {
     base: "/users",
     me: "/users/me",
+    changePassword: "/users/me/change-password",
   },
   companies: "/companies",
   properties: "/properties",

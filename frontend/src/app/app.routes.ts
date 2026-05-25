@@ -121,6 +121,11 @@ export const routes: Routes = [
         canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
         loadComponent: () => import("./features/documents/documents").then((m) => m.Documents),
       },
+      {
+        // Disponible para cualquier usuario autenticado (sin roleGuard).
+        path: "profile",
+        loadComponent: () => import("./features/profile/profile").then((m) => m.Profile),
+      },
     ],
   },
 

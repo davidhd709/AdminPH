@@ -1606,3 +1606,20 @@ GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
   HttpTestingController).
 - Script `test:ci` = `ng test --watch=false`. Build de producción intacto
   (tsconfig.app excluye `*.spec.ts`). Falta: specs de componentes y servicios CRUD.
+
+### Fase 6.3 — Mi perfil (solo frontend)
+- Sin cambios de backend (endpoints /users/me ya existían). 68 tests vigentes.
+- **Bloqueo de "Mi cuenta" (OWNER/RESIDENT)**: no hay usuarios owner/resident en
+  el seed ni endpoints self-service ("mis unidades"), así que esas vistas no son
+  testeables aún. Se priorizó **Mi perfil**, que sirve a cualquier rol y es
+  verificable con el admin.
+- ProfileService (`/users/me`): getMe (AppUser completo), updateMe (PATCH
+  fullName/phone; sincroniza AuthStore para el topbar), changePassword (POST
+  me/change-password). Validador cliente de contraseña fuerte (≥10 + may/min/
+  dígito/símbolo) espejo del backend.
+- Módulo `profile` en `/app/profile` (sin roleGuard — cualquier autenticado):
+  card de datos (email/documento solo lectura + editar nombre/teléfono) y card
+  de cambio de contraseña. Tras cambiarla, cierra sesión y redirige a /login
+  (el backend revoca las sesiones). Topbar: ítem "Mi perfil" ahora navega.
+- Verificado e2e (con revert del seed): GET/PATCH me, password débil→400,
+  fuerte→204, login con nueva OK, con vieja→401.

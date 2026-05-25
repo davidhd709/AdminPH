@@ -74,6 +74,10 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 >
 > **Fase 6.2 — Tests (vitest) ✅.** 26 tests sobre pagination, permissions,
 > TokenService, AuthStore, guards e interceptors. `pnpm run test:ci`.
+>
+> **Fase 6.3 — Mi perfil ✅.** Editar nombre/teléfono y cambiar contraseña
+> (`/users/me`), para cualquier rol. Las vistas OWNER/RESIDENT de "Mi cuenta"
+> quedan pendientes (faltan usuarios seed y endpoints self-service).
 
 ---
 
@@ -222,6 +226,7 @@ src/app/
 | `/app/assemblies` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Asambleas (lista + crear) |
 | `/app/assemblies/:id` | privada + mismo guard | Detalle: asistencia, votaciones, votos |
 | `/app/documents` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Documentos (metadatos + URL) |
+| `/app/profile` | privada (authGuard) | Mi perfil: datos + cambiar contraseña |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -242,7 +247,8 @@ src/app/
 - **Finanzas** ✅: ~~conceptos~~ · ~~pagos~~ · ~~contabilidad~~ · ~~reportes~~.
 - **Operación** ✅: ~~PQR~~ · ~~comunicados~~ · ~~reservas~~ · ~~portería~~ ·
   ~~asambleas~~ · ~~documentos~~.
-- Pendiente: vistas de **Mi cuenta** (OWNER/RESIDENT), pulido transversal
+- Pendiente: vistas **owner/resident** de Mi cuenta (mi unidad, estado de
+  cuenta, etc. — requieren usuarios seed y endpoints self-service), pulido transversal
   (~~sidebar activo~~ ✅ · ~~dashboard real~~ ✅ · breadcrumbs) y ~~tests (vitest)~~ ✅
   (núcleo cubierto; faltan specs de componentes/servicios CRUD).
 - Tests (vitest) de guards/store/servicios/interceptors.
