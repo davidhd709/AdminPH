@@ -61,6 +61,9 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 >
 > **Fase 5.4 — Operación: portería ✅.** Módulo **Portería**: visitantes
 > (ingreso/salida), vehículos y mascotas por copropiedad.
+>
+> **Fase 5.5 — Operación: asambleas ✅.** Módulo **Asambleas** (lista + detalle
+> dedicado): estado, asistencia con quórum, votaciones, votos y escrutinio.
 
 ---
 
@@ -206,6 +209,8 @@ src/app/
 | `/app/announcements` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Comunicados (lista, crear, detalle) |
 | `/app/reservations` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Reservas y zonas comunes |
 | `/app/security` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Portería (visitantes, vehículos, mascotas) |
+| `/app/assemblies` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Asambleas (lista + crear) |
+| `/app/assemblies/:id` | privada + mismo guard | Detalle: asistencia, votaciones, votos |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -225,6 +230,6 @@ src/app/
   unidades → personas).
 - **Finanzas** ✅: ~~conceptos~~ · ~~pagos~~ · ~~contabilidad~~ · ~~reportes~~.
 - **Operación** (en curso): ~~PQR~~ ✅ · ~~comunicados~~ ✅ · ~~reservas~~ ✅ ·
-  ~~portería~~ ✅ · asambleas · documentos.
+  ~~portería~~ ✅ · ~~asambleas~~ ✅ · documentos.
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

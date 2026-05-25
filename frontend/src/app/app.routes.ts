@@ -105,6 +105,17 @@ export const routes: Routes = [
         canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
         loadComponent: () => import("./features/security/security").then((m) => m.Security),
       },
+      {
+        path: "assemblies",
+        canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
+        loadComponent: () => import("./features/assemblies/assemblies").then((m) => m.Assemblies),
+      },
+      {
+        path: "assemblies/:id",
+        canActivate: [roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")],
+        loadComponent: () =>
+          import("./features/assemblies/assembly-detail").then((m) => m.AssemblyDetailPage),
+      },
     ],
   },
 

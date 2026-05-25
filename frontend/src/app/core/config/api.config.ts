@@ -44,4 +44,5 @@ export const API = {
     pets: "/registry/pets",
     vehicles: "/registry/vehicles",
   },
+  assemblies: "/assemblies",
 } as const;

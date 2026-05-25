@@ -1536,3 +1536,25 @@ contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).
   SECURITY diferido (no puede GET /properties para el selector).
 - Verificado e2e: los 3 listados, registrar ingreso/salida, crear/eliminar
   vehículo y mascota, validación sin placa→400.
+
+### Fase 5.5 — Asambleas (commits backend + frontend)
+- **Backend — fix**: assemblies.listAssemblies con doble `@Query()` →
+  AssemblyQueryDto extiende PaginationDto, un solo `@Query()`. 68 tests verdes.
+- **Frontend**: assemblies.manage agregado a COMPANY_ADMIN y PROPERTY_ADMIN
+  (= STAFF_ROLES). status-badge: SCHEDULED. assembly.models (asamblea, votación,
+  voto, tally, labels ES) + assembly.service (todos los endpoints).
+  - **Lista** `assemblies` en `/app/assemblies`: filtros (copropiedad/estado/
+    tipo) + crear (con fecha p-datepicker showTime y quórum %).
+  - **Detalle dedicado** `assembly-detail` en `/app/assemblies/:id` (id por
+    withComponentInputBinding): cabecera + transiciones de estado
+    (SCHEDULED→IN_PROGRESS→CLOSED), indicador de quórum (coef. presente / total
+    de coeficientes de las unidades), asistencia (registrar), votaciones (crear,
+    votar, cerrar) y resultados (escrutinio por votos y por coeficiente).
+- Rutas /app/assemblies y /app/assemblies/:id con roleGuard.
+- Verificado e2e: listar, crear, iniciar, asistencia (snapshot coef), crear
+  votación, votar, tally, cerrar votación, votar en cerrada→400.
+
+### 🏁 Sección Operación COMPLETA
+PQR (5.1), Comunicados (5.2), Reservas (5.3), Portería (5.4), Asambleas (5.5).
+Pendiente: Documentos (deuda backend: storage real de archivos). Quedan las
+vistas de "Mi cuenta" (OWNER/RESIDENT) y el pulido transversal.
