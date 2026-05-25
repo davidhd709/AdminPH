@@ -1,74 +1,111 @@
-<div class="flex min-h-screen items-center justify-center bg-[var(--app-bg)] p-4">
-  <div class="w-full max-w-md">
-    <!-- Brand -->
-    <div class="mb-8 flex flex-col items-center">
-      <span class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white">
-        <i class="pi pi-building text-xl"></i>
-      </span>
-      <h1 class="text-2xl font-semibold tracking-tight text-gray-900">AdminPH</h1>
-      <p class="mt-1 text-sm text-gray-500">Administración de propiedad horizontal</p>
+<div class="flex min-h-screen">
+  <!-- Branding (solo escritorio) -->
+  <section
+    class="relative hidden w-1/2 flex-col justify-center overflow-hidden bg-blue-800 p-12 text-white lg:flex"
+  >
+    <!-- Patrón de puntos decorativo (CSS, sin imágenes externas) -->
+    <div
+      class="pointer-events-none absolute inset-0 opacity-10"
+      style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 40px 40px;"
+    ></div>
+    <div class="relative z-10 max-w-lg">
+      <h1 class="text-4xl font-bold tracking-tight">AdminPH</h1>
+      <p class="mt-4 text-lg leading-relaxed text-blue-100">
+        La plataforma para la gestión eficiente y transparente de copropiedades en Colombia.
+      </p>
+      <ul class="mt-10 space-y-4">
+        <li class="flex items-center gap-3">
+          <i class="pi pi-shield text-emerald-300"></i>
+          <span class="text-blue-50">Seguridad de nivel bancario</span>
+        </li>
+        <li class="flex items-center gap-3">
+          <i class="pi pi-chart-line text-emerald-300"></i>
+          <span class="text-blue-50">Informes financieros en tiempo real</span>
+        </li>
+        <li class="flex items-center gap-3">
+          <i class="pi pi-building text-emerald-300"></i>
+          <span class="text-blue-50">Gestión optimizada de unidades</span>
+        </li>
+      </ul>
     </div>
+  </section>
 
-    <!-- Card -->
-    <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 class="mb-1 text-lg font-semibold text-gray-900">Iniciar sesión</h2>
-      <p class="mb-6 text-sm text-gray-500">Ingresa tus credenciales para continuar.</p>
+  <!-- Formulario -->
+  <main class="flex w-full items-center justify-center bg-[var(--app-bg)] p-6 lg:w-1/2">
+    <div class="w-full max-w-md">
+      <!-- Logo (solo móvil) -->
+      <div class="mb-8 flex items-center justify-center gap-2 lg:hidden">
+        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-800 text-white">
+          <i class="pi pi-building"></i>
+        </span>
+        <span class="text-xl font-semibold tracking-tight text-slate-900">AdminPH</span>
+      </div>
 
-      @if (errorMsg()) {
-        <p-message severity="error" [text]="errorMsg()!" styleClass="mb-4 w-full" />
-      }
+      <div class="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 class="text-xl font-semibold tracking-tight text-slate-900">Bienvenido de nuevo</h2>
+        <p class="mt-1 text-sm text-slate-500">Ingresa tus credenciales para acceder al portal.</p>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
-        <div>
-          <label for="email" class="mb-1.5 block text-sm font-medium text-gray-700">Correo</label>
-          <input
-            pInputText
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="correo@ejemplo.com"
-            class="w-full"
-            autocomplete="username"
-          />
-          @if (form.controls.email.touched && form.controls.email.invalid) {
-            <small class="mt-1 block text-red-600">Ingresa un correo válido.</small>
-          }
-        </div>
+        @if (errorMsg()) {
+          <p-message severity="error" [text]="errorMsg()!" styleClass="mt-4 w-full" />
+        }
 
-        <div>
-          <div class="mb-1.5 flex items-center justify-between">
-            <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-            <a routerLink="/forgot-password" class="text-sm text-indigo-600 hover:underline">
-              ¿Olvidaste tu contraseña?
-            </a>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 space-y-5">
+          <div>
+            <label for="email" class="mb-1.5 block text-sm font-medium text-slate-700">
+              Correo electrónico
+            </label>
+            <input
+              pInputText
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="correo@adminph.com"
+              class="w-full"
+              autocomplete="username"
+              [fluid]="true"
+            />
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <small class="mt-1 block text-red-600">Ingresa un correo válido.</small>
+            }
           </div>
-          <p-password
-            inputId="password"
-            formControlName="password"
-            [feedback]="false"
-            [toggleMask]="true"
-            placeholder="••••••••"
+
+          <div>
+            <div class="mb-1.5 flex items-center justify-between">
+              <label for="password" class="block text-sm font-medium text-slate-700">Contraseña</label>
+              <a routerLink="/forgot-password" class="text-sm font-medium text-blue-800 hover:underline">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              placeholder="••••••••"
+              styleClass="w-full"
+              [inputStyleClass]="'w-full'"
+              [fluid]="true"
+            />
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <small class="mt-1 block text-red-600">La contraseña es obligatoria.</small>
+            }
+          </div>
+
+          <p-button
+            type="submit"
+            label="Iniciar sesión"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            [loading]="submitting()"
             styleClass="w-full"
-            [inputStyleClass]="'w-full'"
             [fluid]="true"
           />
-          @if (form.controls.password.touched && form.controls.password.invalid) {
-            <small class="mt-1 block text-red-600">La contraseña es obligatoria.</small>
-          }
-        </div>
+        </form>
+      </div>
 
-        <p-button
-          type="submit"
-          label="Iniciar sesión"
-          [loading]="submitting()"
-          styleClass="w-full"
-          [fluid]="true"
-        />
-      </form>
+      <p class="mt-6 text-center text-xs text-slate-400">
+        © 2026 AdminPH · SaaS para propiedad horizontal
+      </p>
     </div>
-
-    <p class="mt-6 text-center text-xs text-gray-400">
-      © 2026 AdminPH · SaaS para propiedad horizontal
-    </p>
-  </div>
+  </main>
 </div>
