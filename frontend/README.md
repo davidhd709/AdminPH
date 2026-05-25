@@ -84,6 +84,9 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 >
 > **Fase 7.2 — Mi cuenta: Mis PQR ✅.** El propietario/residente ve solo sus PQR,
 > las crea desde su unidad y responde en el hilo (sin cambiar estado).
+>
+> **Fase 7.3 — Mi cuenta: Reservar ✅.** Reserva de zonas comunes con horario;
+> ve y cancela solo sus reservas (sin aprobar/rechazar).
 
 ---
 
@@ -235,6 +238,7 @@ src/app/
 | `/app/profile` | privada (authGuard) | Mi perfil: datos + cambiar contraseña |
 | `/app/my-unit` | privada + `roleGuard("OWNER", "RESIDENT")` | Mi unidad: cuotas + descargas |
 | `/app/my-pqr` | privada + `roleGuard("OWNER", "RESIDENT")` | Mis PQR (ver/crear/responder) |
+| `/app/my-reservations` | privada + `roleGuard("OWNER", "RESIDENT")` | Reservar zonas comunes |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 

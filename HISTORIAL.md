@@ -1655,3 +1655,14 @@ GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
   Reusa PqrService y pqr.models. Nav "Mis PQR" repunta a /app/my-pqr.
 - Verificado e2e como owner: crear (propertyId derivado), ver solo las propias
   (scoped), responder, cambiar estado→403; el admin sí ve la PQR y cambia estado.
+
+### Fase 7.3 — Mi cuenta: Reservar (solo frontend)
+- Sin cambios de backend (reservations scopea a no-staff por requestedById; el
+  owner tiene PropertyUser para acceder a zonas/crear). 68 tests vigentes.
+- Módulo `my-account/my-reservations` en `/app/my-reservations` (roleGuard
+  OWNER/RESIDENT): lista zonas comunes de su copropiedad (propertyId derivado de
+  /units/mine), crea reservas (horario p-datepicker, unidad opcional, notas), ve
+  solo sus reservas y las cancela. NO revisa (aprobar/rechazar es del staff).
+  Reusa ReservationService. Nav "Reservar" repunta a /app/my-reservations.
+- Verificado e2e como owner: listar zonas, crear (PENDING), ver solo las propias,
+  review→403, cancelar (CANCELLED).
