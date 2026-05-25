@@ -1,3 +1,4 @@
+import { DatePipe } from "@angular/common";
 import { Component, OnInit, computed, inject, signal } from "@angular/core";
 import {
   ApexChart,
@@ -10,7 +11,6 @@ import {
 } from "ng-apexcharts";
 import { AuthStore } from "../../core/auth/auth.store";
 import { roleHasPermission } from "../../core/auth/permissions";
-import { PageHeader } from "../../shared/components/page-header/page-header";
 import { KpiCard, KpiTone } from "../../shared/components/kpi-card/kpi-card";
 import { SectionCard } from "../../shared/components/section-card/section-card";
 import { PropertyService } from "../properties/property.service";
@@ -23,6 +23,7 @@ interface StatCard {
   icon: string;
   value: number | null;
   tone: KpiTone;
+  hint: string;
 }
 
 interface BarChartOptions {
@@ -43,7 +44,7 @@ interface BarChartOptions {
  */
 @Component({
   selector: "app-dashboard",
-  imports: [NgApexchartsModule, PageHeader, KpiCard, SectionCard],
+  imports: [DatePipe, NgApexchartsModule, KpiCard, SectionCard],
   templateUrl: "./dashboard.html",
 })
 export class Dashboard implements OnInit {
@@ -53,7 +54,16 @@ export class Dashboard implements OnInit {
   private readonly paymentService = inject(PaymentService);
   private readonly reservationService = inject(ReservationService);
 
-  readonly userName = computed(() => this.store.user()?.fullName ?? "");
+  /** Fecha de hoy para el encabezado. */
+  readonly today = new Date();
+
+  /** Saludo según la hora + nombre del usuario. */
+  readonly greeting = computed(() => {
+    const hour = new Date().getHours();
+    const part = hour < 12 ? "Buenos días" : hour < 18 ? "Buenas tardes" : "Buenas noches";
+    const name = this.store.user()?.fullName ?? "";
+    return name ? `${part}, ${name}` : part;
+  });
 
   private readonly canProperties = computed(() =>
     this.store.hasRole("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN"),
@@ -72,16 +82,40 @@ export class Dashboard implements OnInit {
   readonly stats = computed<StatCard[]>(() => {
     const cards: StatCard[] = [];
     if (this.canProperties()) {
-      cards.push({ label: "Copropiedades", icon: "pi pi-building-columns", value: this.properties(), tone: "blue" });
+      cards.push({
+        label: "Copropiedades",
+        icon: "pi pi-building-columns",
+        value: this.properties(),
+        tone: "blue",
+        hint: "Conjuntos bajo tu gestión",
+      });
     }
     if (this.can("pqr.manage")) {
-      cards.push({ label: "PQR abiertas", icon: "pi pi-comments", value: this.openPqr(), tone: "amber" });
+      cards.push({
+        label: "PQR abiertas",
+        icon: "pi pi-comments",
+        value: this.openPqr(),
+        tone: "amber",
+        hint: "Peticiones, quejas y reclamos en gestión",
+      });
     }
     if (this.can("payments.manage")) {
-      cards.push({ label: "Pagos en revisión", icon: "pi pi-credit-card", value: this.pendingPayments(), tone: "sky" });
+      cards.push({
+        label: "Pagos en revisión",
+        icon: "pi pi-credit-card",
+        value: this.pendingPayments(),
+        tone: "sky",
+        hint: "Transferencias pendientes de aprobar",
+      });
     }
     if (this.can("reservations.manage")) {
-      cards.push({ label: "Reservas pendientes", icon: "pi pi-calendar", value: this.pendingReservations(), tone: "green" });
+      cards.push({
+        label: "Reservas pendientes",
+        icon: "pi pi-calendar",
+        value: this.pendingReservations(),
+        tone: "green",
+        hint: "Zonas comunes por confirmar",
+      });
     }
     return cards;
   });

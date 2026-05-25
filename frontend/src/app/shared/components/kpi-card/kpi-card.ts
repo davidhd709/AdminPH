@@ -13,9 +13,10 @@ const TONE_CLASSES: Record<KpiTone, string> = {
 };
 
 /**
- * Tarjeta de KPI: etiqueta, valor grande e icono con tono de color. El valor
- * puede ser `null` mientras carga (muestra un placeholder). Reemplaza el
- * patrón inline de stat-cards del dashboard.
+ * Tarjeta de KPI (design system AdminPH / Stitch): icono tonal, etiqueta en
+ * mayúsculas, valor grande y descripción opcional. El valor puede ser `null`
+ * mientras carga (muestra un placeholder). Para cifras financieras, `mono`
+ * activa la tipografía monoespaciada tabular.
  */
 @Component({
   selector: "app-kpi-card",
@@ -26,6 +27,10 @@ export class KpiCard {
   readonly value = input.required<number | string | null>();
   readonly icon = input<string>("pi pi-chart-bar");
   readonly tone = input<KpiTone>("blue");
+  /** Texto descriptivo opcional bajo el valor. */
+  readonly hint = input<string>();
+  /** Usa tipografía monoespaciada/tabular (para moneda). */
+  readonly mono = input<boolean>(false);
 
   /** Valor a mostrar; placeholder mientras el dato llega (null). */
   readonly displayValue = computed<string>(() => {

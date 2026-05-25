@@ -1,10 +1,28 @@
-<app-page-header title="Dashboard" [subtitle]="'Bienvenido, ' + userName()" />
+<!-- Encabezado: saludo por hora + fecha (design system Stitch) -->
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Panel de control</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ greeting() }} · estado actual de tus copropiedades.</p>
+  </div>
+  <div
+    class="inline-flex items-center gap-2 self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600"
+  >
+    <i class="pi pi-calendar text-blue-800"></i>
+    <span>{{ today | date: "longDate" }}</span>
+  </div>
+</div>
 
 <!-- KPIs -->
 @if (stats().length) {
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
     @for (stat of stats(); track stat.label) {
-      <app-kpi-card [label]="stat.label" [value]="stat.value" [icon]="stat.icon" [tone]="stat.tone" />
+      <app-kpi-card
+        [label]="stat.label"
+        [value]="stat.value"
+        [icon]="stat.icon"
+        [tone]="stat.tone"
+        [hint]="stat.hint"
+      />
     }
   </div>
 }
