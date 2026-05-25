@@ -1579,3 +1579,17 @@ pulido transversal (sidebar activo, breadcrumbs, dashboard con datos reales) y
 tests (vitest). Deuda backend recurrente ya resuelta en todos los listados
 (patrón doble @Query). Deudas backend abiertas: storage real de archivos,
 GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
+
+## 2026-05-25 — Pulido transversal
+
+### Fase 6.1 — Dashboard con datos reales (solo frontend)
+- Sin cambios de backend (los 68 tests siguen vigentes).
+- El dashboard ya no es mock: KPIs reales obtenidos con `pageSize=1` leyendo
+  `meta.total`, **gated por permiso** para no disparar 403 (Copropiedades si
+  puede listar properties; PQR abiertas si pqr.manage; Pagos en revisión si
+  payments.manage; Reservas pendientes si reservations.manage).
+- El gráfico mock de "Recaudo por mes" se reemplazó por uno real de **PQR por
+  estado** (barras; 4 conteos), visible solo con pqr.manage.
+- El sidebar ya marcaba el ítem activo (`routerLinkActive`) — sin cambios.
+- Verificado: properties pageSize=1 → meta.total=4 (no 1); gráfico refleja los
+  conteos reales por estado.

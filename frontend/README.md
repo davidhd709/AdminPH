@@ -68,6 +68,9 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > **Fase 5.6 — Operación: documentos ✅.** Módulo **Documentos**: repositorio de
 > metadatos + URL (crear, nueva versión, abrir, eliminar). Cierra la sección
 > **Operación**. El upload binario real es deuda del backend.
+>
+> **Fase 6.1 — Dashboard real ✅.** KPIs reales (gated por permiso) y gráfico de
+> PQR por estado. Inicia el pulido transversal.
 
 ---
 
@@ -237,6 +240,6 @@ src/app/
 - **Operación** ✅: ~~PQR~~ · ~~comunicados~~ · ~~reservas~~ · ~~portería~~ ·
   ~~asambleas~~ · ~~documentos~~.
 - Pendiente: vistas de **Mi cuenta** (OWNER/RESIDENT), pulido transversal
-  (sidebar activo, breadcrumbs, dashboard real) y tests (vitest).
+  (~~sidebar activo~~ ✅ · ~~dashboard real~~ ✅ · breadcrumbs) y tests (vitest).
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).
