@@ -1666,3 +1666,30 @@ GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
   Reusa ReservationService. Nav "Reservar" repunta a /app/my-reservations.
 - Verificado e2e como owner: listar zonas, crear (PENDING), ver solo las propias,
   review→403, cancelar (CANCELLED).
+
+### Fase 7.4 — Mi cuenta: Comunicados (solo frontend)
+- Sin cambios de backend (el endpoint `GET /announcements` ya scopea a no-staff
+  por las copropiedades del usuario; `POST /:id/read` marca lectura; crear es
+  solo staff). 68 tests vigentes.
+- Módulo `my-account/my-announcements` en `/app/my-announcements` (roleGuard
+  OWNER/RESIDENT): lista de **solo lectura** de los comunicados de su copropiedad
+  (orden por `publishedAt` desc), diálogo de detalle (título, alcance, cuerpo).
+  Al abrir un comunicado se marca como leído (`markAsRead`, silencioso). NO
+  permite crear/editar (eso es del staff). Reusa AnnouncementService y
+  announcement.models. Nav "Comunicados" (sección Mi cuenta) repunta a
+  /app/my-announcements.
+- Verificado e2e: el admin publica un comunicado a la copropiedad del owner; el
+  owner lo ve (1 visible), al abrirlo queda `readAt` presente, y crear→403.
+
+### 🏁🏁🏁 "Mi cuenta" COMPLETA — frontend funcional completo
+Con Comunicados se cierra la sección **Mi cuenta** (OWNER/RESIDENT): Mi unidad
+(cuotas + estado de cuenta/paz y salvo), Mis PQR, Reservar y Comunicados, más
+**Mi perfil** (cualquier rol). Sumado a las 3 secciones de staff —
+**Administración** (5 módulos), **Finanzas** (4) y **Operación** (6)— el frontend
+de los **7 roles** queda funcional: 15 módulos de gestión + 4 vistas de Mi cuenta
++ Mi perfil + dashboard con datos reales + 26 tests vitest. Deudas backend
+abiertas (documentadas, no solicitadas): storage real de archivos (R2/MinIO),
+`GET /properties` para ACCOUNTANT/SECURITY, generación de cuotas desde UI,
+presupuestos + reporte ingresos-egresos en contabilidad. Pulido opcional
+pendiente: breadcrumbs, más specs (componentes/servicios CRUD) y CI de frontend
+(GitHub Actions: build + test:ci + audit).

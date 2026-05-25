@@ -1,0 +1,60 @@
+<app-page-header title="Comunicados" subtitle="Avisos de tu copropiedad." />
+
+<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <p-table
+    [value]="announcements()"
+    [loading]="loading()"
+    [paginator]="announcements().length > 10"
+    [rows]="10"
+    dataKey="id"
+    size="small"
+  >
+    <ng-template #header>
+      <tr>
+        <th>Título</th>
+        <th>Alcance</th>
+        <th>Publicado</th>
+        <th class="w-20 text-right">Acción</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-a>
+      <tr class="cursor-pointer hover:bg-gray-50" (click)="openDetail(a)">
+        <td class="font-medium text-gray-900">{{ a.title }}</td>
+        <td>
+          <span class="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+            {{ scopeLabel(a.scope) }}
+          </span>
+        </td>
+        <td class="text-gray-600">{{ a.publishedAt | date: "medium" }}</td>
+        <td class="text-right">
+          <p-button icon="pi pi-eye" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Ver" (onClick)="openDetail(a)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">
+          <app-empty-state icon="pi pi-megaphone" title="Sin comunicados" message="No hay comunicados para tu copropiedad." />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Diálogo: detalle del comunicado -->
+<p-dialog
+  [visible]="detailVisible()"
+  (visibleChange)="detailVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '40rem' }"
+  [header]="detail() ? detail()!.title : 'Comunicado'"
+>
+  @if (detail(); as a) {
+    <div class="space-y-3 pt-1">
+      <p class="text-xs text-gray-500">{{ scopeLabel(a.scope) }} · {{ a.publishedAt | date: "medium" }}</p>
+      <p class="whitespace-pre-line text-sm text-gray-700">{{ a.body }}</p>
+    </div>
+  }
+</p-dialog>

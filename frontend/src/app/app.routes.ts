@@ -143,6 +143,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import("./features/my-account/my-reservations").then((m) => m.MyReservationsPage),
       },
+      {
+        path: "my-announcements",
+        canActivate: [roleGuard("OWNER", "RESIDENT")],
+        loadComponent: () =>
+          import("./features/my-account/my-announcements").then((m) => m.MyAnnouncementsPage),
+      },
     ],
   },
 

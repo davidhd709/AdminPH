@@ -87,6 +87,15 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 >
 > **Fase 7.3 — Mi cuenta: Reservar ✅.** Reserva de zonas comunes con horario;
 > ve y cancela solo sus reservas (sin aprobar/rechazar).
+>
+> **Fase 7.4 — Mi cuenta: Comunicados ✅.** Lista de solo lectura de los
+> comunicados de su copropiedad; al abrir uno se marca como leído.
+>
+> **🏁 Frontend funcional completo.** Cierra **Mi cuenta** (OWNER/RESIDENT) y, con
+> las 3 secciones de staff (Administración, Finanzas, Operación), el frontend de
+> los 7 roles: 15 módulos de gestión + 4 vistas de Mi cuenta + Mi perfil +
+> dashboard real + 26 tests. Pulido opcional pendiente: breadcrumbs, más specs y
+> CI de frontend.
 
 ---
 
@@ -239,6 +248,7 @@ src/app/
 | `/app/my-unit` | privada + `roleGuard("OWNER", "RESIDENT")` | Mi unidad: cuotas + descargas |
 | `/app/my-pqr` | privada + `roleGuard("OWNER", "RESIDENT")` | Mis PQR (ver/crear/responder) |
 | `/app/my-reservations` | privada + `roleGuard("OWNER", "RESIDENT")` | Reservar zonas comunes |
+| `/app/my-announcements` | privada + `roleGuard("OWNER", "RESIDENT")` | Comunicados (solo lectura, marca leído) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -259,9 +269,12 @@ src/app/
 - **Finanzas** ✅: ~~conceptos~~ · ~~pagos~~ · ~~contabilidad~~ · ~~reportes~~.
 - **Operación** ✅: ~~PQR~~ · ~~comunicados~~ · ~~reservas~~ · ~~portería~~ ·
   ~~asambleas~~ · ~~documentos~~.
-- Pendiente: vistas **owner/resident** de Mi cuenta (mi unidad, estado de
-  cuenta, etc. — requieren usuarios seed y endpoints self-service), pulido transversal
-  (~~sidebar activo~~ ✅ · ~~dashboard real~~ ✅ · breadcrumbs) y ~~tests (vitest)~~ ✅
-  (núcleo cubierto; faltan specs de componentes/servicios CRUD).
-- Tests (vitest) de guards/store/servicios/interceptors.
+- **Mi cuenta** (OWNER/RESIDENT) ✅: ~~mi unidad~~ · ~~mis PQR~~ · ~~reservar~~ ·
+  ~~comunicados~~. Más **Mi perfil** ✅ (cualquier rol). Requirió seed de usuarios
+  owner/resident y `GET /units/mine`.
+- Pulido transversal: ~~sidebar activo~~ ✅ · ~~dashboard real~~ ✅ · breadcrumbs
+  (pendiente, menor).
+- Tests (vitest) ✅ núcleo cubierto (guards/store/servicios/interceptors);
+  faltan specs de componentes/servicios CRUD.
+- CI de frontend (GitHub Actions: build + `test:ci` + `pnpm audit`) — pendiente.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).
