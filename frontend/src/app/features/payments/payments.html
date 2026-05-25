@@ -74,8 +74,8 @@
             <td class="font-medium text-slate-900">{{ fee.concept?.name ?? "—" }}</td>
             <td class="text-slate-600">{{ fee.period }}</td>
             <td class="text-slate-600">{{ fee.dueDate | date: "mediumDate" }}</td>
-            <td class="text-right text-slate-600">{{ +fee.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
-            <td class="text-right text-slate-600">{{ +fee.pendingAmount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
+            <td class="text-right text-slate-600 font-data">{{ +fee.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
+            <td class="text-right text-slate-600 font-data">{{ +fee.pendingAmount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
             <td><app-status-badge [status]="fee.status" /></td>
           </tr>
         </ng-template>
@@ -113,7 +113,7 @@
           <tr>
             <td class="text-slate-600">{{ payment.createdAt | date: "mediumDate" }}</td>
             <td class="font-medium text-slate-900">{{ payment.bankReference }}</td>
-            <td class="text-right text-slate-600">{{ +payment.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
+            <td class="text-right text-slate-600 font-data">{{ +payment.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
             <td><app-status-badge [status]="payment.status" /></td>
             <td class="text-right">
               @if (payment.status === "PENDING_REVIEW") {
