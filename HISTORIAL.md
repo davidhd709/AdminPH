@@ -1558,3 +1558,24 @@ contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).
 PQR (5.1), Comunicados (5.2), Reservas (5.3), Portería (5.4), Asambleas (5.5).
 Pendiente: Documentos (deuda backend: storage real de archivos). Quedan las
 vistas de "Mi cuenta" (OWNER/RESIDENT) y el pulido transversal.
+
+### Fase 5.6 — Documentos (commits backend + frontend)
+- **Backend — fix**: documents.findAll con doble `@Query()` → DocumentQueryDto
+  extiende PaginationDto, un solo `@Query()`. 68 tests verdes.
+- **Frontend**: document.models (entidad `AppDocument` para no chocar con el
+  `Document` del DOM; labels ES de tipo) + document.service. Módulo `documents`:
+  lista lazy con filtros (copropiedad/tipo); crear (tipo, título, descripción,
+  fileUrl); nueva versión (bump de version + fileUrl); abrir (window.open del
+  enlace); eliminar con confirmación. El upload binario real sigue como deuda
+  del backend (Fase 9 / storage R2-MinIO); el frontend gestiona metadatos+URL.
+- Ruta /app/documents con roleGuard(SUPERADMIN, COMPANY_ADMIN, PROPERTY_ADMIN).
+- Verificado e2e: listar, crear (v1), nueva versión (v2), sin fileUrl→400,
+  soft-delete fuera del listado.
+
+### 🏁🏁 Operación COMPLETA del todo + 3 secciones de staff cerradas
+Administración (5 módulos) + Finanzas (4) + Operación (6) = 15 módulos de
+gestión (staff). Pendiente del frontend: vistas de "Mi cuenta" (OWNER/RESIDENT),
+pulido transversal (sidebar activo, breadcrumbs, dashboard con datos reales) y
+tests (vitest). Deuda backend recurrente ya resuelta en todos los listados
+(patrón doble @Query). Deudas backend abiertas: storage real de archivos,
+GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.

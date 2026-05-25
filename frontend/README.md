@@ -64,6 +64,10 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 >
 > **Fase 5.5 — Operación: asambleas ✅.** Módulo **Asambleas** (lista + detalle
 > dedicado): estado, asistencia con quórum, votaciones, votos y escrutinio.
+>
+> **Fase 5.6 — Operación: documentos ✅.** Módulo **Documentos**: repositorio de
+> metadatos + URL (crear, nueva versión, abrir, eliminar). Cierra la sección
+> **Operación**. El upload binario real es deuda del backend.
 
 ---
 
@@ -211,6 +215,7 @@ src/app/
 | `/app/security` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Portería (visitantes, vehículos, mascotas) |
 | `/app/assemblies` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Asambleas (lista + crear) |
 | `/app/assemblies/:id` | privada + mismo guard | Detalle: asistencia, votaciones, votos |
+| `/app/documents` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Documentos (metadatos + URL) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -229,7 +234,9 @@ src/app/
   Cierra la sección **Administración** (empresas → copropiedades → torres →
   unidades → personas).
 - **Finanzas** ✅: ~~conceptos~~ · ~~pagos~~ · ~~contabilidad~~ · ~~reportes~~.
-- **Operación** (en curso): ~~PQR~~ ✅ · ~~comunicados~~ ✅ · ~~reservas~~ ✅ ·
-  ~~portería~~ ✅ · ~~asambleas~~ ✅ · documentos.
+- **Operación** ✅: ~~PQR~~ · ~~comunicados~~ · ~~reservas~~ · ~~portería~~ ·
+  ~~asambleas~~ · ~~documentos~~.
+- Pendiente: vistas de **Mi cuenta** (OWNER/RESIDENT), pulido transversal
+  (sidebar activo, breadcrumbs, dashboard real) y tests (vitest).
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

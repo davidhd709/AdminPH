@@ -45,4 +45,5 @@ export const API = {
     vehicles: "/registry/vehicles",
   },
   assemblies: "/assemblies",
+  documents: "/documents",
 } as const;
