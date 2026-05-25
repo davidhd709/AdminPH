@@ -5,7 +5,6 @@ import { DocumentsService } from "./documents.service";
 import { CreateDocumentDto, DocumentQueryDto, NewDocumentVersionDto } from "./dto/document.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("documents")
@@ -36,12 +35,8 @@ export class DocumentsController {
   }
 
   @Get()
-  findAll(
-    @CurrentUser() user: AuthUser,
-    @Query() query: DocumentQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.documentsService.findAll(user, query, pagination);
+  findAll(@CurrentUser() user: AuthUser, @Query() query: DocumentQueryDto) {
+    return this.documentsService.findAll(user, query, query);
   }
 
   @Get(":id")

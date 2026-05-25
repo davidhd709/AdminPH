@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { DocumentType } from "@prisma/client";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreateDocumentDto {
   @ApiProperty({ description: "Copropiedad a la que pertenece el documento" })
@@ -53,7 +54,7 @@ export class NewDocumentVersionDto {
   description?: string;
 }
 
-export class DocumentQueryDto {
+export class DocumentQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()
