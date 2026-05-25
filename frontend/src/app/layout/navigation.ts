@@ -57,7 +57,7 @@ export const NAVIGATION: NavSection[] = [
     items: [
       { label: "Mi unidad", icon: "pi pi-home", route: "/app/my-unit", permission: "myunit.view" },
       { label: "Estado de cuenta", icon: "pi pi-file", route: "/app/my-unit", permission: "statements.view" },
-      { label: "Mis PQR", icon: "pi pi-comment", route: "/app/pqr", permission: "pqr.submit" },
+      { label: "Mis PQR", icon: "pi pi-comment", route: "/app/my-pqr", permission: "pqr.submit" },
       { label: "Reservar", icon: "pi pi-calendar-plus", route: "/app/reservations", permission: "reservations.book" },
       { label: "Comunicados", icon: "pi pi-megaphone", route: "/app/announcements", permission: "announcements.view" },
     ],

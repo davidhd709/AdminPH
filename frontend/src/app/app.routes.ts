@@ -132,6 +132,11 @@ export const routes: Routes = [
         canActivate: [roleGuard("OWNER", "RESIDENT")],
         loadComponent: () => import("./features/my-account/my-unit").then((m) => m.MyUnitPage),
       },
+      {
+        path: "my-pqr",
+        canActivate: [roleGuard("OWNER", "RESIDENT")],
+        loadComponent: () => import("./features/my-account/my-pqr").then((m) => m.MyPqrPage),
+      },
     ],
   },
 

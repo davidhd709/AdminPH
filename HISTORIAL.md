@@ -1644,3 +1644,14 @@ GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
 - Verificado e2e logueado como owner y resident: /units/mine devuelve su unidad
   (T1-101), estado de cuenta PDF descarga (%PDF), cuotas scoped (total 2).
 - Pendiente de "Mi cuenta": Mis PQR, Reservar y Comunicados (vistas owner).
+
+### Fase 7.2 — Mi cuenta: Mis PQR (solo frontend)
+- Sin cambios de backend (los endpoints PQR ya scopean a no-staff por
+  createdById y permiten crear/responder). 68 tests vigentes.
+- Módulo `my-account/my-pqr` en `/app/my-pqr` (roleGuard OWNER/RESIDENT): lista
+  solo las PQR del usuario, crear desde una de sus unidades (propertyId derivado
+  de la unidad vía /units/mine), detalle con hilo de respuestas (marca "Tú" /
+  "Administración") y responder. NO permite cambiar estado (eso es del staff).
+  Reusa PqrService y pqr.models. Nav "Mis PQR" repunta a /app/my-pqr.
+- Verificado e2e como owner: crear (propertyId derivado), ver solo las propias
+  (scoped), responder, cambiar estado→403; el admin sí ve la PQR y cambia estado.

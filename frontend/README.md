@@ -81,6 +81,9 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > **Fase 7.1 — Mi cuenta: Mi unidad ✅.** Vista OWNER/RESIDENT con sus unidades,
 > cuotas y descarga de estado de cuenta / paz y salvo. Requirió seed de usuarios
 > owner/resident con login y el endpoint `GET /units/mine`.
+>
+> **Fase 7.2 — Mi cuenta: Mis PQR ✅.** El propietario/residente ve solo sus PQR,
+> las crea desde su unidad y responde en el hilo (sin cambiar estado).
 
 ---
 
@@ -231,6 +234,7 @@ src/app/
 | `/app/documents` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Documentos (metadatos + URL) |
 | `/app/profile` | privada (authGuard) | Mi perfil: datos + cambiar contraseña |
 | `/app/my-unit` | privada + `roleGuard("OWNER", "RESIDENT")` | Mi unidad: cuotas + descargas |
+| `/app/my-pqr` | privada + `roleGuard("OWNER", "RESIDENT")` | Mis PQR (ver/crear/responder) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
