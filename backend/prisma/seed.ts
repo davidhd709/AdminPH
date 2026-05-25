@@ -251,6 +251,79 @@ async function main() {
     }
   }
 
+  // ===== Usuarios demo con login para la sección "Mi cuenta" =====
+  // Un propietario y un residente vinculados a una unidad real (con asignación
+  // PropertyUser para acceder a lo scoped). Idempotente.
+  const firstProperty = await prisma.property.findFirst({
+    where: { deletedAt: null },
+    orderBy: { createdAt: "asc" },
+  });
+  if (firstProperty) {
+    const firstUnit = await prisma.unit.findFirst({
+      where: { propertyId: firstProperty.id, deletedAt: null },
+      orderBy: { code: "asc" },
+    });
+    if (firstUnit) {
+      const ownerUser = await prisma.user.upsert({
+        where: { email: "owner@adminph.com" },
+        update: { password, companyId: firstProperty.companyId },
+        create: {
+          email: "owner@adminph.com",
+          password,
+          fullName: "Propietario Demo",
+          document: "OW-0001",
+          globalRole: "OWNER",
+          companyId: firstProperty.companyId,
+          emailVerifiedAt: new Date(),
+        },
+      });
+      const residentUser = await prisma.user.upsert({
+        where: { email: "resident@adminph.com" },
+        update: { password, companyId: firstProperty.companyId },
+        create: {
+          email: "resident@adminph.com",
+          password,
+          fullName: "Residente Demo",
+          document: "RE-0001",
+          globalRole: "RESIDENT",
+          companyId: firstProperty.companyId,
+          emailVerifiedAt: new Date(),
+        },
+      });
+      for (const [u, role] of [
+        [ownerUser, "OWNER"],
+        [residentUser, "RESIDENT"],
+      ] as const) {
+        await prisma.propertyUser.upsert({
+          where: { userId_propertyId: { userId: u.id, propertyId: firstProperty.id } },
+          update: { role },
+          create: { userId: u.id, propertyId: firstProperty.id, role },
+        });
+      }
+      const ownerLink = await prisma.owner.findFirst({
+        where: { unitId: firstUnit.id, userId: ownerUser.id, deletedAt: null },
+      });
+      if (!ownerLink) {
+        await prisma.owner.create({
+          data: { unitId: firstUnit.id, userId: ownerUser.id, isPrimary: true, status: "ACTIVE" },
+        });
+      }
+      const residentLink = await prisma.resident.findFirst({
+        where: { unitId: firstUnit.id, userId: residentUser.id, deletedAt: null },
+      });
+      if (!residentLink) {
+        await prisma.resident.create({
+          data: { unitId: firstUnit.id, userId: residentUser.id, status: "ACTIVE" },
+        });
+      }
+      summary.owners++;
+      summary.residents++;
+      console.log(
+        `Demo Mi cuenta: owner@adminph.com / resident@adminph.com (unidad ${firstUnit.code})`,
+      );
+    }
+  }
+
   console.log("Seed completed:", { superadmin: superadmin.email, ...summary });
   console.log(`Demo password for all users: ${DEMO_PASSWORD}`);
 }

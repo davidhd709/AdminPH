@@ -42,6 +42,15 @@ export class UnitsController {
     return this.unitsService.findAll(user, query.propertyId, query);
   }
 
+  /**
+   * Unidades del usuario actual (propietario/residente). Va ANTES de :id para
+   * no colisionar con el matching de rutas. Cualquier rol autenticado.
+   */
+  @Get("mine")
+  async findMine(@CurrentUser() user: any) {
+    return this.unitsService.findMine(user);
+  }
+
   @Get(":id")
   @Roles("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")
   async findOne(@Param("id") id: string, @CurrentUser() user: any) {
