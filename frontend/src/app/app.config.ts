@@ -12,9 +12,9 @@ import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { providePrimeNG } from "primeng/config";
 import { MessageService } from "primeng/api";
-import Aura from "@primeuix/themes/aura";
 
 import { routes } from "./app.routes";
+import { AdminPHPreset } from "./core/config/theme.preset";
 import { authInterceptor } from "./core/interceptors/auth.interceptor";
 import { refreshInterceptor } from "./core/interceptors/refresh.interceptor";
 import { errorInterceptor } from "./core/interceptors/error.interceptor";
@@ -33,7 +33,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Aura,
+        preset: AdminPHPreset,
         options: {
           // Modo claro fijo en esta fase (sin dark mode).
           darkModeSelector: false,

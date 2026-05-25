@@ -6,6 +6,7 @@ import { TableModule } from "primeng/table";
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
 import { StatusBadge } from "../../shared/components/status-badge/status-badge";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { CurrencyPipe, DatePipe, DecimalPipe } from "@angular/common";
 import { blobErrorMessage, downloadBlob } from "../../core/http/download";
 import { UnitService } from "../units/unit.service";
@@ -30,6 +31,7 @@ import { ReportService } from "../reports/report.service";
     PageHeader,
     EmptyState,
     StatusBadge,
+    SectionCard,
   ],
   templateUrl: "./my-unit.html",
 })

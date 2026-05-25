@@ -1,10 +1,30 @@
 <div class="flex h-screen overflow-hidden bg-[var(--app-bg)]">
+  <!-- Sidebar fijo (escritorio) -->
   <app-sidebar class="hidden md:block" />
 
+  <!-- Sidebar como drawer (móvil) -->
+  @if (menuOpen()) {
+    <div
+      class="fixed inset-0 z-40 bg-slate-900/50 md:hidden"
+      (click)="menuOpen.set(false)"
+      aria-hidden="true"
+    ></div>
+  }
+  <div
+    class="fixed inset-y-0 left-0 z-50 w-64 transform shadow-xl transition-transform duration-200 ease-out md:hidden"
+    [class.translate-x-0]="menuOpen()"
+    [class.-translate-x-full]="!menuOpen()"
+  >
+    <app-sidebar class="block h-full" (navigate)="menuOpen.set(false)" />
+  </div>
+
+  <!-- Columna principal -->
   <div class="flex min-w-0 flex-1 flex-col">
-    <app-topbar />
-    <main class="flex-1 overflow-y-auto p-6">
-      <router-outlet />
+    <app-topbar (menuToggle)="menuOpen.set(true)" />
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6">
+      <div class="mx-auto w-full max-w-7xl">
+        <router-outlet />
+      </div>
     </main>
   </div>
 </div>

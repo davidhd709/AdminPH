@@ -1,8 +1,12 @@
-<app-page-header title="Copropiedades" subtitle="Conjuntos y edificios administrados.">
+<app-page-header
+  title="Copropiedades"
+  subtitle="Conjuntos y edificios administrados."
+  [breadcrumbs]="[{ label: 'Administración' }, { label: 'Copropiedades' }]"
+>
   <p-button label="Nueva copropiedad" icon="pi pi-plus" (onClick)="openCreate()" />
 </app-page-header>
 
-<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+<app-section-card [bodyPadding]="false">
   <p-table
     [value]="properties()"
     [lazy]="true"
@@ -74,7 +78,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
+</app-section-card>
 
 <!-- Diálogo de alta / edición -->
 <p-dialog

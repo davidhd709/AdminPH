@@ -1,9 +1,13 @@
-<app-page-header title="Reportes" subtitle="Documentos descargables (PDF y Excel)." />
+<app-page-header
+  title="Reportes"
+  subtitle="Documentos descargables (PDF y Excel)."
+  [breadcrumbs]="[{ label: 'Finanzas' }, { label: 'Reportes' }]"
+/>
 
 <!-- Selectores -->
-<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-  <div>
-    <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
     <p-select
       [options]="properties()"
       optionLabel="name"
@@ -17,8 +21,8 @@
       [fluid]="true"
     />
   </div>
-  <div>
-    <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad</label>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Unidad</label>
     <p-select
       [options]="units()"
       optionLabel="code"
@@ -33,27 +37,18 @@
       [fluid]="true"
     />
   </div>
-</div>
+</app-action-toolbar>
 
 @if (!selectedPropertyId()) {
-  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <app-section-card>
     <app-empty-state icon="pi pi-chart-bar" title="Selecciona una copropiedad" message="Elige una copropiedad (y una unidad) para descargar reportes." />
-  </div>
+  </app-section-card>
 } @else {
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Por unidad -->
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div class="mb-1 flex items-center gap-2">
-        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-          <i class="pi pi-file-pdf"></i>
-        </span>
-        <h2 class="text-sm font-semibold text-gray-900">Por unidad</h2>
-      </div>
-      <p class="mb-4 text-sm text-gray-500">
-        Documentos PDF de la unidad seleccionada.
-      </p>
+    <app-section-card title="Por unidad" subtitle="Documentos PDF de la unidad seleccionada.">
       @if (!selectedUnitId()) {
-        <p class="text-sm text-gray-400">Selecciona una unidad para habilitar estas descargas.</p>
+        <p class="text-sm text-slate-400">Selecciona una unidad para habilitar estas descargas.</p>
       } @else {
         <div class="flex flex-col gap-2 sm:flex-row">
           <p-button
@@ -72,25 +67,16 @@
           />
         </div>
       }
-    </div>
+    </app-section-card>
 
     <!-- Por copropiedad -->
-    <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div class="mb-1 flex items-center gap-2">
-        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600">
-          <i class="pi pi-file-excel"></i>
-        </span>
-        <h2 class="text-sm font-semibold text-gray-900">Por copropiedad</h2>
-      </div>
-      <p class="mb-4 text-sm text-gray-500">
-        Cartera (estado de cuotas de todas las unidades) en Excel.
-      </p>
+    <app-section-card title="Por copropiedad" subtitle="Cartera (estado de cuotas de todas las unidades) en Excel.">
       <p-button
         label="Descargar cartera"
         icon="pi pi-download"
         [loading]="dlPortfolio()"
         (onClick)="downloadPortfolio()"
       />
-    </div>
+    </app-section-card>
   </div>
 }

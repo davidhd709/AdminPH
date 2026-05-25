@@ -1,37 +1,35 @@
 <header
-  class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6"
+  class="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6"
 >
-  <div class="flex items-center gap-3">
-    <h1 class="text-sm font-medium text-gray-500">Panel de administración</h1>
+  <div class="flex items-center gap-2">
+    <button
+      type="button"
+      class="-ml-1 rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 md:hidden"
+      (click)="menuToggle.emit()"
+      aria-label="Abrir menú"
+    >
+      <i class="pi pi-bars text-lg"></i>
+    </button>
+    <h1 class="text-sm font-medium text-slate-500">Panel de administración</h1>
   </div>
 
-  <div class="flex items-center gap-4">
+  <div class="flex items-center gap-3">
     <button
       type="button"
-      class="relative text-gray-400 transition-colors hover:text-gray-600"
-      aria-label="Notificaciones"
-    >
-      <i class="pi pi-bell text-lg"></i>
-    </button>
-
-    <div class="h-6 w-px bg-gray-200"></div>
-
-    <button
-      type="button"
-      class="flex items-center gap-3"
+      class="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-slate-50"
       (click)="menu.toggle($event)"
       aria-label="Menú de usuario"
     >
       <span
-        class="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700"
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700"
       >
         {{ initials() || "U" }}
       </span>
       <span class="hidden text-left sm:block">
-        <span class="block text-sm font-medium text-gray-900">{{ user()?.fullName }}</span>
-        <span class="block text-xs text-gray-500">{{ roleLabel() }}</span>
+        <span class="block text-sm font-medium text-slate-900">{{ user()?.fullName }}</span>
+        <span class="block text-xs text-slate-500">{{ roleLabel() }}</span>
       </span>
-      <i class="pi pi-angle-down text-xs text-gray-400"></i>
+      <i class="pi pi-angle-down text-xs text-slate-400"></i>
     </button>
     <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
   </div>

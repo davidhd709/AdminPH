@@ -7,6 +7,8 @@ import { MessageService } from "primeng/api";
 
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
+import { SectionCard } from "../../shared/components/section-card/section-card";
+import { ActionToolbar } from "../../shared/components/action-toolbar/action-toolbar";
 import { downloadBlob } from "../../core/http/download";
 import { PropertyService } from "../properties/property.service";
 import { Property } from "../properties/property.models";
@@ -21,7 +23,7 @@ import { ReportService } from "./report.service";
  */
 @Component({
   selector: "app-reports",
-  imports: [FormsModule, ButtonModule, SelectModule, PageHeader, EmptyState],
+  imports: [FormsModule, ButtonModule, SelectModule, PageHeader, EmptyState, SectionCard, ActionToolbar],
   templateUrl: "./reports.html",
 })
 export class Reports implements OnInit {
