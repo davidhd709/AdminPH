@@ -12,6 +12,8 @@ import { MessageService } from "primeng/api";
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
 import { StatusBadge } from "../../shared/components/status-badge/status-badge";
+import { SectionCard } from "../../shared/components/section-card/section-card";
+import { ActionToolbar } from "../../shared/components/action-toolbar/action-toolbar";
 import { AuthStore } from "../../core/auth/auth.store";
 import { DEFAULT_PAGE_SIZE, PageQuery } from "../../core/http/pagination";
 import { PropertyService } from "../properties/property.service";
@@ -50,6 +52,8 @@ import {
     PageHeader,
     EmptyState,
     StatusBadge,
+    SectionCard,
+    ActionToolbar,
   ],
   templateUrl: "./pqr.html",
 })

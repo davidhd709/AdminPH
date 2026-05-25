@@ -72,3 +72,6 @@ minio_data/
 
 # ===== Playwright MCP (artefactos de auditoría, no versionar) =====
 .playwright-mcp/
+
+
+credenciales.md

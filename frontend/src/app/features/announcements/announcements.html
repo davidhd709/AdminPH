@@ -1,26 +1,32 @@
-<app-page-header title="Comunicados" subtitle="Avisos a la copropiedad, una torre o una unidad.">
+<app-page-header
+  title="Comunicados"
+  subtitle="Avisos a la copropiedad, una torre o una unidad."
+  [breadcrumbs]="[{ label: 'Operación' }, { label: 'Comunicados' }]"
+>
   <p-button label="Nuevo comunicado" icon="pi pi-plus" (onClick)="openCreate()" />
 </app-page-header>
 
 <!-- Filtro -->
-<div class="mb-4 max-w-md">
-  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
-  <p-select
-    [options]="properties()"
-    optionLabel="name"
-    optionValue="id"
-    [ngModel]="filterPropertyId()"
-    (onChange)="filterPropertyId.set($event.value); applyFilters()"
-    placeholder="Todas las copropiedades"
-    [showClear]="true"
-    [filter]="true"
-    filterBy="name"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-</div>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
+    <p-select
+      [options]="properties()"
+      optionLabel="name"
+      optionValue="id"
+      [ngModel]="filterPropertyId()"
+      (onChange)="filterPropertyId.set($event.value); applyFilters()"
+      placeholder="Todas las copropiedades"
+      [showClear]="true"
+      [filter]="true"
+      filterBy="name"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+</app-action-toolbar>
 
-<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+<app-section-card [bodyPadding]="false">
   <p-table
     [value]="announcements()"
     [lazy]="true"
@@ -46,13 +52,13 @@
 
     <ng-template #body let-a>
       <tr>
-        <td class="font-medium text-gray-900">{{ a.title }}</td>
+        <td class="font-medium text-slate-900">{{ a.title }}</td>
         <td>
-          <span class="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+          <span class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
             {{ scopeLabel(a.scope) }}
           </span>
         </td>
-        <td class="text-gray-600">{{ a.publishedAt | date: "medium" }}</td>
+        <td class="text-slate-600">{{ a.publishedAt | date: "medium" }}</td>
         <td class="text-right">
           <p-button icon="pi pi-eye" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Ver" (onClick)="openDetail(a)" />
         </td>
@@ -67,7 +73,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
+</app-section-card>
 
 <!-- Diálogo: crear comunicado -->
 <p-dialog
@@ -81,7 +87,7 @@
 >
   <form [formGroup]="createForm" (ngSubmit)="saveCreate()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
       <p-select
         formControlName="propertyId"
         [options]="properties()"
@@ -99,7 +105,7 @@
       }
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Alcance</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Alcance</label>
       <p-select
         formControlName="scope"
         [options]="scopeOptions"
@@ -113,26 +119,26 @@
 
     @if (createScope() === "TOWER") {
       <div class="sm:col-span-2">
-        <label class="mb-1.5 block text-sm font-medium text-gray-700">Torre destino</label>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">Torre destino</label>
         <p-select formControlName="towerId" [options]="dialogTowers()" optionLabel="name" optionValue="id" placeholder="Selecciona la torre" [filter]="true" filterBy="name" styleClass="w-full" [fluid]="true" />
       </div>
     }
     @if (createScope() === "UNIT") {
       <div class="sm:col-span-2">
-        <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad destino</label>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">Unidad destino</label>
         <p-select formControlName="unitId" [options]="dialogUnits()" optionLabel="code" optionValue="id" placeholder="Selecciona la unidad" [filter]="true" filterBy="code" styleClass="w-full" [fluid]="true" />
       </div>
     }
 
     <div class="sm:col-span-2">
-      <label for="title" class="mb-1.5 block text-sm font-medium text-gray-700">Título</label>
+      <label for="title" class="mb-1.5 block text-sm font-medium text-slate-700">Título</label>
       <input pInputText id="title" formControlName="title" placeholder="Corte de agua programado" class="w-full" [fluid]="true" />
       @if (createForm.controls.title.touched && createForm.controls.title.invalid) {
         <small class="mt-1 block text-red-600">El título es obligatorio (máx. 200).</small>
       }
     </div>
     <div class="sm:col-span-2">
-      <label for="body" class="mb-1.5 block text-sm font-medium text-gray-700">Cuerpo</label>
+      <label for="body" class="mb-1.5 block text-sm font-medium text-slate-700">Cuerpo</label>
       <textarea pTextarea id="body" formControlName="body" rows="5" placeholder="Detalle del comunicado…" class="w-full" [fluid]="true"></textarea>
       @if (createForm.controls.body.touched && createForm.controls.body.invalid) {
         <small class="mt-1 block text-red-600">El cuerpo es obligatorio.</small>
@@ -158,10 +164,10 @@
 >
   @if (detail(); as a) {
     <div class="space-y-3 pt-1">
-      <p class="text-xs text-gray-500">
+      <p class="text-xs text-slate-500">
         {{ scopeLabel(a.scope) }} · {{ a.publishedAt | date: "medium" }}
       </p>
-      <p class="whitespace-pre-line text-sm text-gray-700">{{ a.body }}</p>
+      <p class="whitespace-pre-line text-sm text-slate-700">{{ a.body }}</p>
     </div>
   }
 </p-dialog>
