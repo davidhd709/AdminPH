@@ -11,6 +11,8 @@ import {
 import { AuthStore } from "../../core/auth/auth.store";
 import { roleHasPermission } from "../../core/auth/permissions";
 import { PageHeader } from "../../shared/components/page-header/page-header";
+import { KpiCard, KpiTone } from "../../shared/components/kpi-card/kpi-card";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { PropertyService } from "../properties/property.service";
 import { PqrService } from "../pqr/pqr.service";
 import { PaymentService } from "../payments/payment.service";
@@ -20,6 +22,7 @@ interface StatCard {
   label: string;
   icon: string;
   value: number | null;
+  tone: KpiTone;
 }
 
 interface BarChartOptions {
@@ -40,7 +43,7 @@ interface BarChartOptions {
  */
 @Component({
   selector: "app-dashboard",
-  imports: [NgApexchartsModule, PageHeader],
+  imports: [NgApexchartsModule, PageHeader, KpiCard, SectionCard],
   templateUrl: "./dashboard.html",
 })
 export class Dashboard implements OnInit {
@@ -69,16 +72,16 @@ export class Dashboard implements OnInit {
   readonly stats = computed<StatCard[]>(() => {
     const cards: StatCard[] = [];
     if (this.canProperties()) {
-      cards.push({ label: "Copropiedades", icon: "pi pi-building-columns", value: this.properties() });
+      cards.push({ label: "Copropiedades", icon: "pi pi-building-columns", value: this.properties(), tone: "blue" });
     }
     if (this.can("pqr.manage")) {
-      cards.push({ label: "PQR abiertas", icon: "pi pi-comments", value: this.openPqr() });
+      cards.push({ label: "PQR abiertas", icon: "pi pi-comments", value: this.openPqr(), tone: "amber" });
     }
     if (this.can("payments.manage")) {
-      cards.push({ label: "Pagos en revisión", icon: "pi pi-credit-card", value: this.pendingPayments() });
+      cards.push({ label: "Pagos en revisión", icon: "pi pi-credit-card", value: this.pendingPayments(), tone: "sky" });
     }
     if (this.can("reservations.manage")) {
-      cards.push({ label: "Reservas pendientes", icon: "pi pi-calendar", value: this.pendingReservations() });
+      cards.push({ label: "Reservas pendientes", icon: "pi pi-calendar", value: this.pendingReservations(), tone: "green" });
     }
     return cards;
   });
@@ -143,7 +146,7 @@ export class Dashboard implements OnInit {
     this.chart.set({
       series: [{ name: "PQR", data }],
       chart: { type: "bar", height: 300, toolbar: { show: false }, fontFamily: "inherit" },
-      colors: ["#4f46e5"],
+      colors: ["#2563eb"],
       plotOptions: { bar: { borderRadius: 6, columnWidth: "45%", distributed: false } },
       dataLabels: { enabled: true },
       fill: { opacity: 1 },

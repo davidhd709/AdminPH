@@ -11,6 +11,7 @@ import { ConfirmationService, MessageService } from "primeng/api";
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
 import { StatusBadge } from "../../shared/components/status-badge/status-badge";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { DEFAULT_PAGE_SIZE, PageQuery } from "../../core/http/pagination";
 import { CompanyService } from "./company.service";
 import { Company } from "./company.models";
@@ -36,6 +37,7 @@ import { Company } from "./company.models";
     PageHeader,
     EmptyState,
     StatusBadge,
+    SectionCard,
   ],
   providers: [ConfirmationService],
   templateUrl: "./companies.html",

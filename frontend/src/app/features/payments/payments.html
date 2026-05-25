@@ -1,9 +1,13 @@
-<app-page-header title="Pagos" subtitle="Cuotas y pagos de cada unidad." />
+<app-page-header
+  title="Pagos"
+  subtitle="Cuotas y pagos de cada unidad."
+  [breadcrumbs]="[{ label: 'Finanzas' }, { label: 'Pagos' }]"
+/>
 
 <!-- Selectores: copropiedad + unidad -->
-<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-  <div>
-    <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
     <p-select
       [options]="properties()"
       optionLabel="name"
@@ -17,8 +21,8 @@
       [fluid]="true"
     />
   </div>
-  <div>
-    <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad</label>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Unidad</label>
     <p-select
       [options]="units()"
       optionLabel="code"
@@ -33,113 +37,109 @@
       [fluid]="true"
     />
   </div>
-</div>
+</app-action-toolbar>
 
 @if (!selectedUnitId()) {
-  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <app-section-card>
     <app-empty-state
       icon="pi pi-credit-card"
       title="Selecciona una unidad"
       message="Elige una copropiedad y una unidad para ver sus cuotas y pagos."
     />
-  </div>
+  </app-section-card>
 } @else {
-  <!-- Cuotas de la unidad -->
-  <div class="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-    <div class="border-b border-gray-100 px-4 py-3">
-      <h2 class="text-sm font-semibold text-gray-900">Cuotas de la unidad</h2>
-    </div>
-    <p-table
-      [value]="fees()"
-      [loading]="loadingFees()"
-      [paginator]="fees().length > 10"
-      [rows]="10"
-      dataKey="id"
-      size="small"
-    >
-      <ng-template #header>
-        <tr>
-          <th>Concepto</th>
-          <th>Periodo</th>
-          <th>Vence</th>
-          <th class="text-right">Monto</th>
-          <th class="text-right">Pendiente</th>
-          <th>Estado</th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-fee>
-        <tr>
-          <td class="font-medium text-gray-900">{{ fee.concept?.name ?? "—" }}</td>
-          <td class="text-gray-600">{{ fee.period }}</td>
-          <td class="text-gray-600">{{ fee.dueDate | date: "mediumDate" }}</td>
-          <td class="text-right text-gray-600">{{ +fee.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
-          <td class="text-right text-gray-600">{{ +fee.pendingAmount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
-          <td><app-status-badge [status]="fee.status" /></td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="6">
-            <app-empty-state icon="pi pi-wallet" title="Sin cuotas" message="Esta unidad no tiene cuotas registradas." />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
+  <div class="space-y-6">
+    <!-- Cuotas de la unidad -->
+    <app-section-card title="Cuotas de la unidad" [bodyPadding]="false">
+      <p-table
+        [value]="fees()"
+        [loading]="loadingFees()"
+        [paginator]="fees().length > 10"
+        [rows]="10"
+        dataKey="id"
+        size="small"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Concepto</th>
+            <th>Periodo</th>
+            <th>Vence</th>
+            <th class="text-right">Monto</th>
+            <th class="text-right">Pendiente</th>
+            <th>Estado</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-fee>
+          <tr>
+            <td class="font-medium text-slate-900">{{ fee.concept?.name ?? "—" }}</td>
+            <td class="text-slate-600">{{ fee.period }}</td>
+            <td class="text-slate-600">{{ fee.dueDate | date: "mediumDate" }}</td>
+            <td class="text-right text-slate-600">{{ +fee.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
+            <td class="text-right text-slate-600">{{ +fee.pendingAmount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
+            <td><app-status-badge [status]="fee.status" /></td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6">
+              <app-empty-state icon="pi pi-wallet" title="Sin cuotas" message="Esta unidad no tiene cuotas registradas." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </app-section-card>
 
-  <!-- Pagos de la unidad -->
-  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-    <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-      <h2 class="text-sm font-semibold text-gray-900">Pagos de la unidad</h2>
-      <p-button label="Registrar pago" icon="pi pi-plus" size="small" (onClick)="openRegister()" />
-    </div>
-    <p-table
-      [value]="payments()"
-      [loading]="loadingPayments()"
-      [paginator]="payments().length > 10"
-      [rows]="10"
-      dataKey="id"
-      size="small"
-    >
-      <ng-template #header>
-        <tr>
-          <th>Fecha</th>
-          <th>Referencia</th>
-          <th class="text-right">Monto</th>
-          <th>Estado</th>
-          <th class="w-40 text-right">Acciones</th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-payment>
-        <tr>
-          <td class="text-gray-600">{{ payment.createdAt | date: "mediumDate" }}</td>
-          <td class="font-medium text-gray-900">{{ payment.bankReference }}</td>
-          <td class="text-right text-gray-600">{{ +payment.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
-          <td><app-status-badge [status]="payment.status" /></td>
-          <td class="text-right">
-            @if (payment.status === "PENDING_REVIEW") {
-              <p-button label="Aprobar" icon="pi pi-check" severity="success" [text]="true" size="small" (onClick)="confirmApprove(payment)" />
-              <p-button label="Rechazar" icon="pi pi-times" severity="danger" [text]="true" size="small" (onClick)="openReject(payment)" />
-            } @else if (payment.status === "REJECTED" && payment.rejectionReason) {
-              <span class="text-xs text-gray-500" [title]="payment.rejectionReason">{{ payment.rejectionReason }}</span>
-            } @else {
-              <span class="text-gray-300">—</span>
-            }
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="5">
-            <app-empty-state
-              icon="pi pi-credit-card"
-              title="Sin pagos"
-              message="Esta unidad no tiene pagos. Registra el primero con “Registrar pago”."
-            />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+    <!-- Pagos de la unidad -->
+    <app-section-card title="Pagos de la unidad" [bodyPadding]="false">
+      <p-button card-actions label="Registrar pago" icon="pi pi-plus" size="small" (onClick)="openRegister()" />
+      <p-table
+        [value]="payments()"
+        [loading]="loadingPayments()"
+        [paginator]="payments().length > 10"
+        [rows]="10"
+        dataKey="id"
+        size="small"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Fecha</th>
+            <th>Referencia</th>
+            <th class="text-right">Monto</th>
+            <th>Estado</th>
+            <th class="w-40 text-right">Acciones</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-payment>
+          <tr>
+            <td class="text-slate-600">{{ payment.createdAt | date: "mediumDate" }}</td>
+            <td class="font-medium text-slate-900">{{ payment.bankReference }}</td>
+            <td class="text-right text-slate-600">{{ +payment.amount | currency: "COP" : "symbol-narrow" : "1.0-0" }}</td>
+            <td><app-status-badge [status]="payment.status" /></td>
+            <td class="text-right">
+              @if (payment.status === "PENDING_REVIEW") {
+                <p-button label="Aprobar" icon="pi pi-check" severity="success" [text]="true" size="small" (onClick)="confirmApprove(payment)" />
+                <p-button label="Rechazar" icon="pi pi-times" severity="danger" [text]="true" size="small" (onClick)="openReject(payment)" />
+              } @else if (payment.status === "REJECTED" && payment.rejectionReason) {
+                <span class="text-xs text-slate-500" [title]="payment.rejectionReason">{{ payment.rejectionReason }}</span>
+              } @else {
+                <span class="text-slate-300">—</span>
+              }
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5">
+              <app-empty-state
+                icon="pi pi-credit-card"
+                title="Sin pagos"
+                message="Esta unidad no tiene pagos. Registra el primero con “Registrar pago”."
+              />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </app-section-card>
   </div>
 }
 
@@ -155,21 +155,21 @@
 >
   <form [formGroup]="registerForm" (ngSubmit)="savePayment()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
     <div>
-      <label for="amount" class="mb-1.5 block text-sm font-medium text-gray-700">Monto</label>
+      <label for="amount" class="mb-1.5 block text-sm font-medium text-slate-700">Monto</label>
       <p-inputNumber inputId="amount" formControlName="amount" mode="currency" currency="COP" [minFractionDigits]="0" [maxFractionDigits]="0" [min]="0" styleClass="w-full" [fluid]="true" />
       @if (registerForm.controls.amount.touched && registerForm.controls.amount.invalid) {
         <small class="mt-1 block text-red-600">Ingresa un monto mayor a 0.</small>
       }
     </div>
     <div>
-      <label for="bankReference" class="mb-1.5 block text-sm font-medium text-gray-700">Referencia bancaria</label>
+      <label for="bankReference" class="mb-1.5 block text-sm font-medium text-slate-700">Referencia bancaria</label>
       <input pInputText id="bankReference" formControlName="bankReference" placeholder="REF-2026-0001" class="w-full" [fluid]="true" />
       @if (registerForm.controls.bankReference.touched && registerForm.controls.bankReference.invalid) {
         <small class="mt-1 block text-red-600">La referencia es obligatoria.</small>
       }
     </div>
     <div class="sm:col-span-2">
-      <label for="receiptUrl" class="mb-1.5 block text-sm font-medium text-gray-700">URL del comprobante</label>
+      <label for="receiptUrl" class="mb-1.5 block text-sm font-medium text-slate-700">URL del comprobante</label>
       <input pInputText id="receiptUrl" formControlName="receiptUrl" placeholder="https://…/recibo.pdf" class="w-full" [fluid]="true" />
       @if (registerForm.controls.receiptUrl.touched && registerForm.controls.receiptUrl.invalid) {
         <small class="mt-1 block text-red-600">El comprobante es obligatorio.</small>
@@ -195,7 +195,7 @@
 >
   <form [formGroup]="rejectForm" (ngSubmit)="submitReject()" class="space-y-5 pt-2">
     <div>
-      <label for="rejectionReason" class="mb-1.5 block text-sm font-medium text-gray-700">Motivo del rechazo</label>
+      <label for="rejectionReason" class="mb-1.5 block text-sm font-medium text-slate-700">Motivo del rechazo</label>
       <textarea pTextarea id="rejectionReason" formControlName="rejectionReason" rows="3" placeholder="Comprobante ilegible…" class="w-full" [fluid]="true"></textarea>
       @if (rejectForm.controls.rejectionReason.touched && rejectForm.controls.rejectionReason.invalid) {
         <small class="mt-1 block text-red-600">El motivo es obligatorio.</small>

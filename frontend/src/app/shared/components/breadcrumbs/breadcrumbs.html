@@ -6,8 +6,10 @@
     <i class="pi pi-angle-right text-xs text-slate-300"></i>
     @if (crumb.link) {
       <a [routerLink]="crumb.link" class="transition-colors hover:text-slate-700">{{ crumb.label }}</a>
-    } @else {
+    } @else if (crumb.current) {
       <span class="font-medium text-slate-700" aria-current="page">{{ crumb.label }}</span>
+    } @else {
+      <span>{{ crumb.label }}</span>
     }
   }
 </nav>
