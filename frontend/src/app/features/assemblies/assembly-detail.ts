@@ -13,6 +13,7 @@ import { MessageService } from "primeng/api";
 import { PageHeader } from "../../shared/components/page-header/page-header";
 import { EmptyState } from "../../shared/components/empty-state/empty-state";
 import { StatusBadge } from "../../shared/components/status-badge/status-badge";
+import { SectionCard } from "../../shared/components/section-card/section-card";
 import { UnitService } from "../units/unit.service";
 import { Unit } from "../units/unit.models";
 import { AssemblyService } from "./assembly.service";
@@ -51,6 +52,7 @@ import {
     PageHeader,
     EmptyState,
     StatusBadge,
+    SectionCard,
   ],
   templateUrl: "./assembly-detail.html",
 })

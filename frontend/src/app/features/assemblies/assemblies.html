@@ -1,47 +1,57 @@
-<app-page-header title="Asambleas" subtitle="Convocatorias, asistencia y votaciones.">
+<app-page-header
+  title="Asambleas"
+  subtitle="Convocatorias, asistencia y votaciones."
+  [breadcrumbs]="[{ label: 'Operación' }, { label: 'Asambleas' }]"
+>
   <p-button label="Nueva asamblea" icon="pi pi-plus" (onClick)="openCreate()" />
 </app-page-header>
 
 <!-- Filtros -->
-<div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-  <p-select
-    [options]="properties()"
-    optionLabel="name"
-    optionValue="id"
-    [ngModel]="filterPropertyId()"
-    (onChange)="filterPropertyId.set($event.value); applyFilters()"
-    placeholder="Todas las copropiedades"
-    [showClear]="true"
-    [filter]="true"
-    filterBy="name"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-  <p-select
-    [options]="statusOptions"
-    optionLabel="label"
-    optionValue="value"
-    [ngModel]="filterStatus()"
-    (onChange)="filterStatus.set($event.value); applyFilters()"
-    placeholder="Todos los estados"
-    [showClear]="true"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-  <p-select
-    [options]="typeOptions"
-    optionLabel="label"
-    optionValue="value"
-    [ngModel]="filterType()"
-    (onChange)="filterType.set($event.value); applyFilters()"
-    placeholder="Todos los tipos"
-    [showClear]="true"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-</div>
+<app-action-toolbar>
+  <div class="w-full sm:w-64">
+    <p-select
+      [options]="properties()"
+      optionLabel="name"
+      optionValue="id"
+      [ngModel]="filterPropertyId()"
+      (onChange)="filterPropertyId.set($event.value); applyFilters()"
+      placeholder="Todas las copropiedades"
+      [showClear]="true"
+      [filter]="true"
+      filterBy="name"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+  <div class="w-full sm:w-52">
+    <p-select
+      [options]="statusOptions"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="filterStatus()"
+      (onChange)="filterStatus.set($event.value); applyFilters()"
+      placeholder="Todos los estados"
+      [showClear]="true"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+  <div class="w-full sm:w-52">
+    <p-select
+      [options]="typeOptions"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="filterType()"
+      (onChange)="filterType.set($event.value); applyFilters()"
+      placeholder="Todos los tipos"
+      [showClear]="true"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+</app-action-toolbar>
 
-<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+<app-section-card [bodyPadding]="false">
   <p-table
     [value]="assemblies()"
     [lazy]="true"
@@ -68,9 +78,9 @@
 
     <ng-template #body let-a>
       <tr>
-        <td class="font-medium text-gray-900">{{ a.title }}</td>
-        <td class="text-gray-600">{{ typeLabel(a.type) }}</td>
-        <td class="text-gray-600">{{ a.scheduledAt | date: "medium" }}</td>
+        <td class="font-medium text-slate-900">{{ a.title }}</td>
+        <td class="text-slate-600">{{ typeLabel(a.type) }}</td>
+        <td class="text-slate-600">{{ a.scheduledAt | date: "medium" }}</td>
         <td><app-status-badge [status]="a.status" /></td>
         <td class="text-right">
           <p-button icon="pi pi-eye" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Ver" (onClick)="openDetail(a)" />
@@ -86,7 +96,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
+</app-section-card>
 
 <!-- Diálogo: crear asamblea -->
 <p-dialog
@@ -100,36 +110,36 @@
 >
   <form [formGroup]="createForm" (ngSubmit)="saveCreate()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
     <div class="sm:col-span-2">
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
       <p-select formControlName="propertyId" [options]="properties()" optionLabel="name" optionValue="id" placeholder="Selecciona" [filter]="true" filterBy="name" styleClass="w-full" [fluid]="true" />
       @if (createForm.controls.propertyId.touched && createForm.controls.propertyId.invalid) {
         <small class="mt-1 block text-red-600">Selecciona la copropiedad.</small>
       }
     </div>
     <div class="sm:col-span-2">
-      <label for="title" class="mb-1.5 block text-sm font-medium text-gray-700">Título</label>
+      <label for="title" class="mb-1.5 block text-sm font-medium text-slate-700">Título</label>
       <input pInputText id="title" formControlName="title" placeholder="Asamblea ordinaria 2026" class="w-full" [fluid]="true" />
       @if (createForm.controls.title.touched && createForm.controls.title.invalid) {
         <small class="mt-1 block text-red-600">El título es obligatorio.</small>
       }
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Tipo</label>
       <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">
-        Quórum % <span class="text-gray-400">(opcional)</span>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+        Quórum % <span class="text-slate-400">(opcional)</span>
       </label>
       <p-inputNumber formControlName="quorumPercent" [min]="0" [max]="100" suffix=" %" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="sm:col-span-2">
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Fecha y hora</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Fecha y hora</label>
       <p-datepicker formControlName="scheduledAt" [showTime]="true" hourFormat="24" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="sm:col-span-2">
-      <label for="agenda" class="mb-1.5 block text-sm font-medium text-gray-700">
-        Orden del día <span class="text-gray-400">(opcional)</span>
+      <label for="agenda" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Orden del día <span class="text-slate-400">(opcional)</span>
       </label>
       <textarea pTextarea id="agenda" formControlName="agenda" rows="3" placeholder="Puntos a tratar…" class="w-full" [fluid]="true"></textarea>
     </div>

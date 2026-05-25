@@ -1,36 +1,44 @@
-<app-page-header title="Documentos" subtitle="Reglamentos, actas, contratos y más por copropiedad.">
+<app-page-header
+  title="Documentos"
+  subtitle="Reglamentos, actas, contratos y más por copropiedad."
+  [breadcrumbs]="[{ label: 'Operación' }, { label: 'Documentos' }]"
+>
   <p-button label="Nuevo documento" icon="pi pi-plus" (onClick)="openCreate()" />
 </app-page-header>
 
 <!-- Filtros -->
-<div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-  <p-select
-    [options]="properties()"
-    optionLabel="name"
-    optionValue="id"
-    [ngModel]="filterPropertyId()"
-    (onChange)="filterPropertyId.set($event.value); applyFilters()"
-    placeholder="Todas las copropiedades"
-    [showClear]="true"
-    [filter]="true"
-    filterBy="name"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-  <p-select
-    [options]="typeOptions"
-    optionLabel="label"
-    optionValue="value"
-    [ngModel]="filterType()"
-    (onChange)="filterType.set($event.value); applyFilters()"
-    placeholder="Todos los tipos"
-    [showClear]="true"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-</div>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <p-select
+      [options]="properties()"
+      optionLabel="name"
+      optionValue="id"
+      [ngModel]="filterPropertyId()"
+      (onChange)="filterPropertyId.set($event.value); applyFilters()"
+      placeholder="Todas las copropiedades"
+      [showClear]="true"
+      [filter]="true"
+      filterBy="name"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+  <div class="w-full sm:w-64">
+    <p-select
+      [options]="typeOptions"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="filterType()"
+      (onChange)="filterType.set($event.value); applyFilters()"
+      placeholder="Todos los tipos"
+      [showClear]="true"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+</app-action-toolbar>
 
-<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+<app-section-card [bodyPadding]="false">
   <p-table
     [value]="documents()"
     [lazy]="true"
@@ -57,15 +65,15 @@
 
     <ng-template #body let-doc>
       <tr>
-        <td class="font-medium text-gray-900">
+        <td class="font-medium text-slate-900">
           {{ doc.title }}
           @if (doc.description) {
-            <span class="block text-xs font-normal text-gray-500">{{ doc.description }}</span>
+            <span class="block text-xs font-normal text-slate-500">{{ doc.description }}</span>
           }
         </td>
-        <td class="text-gray-600">{{ typeLabel(doc.type) }}</td>
-        <td class="text-right text-gray-600">v{{ doc.version }}</td>
-        <td class="text-gray-600">{{ doc.updatedAt | date: "mediumDate" }}</td>
+        <td class="text-slate-600">{{ typeLabel(doc.type) }}</td>
+        <td class="text-right text-slate-600">v{{ doc.version }}</td>
+        <td class="text-slate-600">{{ doc.updatedAt | date: "mediumDate" }}</td>
         <td class="text-right">
           <p-button icon="pi pi-external-link" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Abrir" (onClick)="openFile(doc)" />
           <p-button icon="pi pi-upload" severity="secondary" [text]="true" [rounded]="true" ariaLabel="Nueva versión" (onClick)="openVersion(doc)" />
@@ -82,7 +90,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
+</app-section-card>
 
 <!-- Diálogo: crear documento -->
 <p-dialog
@@ -96,33 +104,33 @@
 >
   <form [formGroup]="createForm" (ngSubmit)="saveCreate()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
       <p-select formControlName="propertyId" [options]="properties()" optionLabel="name" optionValue="id" placeholder="Selecciona" [filter]="true" filterBy="name" styleClass="w-full" [fluid]="true" />
       @if (createForm.controls.propertyId.touched && createForm.controls.propertyId.invalid) {
         <small class="mt-1 block text-red-600">Selecciona la copropiedad.</small>
       }
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Tipo</label>
       <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="sm:col-span-2">
-      <label for="title" class="mb-1.5 block text-sm font-medium text-gray-700">Título</label>
+      <label for="title" class="mb-1.5 block text-sm font-medium text-slate-700">Título</label>
       <input pInputText id="title" formControlName="title" placeholder="Reglamento de Propiedad Horizontal" class="w-full" [fluid]="true" />
       @if (createForm.controls.title.touched && createForm.controls.title.invalid) {
         <small class="mt-1 block text-red-600">El título es obligatorio.</small>
       }
     </div>
     <div class="sm:col-span-2">
-      <label for="fileUrl" class="mb-1.5 block text-sm font-medium text-gray-700">URL del archivo</label>
+      <label for="fileUrl" class="mb-1.5 block text-sm font-medium text-slate-700">URL del archivo</label>
       <input pInputText id="fileUrl" formControlName="fileUrl" placeholder="https://…/documento.pdf" class="w-full" [fluid]="true" />
       @if (createForm.controls.fileUrl.touched && createForm.controls.fileUrl.invalid) {
         <small class="mt-1 block text-red-600">La URL del archivo es obligatoria.</small>
       }
     </div>
     <div class="sm:col-span-2">
-      <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700">
-        Descripción <span class="text-gray-400">(opcional)</span>
+      <label for="description" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Descripción <span class="text-slate-400">(opcional)</span>
       </label>
       <textarea pTextarea id="description" formControlName="description" rows="2" placeholder="Notas del documento…" class="w-full" [fluid]="true"></textarea>
     </div>
@@ -146,15 +154,15 @@
 >
   <form [formGroup]="versionForm" (ngSubmit)="saveVersion()" class="space-y-5 pt-2">
     <div>
-      <label for="vFileUrl" class="mb-1.5 block text-sm font-medium text-gray-700">URL del nuevo archivo</label>
+      <label for="vFileUrl" class="mb-1.5 block text-sm font-medium text-slate-700">URL del nuevo archivo</label>
       <input pInputText id="vFileUrl" formControlName="fileUrl" placeholder="https://…/documento-v2.pdf" class="w-full" [fluid]="true" />
       @if (versionForm.controls.fileUrl.touched && versionForm.controls.fileUrl.invalid) {
         <small class="mt-1 block text-red-600">La URL del archivo es obligatoria.</small>
       }
     </div>
     <div>
-      <label for="vDescription" class="mb-1.5 block text-sm font-medium text-gray-700">
-        Descripción <span class="text-gray-400">(opcional)</span>
+      <label for="vDescription" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Descripción <span class="text-slate-400">(opcional)</span>
       </label>
       <textarea pTextarea id="vDescription" formControlName="description" rows="2" placeholder="Cambios de esta versión…" class="w-full" [fluid]="true"></textarea>
     </div>
