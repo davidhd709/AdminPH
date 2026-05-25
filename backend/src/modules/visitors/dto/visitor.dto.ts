@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { VisitorType } from "@prisma/client";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreateVisitorDto {
   @ApiProperty({ description: "Copropiedad donde se registra el ingreso" })
@@ -40,7 +41,7 @@ export class CreateVisitorDto {
   notes?: string;
 }
 
-export class VisitorQueryDto {
+export class VisitorQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()

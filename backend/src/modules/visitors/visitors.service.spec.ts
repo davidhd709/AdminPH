@@ -89,9 +89,8 @@ describe("VisitorsService", () => {
 
   describe("findAll", () => {
     it("throws Forbidden for an OWNER", async () => {
-      await expect(
-        service.findAll(owner, {}, { page: 1, pageSize: 20, sortOrder: "desc" }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      const query = { page: 1, pageSize: 20, sortOrder: "desc" as const };
+      await expect(service.findAll(owner, query, query)).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 

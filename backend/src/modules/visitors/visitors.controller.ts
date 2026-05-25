@@ -5,7 +5,6 @@ import { VisitorsService } from "./visitors.service";
 import { CreateVisitorDto, VisitorQueryDto } from "./dto/visitor.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("visitors")
@@ -35,12 +34,8 @@ export class VisitorsController {
   }
 
   @Get()
-  findAll(
-    @CurrentUser() user: AuthUser,
-    @Query() query: VisitorQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.visitorsService.findAll(user, query, pagination);
+  findAll(@CurrentUser() user: AuthUser, @Query() query: VisitorQueryDto) {
+    return this.visitorsService.findAll(user, query, query);
   }
 
   @Get(":id")

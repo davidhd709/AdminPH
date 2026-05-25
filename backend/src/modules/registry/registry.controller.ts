@@ -4,7 +4,6 @@ import { Request as ExpressRequest } from "express";
 import { RegistryService } from "./registry.service";
 import { CreatePetDto, CreateVehicleDto, RegistryQueryDto } from "./dto/registry.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("registry")
@@ -25,12 +24,8 @@ export class RegistryController {
   }
 
   @Get("pets")
-  listPets(
-    @CurrentUser() user: AuthUser,
-    @Query() query: RegistryQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.registryService.listPets(user, query, pagination);
+  listPets(@CurrentUser() user: AuthUser, @Query() query: RegistryQueryDto) {
+    return this.registryService.listPets(user, query, query);
   }
 
   @Delete("pets/:id")
@@ -54,12 +49,8 @@ export class RegistryController {
   }
 
   @Get("vehicles")
-  listVehicles(
-    @CurrentUser() user: AuthUser,
-    @Query() query: RegistryQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.registryService.listVehicles(user, query, pagination);
+  listVehicles(@CurrentUser() user: AuthUser, @Query() query: RegistryQueryDto) {
+    return this.registryService.listVehicles(user, query, query);
   }
 
   @Delete("vehicles/:id")

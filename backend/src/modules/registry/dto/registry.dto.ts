@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { VehicleType } from "@prisma/client";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreatePetDto {
   @ApiProperty({ description: "Unidad a la que pertenece la mascota" })
@@ -71,7 +72,7 @@ export class CreateVehicleDto {
   parkingSpot?: string;
 }
 
-export class RegistryQueryDto {
+export class RegistryQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por unidad" })
   @IsOptional()
   @IsUUID()
