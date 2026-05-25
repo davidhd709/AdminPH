@@ -11,6 +11,7 @@ import { API } from "../config/api.config";
  * Manejo centralizado de errores HTTP:
  *  - 401: limpia sesión y manda a /login (salvo en el propio login).
  *  - 403: toast de acceso denegado.
+ *  - 429: toast "demasiadas solicitudes" (rate limit). NO cierra sesión.
  *  - 5xx / red: toast genérico.
  * Muestra mensajes con PrimeNG MessageService (toast global).
  *
@@ -40,6 +41,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           severity: "warn",
           summary: "Acceso denegado",
           detail: "No tienes permisos para esta acción.",
+        });
+      } else if (error.status === 429) {
+        // Rate limit del backend: NO se cierra sesión ni se redirige a /login;
+        // solo se informa al usuario para que reintente en unos segundos.
+        messages.add({
+          severity: "warn",
+          summary: "Demasiadas solicitudes",
+          detail: "Espera unos segundos e intenta nuevamente.",
         });
       } else if (error.status === 0) {
         messages.add({

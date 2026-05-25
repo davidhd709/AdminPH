@@ -76,3 +76,40 @@ jobs:
           name: coverage
           path: backend/coverage/
           retention-days: 7
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Unit tests
+        run: pnpm run test:ci
+
+      - name: Audit (no bloqueante)
+        # Informativo: no debe frenar el PR por vulnerabilidades transitivas
+        # de devDependencies. Revisar el log si reporta high/critical.
+        run: pnpm audit --audit-level high
+        continue-on-error: true
