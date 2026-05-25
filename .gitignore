@@ -69,3 +69,6 @@ minio_data/
 
 # ===== Misc =====
 .claude/
+
+# ===== Playwright MCP (artefactos de auditoría, no versionar) =====
+.playwright-mcp/
