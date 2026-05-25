@@ -1,4 +1,4 @@
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, output } from "@angular/core";
 import { Router } from "@angular/router";
 import { ButtonModule } from "primeng/button";
 import { MenuModule } from "primeng/menu";
@@ -25,6 +25,9 @@ export class Topbar {
   private readonly store = inject(AuthStore);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+
+  /** Se emite al pulsar el botón hamburguesa (abre el drawer en móvil). */
+  readonly menuToggle = output<void>();
 
   readonly user = this.store.user;
   readonly roleLabel = computed(() => {
