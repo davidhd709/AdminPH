@@ -25,7 +25,7 @@ describe("KpiCard", () => {
     ref.componentRef.setInput("label", "X");
     ref.componentRef.setInput("value", 1);
     ref.detectChanges();
-    expect(ref.componentInstance.toneClasses()).toContain("text-blue-600");
+    expect(ref.componentInstance.toneClasses()).toContain("text-blue-800");
   });
 
   it("aplica las clases del tono indicado", () => {

@@ -8,13 +8,26 @@
 /* PrimeIcons */
 @import "primeicons/primeicons.css";
 
+/* Tipografía del design system (AdminPH / Stitch): self-hosted, sin CDN.
+   Inter para texto; JetBrains Mono para cifras (moneda/datos). */
+/* Variable fonts (todos los subsets via unicode-range: el navegador solo
+   descarga el subset latin en runtime). */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
 :root {
-  /* Paleta base (Tailwind slate) — superficies tipo SaaS B2B. */
+  /* Paleta base (design system AdminPH / Stitch) — superficies SaaS B2B. */
   --app-bg: #f8fafc; /* slate-50 */
   --app-surface: #ffffff;
   --app-border: #e2e8f0; /* slate-200 */
   --app-text: #0f172a; /* slate-900 */
   --app-muted: #64748b; /* slate-500 */
+  --app-success: #10b981; /* emerald-500 (tertiary/aprobado) */
+
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 html,
@@ -26,7 +39,18 @@ body {
   margin: 0;
   background-color: var(--app-bg);
   color: var(--app-text);
-  font-family:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Cifras monoespaciadas y tabulares para moneda/datos (design system). */
+.font-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tablas de datos: zebra-striping suave (design system AdminPH).
+   Va fuera de @layer para tener prioridad sobre los estilos de PrimeNG. */
+.p-datatable-tbody > tr:nth-child(even) {
+  background-color: #f8fafc; /* slate-50 */
 }

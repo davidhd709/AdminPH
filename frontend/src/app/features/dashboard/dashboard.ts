@@ -146,7 +146,7 @@ export class Dashboard implements OnInit {
     this.chart.set({
       series: [{ name: "PQR", data }],
       chart: { type: "bar", height: 300, toolbar: { show: false }, fontFamily: "inherit" },
-      colors: ["#2563eb"],
+      colors: ["#1e40af"],
       plotOptions: { bar: { borderRadius: 6, columnWidth: "45%", distributed: false } },
       dataLabels: { enabled: true },
       fill: { opacity: 1 },
