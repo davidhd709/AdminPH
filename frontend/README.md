@@ -76,8 +76,11 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > TokenService, AuthStore, guards e interceptors. `pnpm run test:ci`.
 >
 > **Fase 6.3 — Mi perfil ✅.** Editar nombre/teléfono y cambiar contraseña
-> (`/users/me`), para cualquier rol. Las vistas OWNER/RESIDENT de "Mi cuenta"
-> quedan pendientes (faltan usuarios seed y endpoints self-service).
+> (`/users/me`), para cualquier rol.
+>
+> **Fase 7.1 — Mi cuenta: Mi unidad ✅.** Vista OWNER/RESIDENT con sus unidades,
+> cuotas y descarga de estado de cuenta / paz y salvo. Requirió seed de usuarios
+> owner/resident con login y el endpoint `GET /units/mine`.
 
 ---
 
@@ -227,6 +230,7 @@ src/app/
 | `/app/assemblies/:id` | privada + mismo guard | Detalle: asistencia, votaciones, votos |
 | `/app/documents` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Documentos (metadatos + URL) |
 | `/app/profile` | privada (authGuard) | Mi perfil: datos + cambiar contraseña |
+| `/app/my-unit` | privada + `roleGuard("OWNER", "RESIDENT")` | Mi unidad: cuotas + descargas |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 

@@ -1623,3 +1623,24 @@ GET /properties para ACCOUNTANT/SECURITY, generación de cuotas desde UI.
   (el backend revoca las sesiones). Topbar: ítem "Mi perfil" ahora navega.
 - Verificado e2e (con revert del seed): GET/PATCH me, password débil→400,
   fuerte→204, login con nueva OK, con vieja→401.
+
+## 2026-05-25 — Mi cuenta (owner/resident)
+
+### Fase 7.1 — Fundación owner + Mi unidad (backend + frontend)
+- **Backend (desbloquea la sección)**:
+  - Seed: usuarios demo con login `owner@adminph.com` y `resident@adminph.com`
+    (password `AdminPH2026!`), vinculados (Owner/Resident con userId) a la
+    primera unidad de la primera copropiedad + asignación PropertyUser (para
+    acceder a lo scoped). Idempotente.
+  - `GET /units/mine` (units.service.findMine + controller, antes de `:id`,
+    cualquier rol autenticado): unidades donde el usuario es propietario/
+    residente, con refs de copropiedad y torre. Tipo UnitWithRefs vía
+    Prisma.validator. 68 tests verdes.
+- **Frontend**: MyUnit type + UnitService.mine() + helper `blobErrorMessage` en
+  core/http/download. Módulo `my-account/my-unit` en `/app/my-unit`
+  (roleGuard OWNER/RESIDENT): tarjeta por unidad (copropiedad, torre, área,
+  coeficiente, estado) + descarga de estado de cuenta y paz y salvo (PDF) +
+  tabla de cuotas de la unidad. Nav "Estado de cuenta" repunta a /app/my-unit.
+- Verificado e2e logueado como owner y resident: /units/mine devuelve su unidad
+  (T1-101), estado de cuenta PDF descarga (%PDF), cuotas scoped (total 2).
+- Pendiente de "Mi cuenta": Mis PQR, Reservar y Comunicados (vistas owner).

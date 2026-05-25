@@ -19,6 +19,12 @@ export interface Unit {
   updatedAt: string;
 }
 
+/** Unidad del usuario actual (GET /units/mine), con refs de copropiedad y torre. */
+export interface MyUnit extends Unit {
+  property: { id: string; name: string };
+  tower: { id: string; name: string } | null;
+}
+
 /** Payload de creación (POST /units). Requiere propertyId. */
 export interface CreateUnitPayload {
   propertyId: string;

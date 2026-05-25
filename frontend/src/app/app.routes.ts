@@ -126,6 +126,12 @@ export const routes: Routes = [
         path: "profile",
         loadComponent: () => import("./features/profile/profile").then((m) => m.Profile),
       },
+      // ===== Mi cuenta (propietario/residente) =====
+      {
+        path: "my-unit",
+        canActivate: [roleGuard("OWNER", "RESIDENT")],
+        loadComponent: () => import("./features/my-account/my-unit").then((m) => m.MyUnitPage),
+      },
     ],
   },
 

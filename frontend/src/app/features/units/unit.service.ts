@@ -3,7 +3,7 @@ import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
 import { API } from "../../core/config/api.config";
 import { PageQuery, PaginatedResult, toHttpParams } from "../../core/http/pagination";
-import { CreateUnitPayload, Unit, UpdateUnitPayload } from "./unit.models";
+import { CreateUnitPayload, MyUnit, Unit, UpdateUnitPayload } from "./unit.models";
 
 /**
  * Acceso a la API de unidades (/api/v1/units).
@@ -17,6 +17,11 @@ export class UnitService {
   list(propertyId: string, query: PageQuery): Observable<PaginatedResult<Unit>> {
     const params = toHttpParams(query).set("propertyId", propertyId);
     return this.http.get<PaginatedResult<Unit>>(this.base, { params });
+  }
+
+  /** Unidades del usuario actual (propietario/residente). */
+  mine(): Observable<MyUnit[]> {
+    return this.http.get<MyUnit[]>(`${this.base}/mine`);
   }
 
   getById(id: string): Observable<Unit> {
