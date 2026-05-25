@@ -1519,3 +1519,20 @@ contabilidad; habilitar finanzas para ACCOUNTANT (requiere GET /properties).
 - Ruta /app/reservations con roleGuard(SUPERADMIN, COMPANY_ADMIN, PROPERTY_ADMIN).
 - Verificado e2e: ambos listados, crear zona, crear reserva, solapamiento→409,
   inicio≥fin→400, aprobar (reviewedAt), cancelar.
+
+### Fase 5.4 — Portería (commits backend + frontend)
+- **Backend — fix de 3 listados** (módulos `visitors` y `registry`):
+  visitors.findAll, registry.listPets y registry.listVehicles usaban doble
+  `@Query()` → los QueryDto ahora extienden PaginationDto, un solo `@Query()`.
+  Se ajustó el spec de visitors (findAll ya no acepta `{}` como query).
+  68 tests verdes.
+- **Frontend**: security.manage agregado a COMPANY_ADMIN y PROPERTY_ADMIN.
+  visitor + registry models/services. Módulo `security` (Portería): selector de
+  copropiedad + 3 bloques — Visitantes (filtro por tipo, registrar ingreso,
+  registrar salida con entryAt/exitAt), Vehículos (crear+eliminar) y Mascotas
+  (crear+eliminar); lookup de unidad por código. Guard de doble click via
+  actingId.
+- Ruta /app/security con roleGuard(SUPERADMIN, COMPANY_ADMIN, PROPERTY_ADMIN).
+  SECURITY diferido (no puede GET /properties para el selector).
+- Verificado e2e: los 3 listados, registrar ingreso/salida, crear/eliminar
+  vehículo y mascota, validación sin placa→400.

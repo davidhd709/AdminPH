@@ -58,6 +58,9 @@ Colombia). Consume la API del backend NestJS en `/api/v1`.
 > **Fase 5.3 — Operación: reservas ✅.** Módulo **Reservas**: zonas comunes
 > (crear/listar) y reservas (crear con horario, aprobar/rechazar/cancelar);
 > el backend valida solapamientos.
+>
+> **Fase 5.4 — Operación: portería ✅.** Módulo **Portería**: visitantes
+> (ingreso/salida), vehículos y mascotas por copropiedad.
 
 ---
 
@@ -202,6 +205,7 @@ src/app/
 | `/app/pqr` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Gestión de PQR (lista, detalle, respuestas) |
 | `/app/announcements` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Comunicados (lista, crear, detalle) |
 | `/app/reservations` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Reservas y zonas comunes |
+| `/app/security` | privada + `roleGuard("SUPERADMIN", "COMPANY_ADMIN", "PROPERTY_ADMIN")` | Portería (visitantes, vehículos, mascotas) |
 | `/403` | — | Acceso denegado |
 | `/404` | — | No encontrado |
 
@@ -221,6 +225,6 @@ src/app/
   unidades → personas).
 - **Finanzas** ✅: ~~conceptos~~ · ~~pagos~~ · ~~contabilidad~~ · ~~reportes~~.
 - **Operación** (en curso): ~~PQR~~ ✅ · ~~comunicados~~ ✅ · ~~reservas~~ ✅ ·
-  portería · asambleas · documentos.
+  ~~portería~~ ✅ · asambleas · documentos.
 - Tests (vitest) de guards/store/servicios/interceptors.
 - Revisar que `apexcharts` quede en chunk lazy (hoy infla el bundle inicial).

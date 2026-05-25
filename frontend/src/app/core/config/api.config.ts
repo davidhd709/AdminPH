@@ -39,4 +39,9 @@ export const API = {
     base: "/reservations",
     areas: "/reservations/areas",
   },
+  visitors: "/visitors",
+  registry: {
+    pets: "/registry/pets",
+    vehicles: "/registry/vehicles",
+  },
 } as const;

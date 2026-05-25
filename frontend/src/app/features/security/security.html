@@ -1,0 +1,283 @@
+<app-page-header title="Portería" subtitle="Visitantes, vehículos y mascotas por copropiedad." />
+
+<!-- Selector de copropiedad -->
+<div class="mb-6 max-w-md">
+  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+  <p-select
+    [options]="properties()"
+    optionLabel="name"
+    optionValue="id"
+    [ngModel]="selectedPropertyId()"
+    (onChange)="onPropertyChange($event.value)"
+    placeholder="Selecciona una copropiedad"
+    [filter]="true"
+    filterBy="name"
+    styleClass="w-full"
+    [fluid]="true"
+  />
+</div>
+
+@if (!selectedPropertyId()) {
+  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <app-empty-state icon="pi pi-shield" title="Selecciona una copropiedad" message="Elige una copropiedad para ver su portería." />
+  </div>
+} @else {
+  <!-- Visitantes -->
+  <div class="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div class="flex flex-col gap-3 border-b border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <h2 class="text-sm font-semibold text-gray-900">Visitantes</h2>
+      <div class="flex flex-wrap items-center gap-2">
+        <p-select
+          [options]="visitorTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="filterVisitorType()"
+          (onChange)="filterVisitorType.set($event.value); loadVisitors()"
+          placeholder="Todos los tipos"
+          [showClear]="true"
+          styleClass="w-44"
+        />
+        <p-button label="Registrar ingreso" icon="pi pi-plus" size="small" (onClick)="openVisitor()" />
+      </div>
+    </div>
+    <p-table [value]="visitors()" [loading]="loadingVisitors()" [paginator]="visitors().length > 10" [rows]="10" dataKey="id" size="small">
+      <ng-template #header>
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Unidad</th>
+          <th>Ingreso</th>
+          <th>Salida</th>
+          <th class="w-32 text-right">Acción</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-v>
+        <tr>
+          <td class="font-medium text-gray-900">
+            {{ v.fullName }}
+            @if (v.document) {
+              <span class="block text-xs font-normal text-gray-500">{{ v.document }}</span>
+            }
+          </td>
+          <td class="text-gray-600">{{ visitorTypeLabel(v.type) }}</td>
+          <td class="text-gray-600">{{ unitName(v.unitId) }}</td>
+          <td class="text-gray-600">{{ v.entryAt | date: "short" }}</td>
+          <td class="text-gray-600">{{ v.exitAt ? (v.exitAt | date: "short") : "—" }}</td>
+          <td class="text-right">
+            @if (!v.exitAt) {
+              <p-button label="Registrar salida" icon="pi pi-sign-out" severity="secondary" [text]="true" size="small" [disabled]="actingId() === v.id" (onClick)="registerExit(v)" />
+            } @else {
+              <span class="text-gray-300">—</span>
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6">
+            <app-empty-state icon="pi pi-users" title="Sin visitantes" message="Registra el primer ingreso con “Registrar ingreso”." />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- Vehículos -->
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <h2 class="text-sm font-semibold text-gray-900">Vehículos</h2>
+        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openVehicle()" />
+      </div>
+      <p-table [value]="vehicles()" [loading]="loadingVehicles()" [paginator]="vehicles().length > 10" [rows]="10" dataKey="id" size="small">
+        <ng-template #header>
+          <tr>
+            <th>Placa</th>
+            <th>Tipo</th>
+            <th>Unidad</th>
+            <th class="w-12 text-right">Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-veh>
+          <tr>
+            <td class="font-medium text-gray-900">
+              {{ veh.plate }}
+              @if (veh.brand || veh.color) {
+                <span class="block text-xs font-normal text-gray-500">{{ veh.brand }} {{ veh.color }}</span>
+              }
+            </td>
+            <td class="text-gray-600">{{ vehicleTypeLabel(veh.type) }}</td>
+            <td class="text-gray-600">{{ unitName(veh.unitId) }}</td>
+            <td class="text-right">
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Eliminar" [disabled]="actingId() === veh.id" (onClick)="removeVehicle(veh)" />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="4">
+              <app-empty-state icon="pi pi-car" title="Sin vehículos" message="Agrega el primer vehículo." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Mascotas -->
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <h2 class="text-sm font-semibold text-gray-900">Mascotas</h2>
+        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openPet()" />
+      </div>
+      <p-table [value]="pets()" [loading]="loadingPets()" [paginator]="pets().length > 10" [rows]="10" dataKey="id" size="small">
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Especie</th>
+            <th>Unidad</th>
+            <th class="w-12 text-right">Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-pet>
+          <tr>
+            <td class="font-medium text-gray-900">{{ pet.name }}</td>
+            <td class="text-gray-600">{{ pet.species }}{{ pet.breed ? " · " + pet.breed : "" }}</td>
+            <td class="text-gray-600">{{ unitName(pet.unitId) }}</td>
+            <td class="text-right">
+              <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" ariaLabel="Eliminar" [disabled]="actingId() === pet.id" (onClick)="removePet(pet)" />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="4">
+              <app-empty-state icon="pi pi-heart" title="Sin mascotas" message="Agrega la primera mascota." />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+}
+
+<!-- Diálogo: registrar visitante -->
+<p-dialog [visible]="visitorVisible()" (visibleChange)="visitorVisible.set($event)" [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: '32rem' }" header="Registrar ingreso">
+  <form [formGroup]="visitorForm" (ngSubmit)="saveVisitor()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label for="fullName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre completo</label>
+      <input pInputText id="fullName" formControlName="fullName" placeholder="Juan Pérez" class="w-full" [fluid]="true" />
+      @if (visitorForm.controls.fullName.touched && visitorForm.controls.fullName.invalid) {
+        <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
+      }
+    </div>
+    <div>
+      <label for="document" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Documento <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="document" formControlName="document" placeholder="CC 123456" class="w-full" [fluid]="true" />
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <p-select formControlName="type" [options]="visitorTypeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div class="sm:col-span-2">
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">
+        Unidad destino <span class="text-gray-400">(opcional)</span>
+      </label>
+      <p-select formControlName="unitId" [options]="units()" optionLabel="code" optionValue="id" placeholder="Sin unidad" [showClear]="true" [filter]="true" filterBy="code" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div class="sm:col-span-2">
+      <label for="vnotes" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Notas <span class="text-gray-400">(opcional)</span>
+      </label>
+      <textarea pTextarea id="vnotes" formControlName="notes" rows="2" placeholder="Observaciones…" class="w-full" [fluid]="true"></textarea>
+    </div>
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="visitorVisible.set(false)" />
+      <p-button type="submit" label="Registrar" [loading]="savingVisitor()" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Diálogo: registrar vehículo -->
+<p-dialog [visible]="vehicleVisible()" (visibleChange)="vehicleVisible.set($event)" [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: '32rem' }" header="Registrar vehículo">
+  <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad</label>
+      <p-select formControlName="unitId" [options]="units()" optionLabel="code" optionValue="id" placeholder="Selecciona" [filter]="true" filterBy="code" styleClass="w-full" [fluid]="true" />
+      @if (vehicleForm.controls.unitId.touched && vehicleForm.controls.unitId.invalid) {
+        <small class="mt-1 block text-red-600">Selecciona la unidad.</small>
+      }
+    </div>
+    <div>
+      <label for="plate" class="mb-1.5 block text-sm font-medium text-gray-700">Placa</label>
+      <input pInputText id="plate" formControlName="plate" placeholder="ABC123" class="w-full" [fluid]="true" />
+      @if (vehicleForm.controls.plate.touched && vehicleForm.controls.plate.invalid) {
+        <small class="mt-1 block text-red-600">La placa es obligatoria.</small>
+      }
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <p-select formControlName="type" [options]="vehicleTypeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
+    </div>
+    <div>
+      <label for="parkingSpot" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Parqueadero <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="parkingSpot" formControlName="parkingSpot" placeholder="P-12" class="w-full" [fluid]="true" />
+    </div>
+    <div>
+      <label for="brand" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Marca <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="brand" formControlName="brand" placeholder="Toyota" class="w-full" [fluid]="true" />
+    </div>
+    <div>
+      <label for="color" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Color <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="color" formControlName="color" placeholder="Rojo" class="w-full" [fluid]="true" />
+    </div>
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="vehicleVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="savingVehicle()" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Diálogo: registrar mascota -->
+<p-dialog [visible]="petVisible()" (visibleChange)="petVisible.set($event)" [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: '30rem' }" header="Registrar mascota">
+  <form [formGroup]="petForm" (ngSubmit)="savePet()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad</label>
+      <p-select formControlName="unitId" [options]="units()" optionLabel="code" optionValue="id" placeholder="Selecciona" [filter]="true" filterBy="code" styleClass="w-full" [fluid]="true" />
+      @if (petForm.controls.unitId.touched && petForm.controls.unitId.invalid) {
+        <small class="mt-1 block text-red-600">Selecciona la unidad.</small>
+      }
+    </div>
+    <div>
+      <label for="petName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <input pInputText id="petName" formControlName="name" placeholder="Firulais" class="w-full" [fluid]="true" />
+      @if (petForm.controls.name.touched && petForm.controls.name.invalid) {
+        <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
+      }
+    </div>
+    <div>
+      <label for="species" class="mb-1.5 block text-sm font-medium text-gray-700">Especie</label>
+      <input pInputText id="species" formControlName="species" placeholder="Perro" class="w-full" [fluid]="true" />
+      @if (petForm.controls.species.touched && petForm.controls.species.invalid) {
+        <small class="mt-1 block text-red-600">La especie es obligatoria.</small>
+      }
+    </div>
+    <div class="sm:col-span-2">
+      <label for="breed" class="mb-1.5 block text-sm font-medium text-gray-700">
+        Raza <span class="text-gray-400">(opcional)</span>
+      </label>
+      <input pInputText id="breed" formControlName="breed" placeholder="Labrador" class="w-full" [fluid]="true" />
+    </div>
+    <div class="flex justify-end gap-2 pt-2 sm:col-span-2">
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="petVisible.set(false)" />
+      <p-button type="submit" label="Guardar" [loading]="savingPet()" />
+    </div>
+  </form>
+</p-dialog>
