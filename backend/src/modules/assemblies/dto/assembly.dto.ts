@@ -13,6 +13,7 @@ import {
   MaxLength,
   Min,
 } from "class-validator";
+import { PaginationDto } from "../../../core/dto/pagination.dto";
 
 export class CreateAssemblyDto {
   @ApiProperty({ description: "Copropiedad a la que pertenece la asamblea" })
@@ -93,7 +94,7 @@ export class CastVoteDto {
   choice!: VoteChoice;
 }
 
-export class AssemblyQueryDto {
+export class AssemblyQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: "Filtrar por copropiedad" })
   @IsOptional()
   @IsUUID()

@@ -12,7 +12,6 @@ import {
 } from "./dto/assembly.dto";
 import { CurrentUser } from "../../core/decorators/current-user.decorator";
 import { Roles } from "../../core/decorators/roles.decorator";
-import { PaginationDto } from "../../core/dto/pagination.dto";
 import { AuthUser } from "../../core/types/auth-user";
 
 @ApiTags("assemblies")
@@ -62,12 +61,8 @@ export class AssembliesController {
   }
 
   @Get()
-  listAssemblies(
-    @CurrentUser() user: AuthUser,
-    @Query() query: AssemblyQueryDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.assembliesService.listAssemblies(user, query, pagination);
+  listAssemblies(@CurrentUser() user: AuthUser, @Query() query: AssemblyQueryDto) {
+    return this.assembliesService.listAssemblies(user, query, query);
   }
 
   @Get(":id")
