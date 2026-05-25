@@ -1,4 +1,8 @@
-<app-page-header title="Torres" subtitle="Torres o bloques de cada copropiedad.">
+<app-page-header
+  title="Torres"
+  subtitle="Torres o bloques de cada copropiedad."
+  [breadcrumbs]="[{ label: 'Administración' }, { label: 'Torres' }]"
+>
   <p-button
     label="Nueva torre"
     icon="pi pi-plus"
@@ -8,23 +12,25 @@
 </app-page-header>
 
 <!-- Selector de copropiedad -->
-<div class="mb-4 max-w-md">
-  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
-  <p-select
-    [options]="properties()"
-    optionLabel="name"
-    optionValue="id"
-    [ngModel]="selectedPropertyId()"
-    (onChange)="onPropertyChange($event.value)"
-    placeholder="Selecciona una copropiedad"
-    [filter]="true"
-    filterBy="name"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-</div>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
+    <p-select
+      [options]="properties()"
+      optionLabel="name"
+      optionValue="id"
+      [ngModel]="selectedPropertyId()"
+      (onChange)="onPropertyChange($event.value)"
+      placeholder="Selecciona una copropiedad"
+      [filter]="true"
+      filterBy="name"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+</app-action-toolbar>
 
-<div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+<app-section-card [bodyPadding]="false">
   <p-table
     [value]="towers()"
     [lazy]="true"
@@ -50,9 +56,9 @@
 
     <ng-template #body let-tower>
       <tr>
-        <td class="font-medium text-gray-900">{{ tower.name }}</td>
-        <td class="text-gray-600">{{ tower.description || "—" }}</td>
-        <td class="text-gray-600">{{ tower.createdAt | date: "mediumDate" }}</td>
+        <td class="font-medium text-slate-900">{{ tower.name }}</td>
+        <td class="text-slate-600">{{ tower.description || "—" }}</td>
+        <td class="text-slate-600">{{ tower.createdAt | date: "mediumDate" }}</td>
         <td class="text-right">
           <p-button
             icon="pi pi-pencil"
@@ -92,7 +98,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
+</app-section-card>
 
 <!-- Diálogo de alta / edición -->
 <p-dialog
@@ -106,7 +112,7 @@
 >
   <form [formGroup]="form" (ngSubmit)="save()" class="space-y-5 pt-2">
     <div>
-      <label for="name" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <label for="name" class="mb-1.5 block text-sm font-medium text-slate-700">Nombre</label>
       <input pInputText id="name" formControlName="name" placeholder="Torre A" class="w-full" [fluid]="true" />
       @if (form.controls.name.touched && form.controls.name.invalid) {
         <small class="mt-1 block text-red-600">El nombre es obligatorio (máx. 120).</small>
@@ -114,8 +120,8 @@
     </div>
 
     <div>
-      <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700">
-        Descripción <span class="text-gray-400">(opcional)</span>
+      <label for="description" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Descripción <span class="text-slate-400">(opcional)</span>
       </label>
       <textarea
         pTextarea

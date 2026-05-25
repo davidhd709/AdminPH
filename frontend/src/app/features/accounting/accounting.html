@@ -1,34 +1,38 @@
-<app-page-header title="Contabilidad" subtitle="Movimientos, categorías y cuentas por copropiedad." />
+<app-page-header
+  title="Contabilidad"
+  subtitle="Movimientos, categorías y cuentas por copropiedad."
+  [breadcrumbs]="[{ label: 'Finanzas' }, { label: 'Contabilidad' }]"
+/>
 
 <!-- Selector de copropiedad -->
-<div class="mb-6 max-w-md">
-  <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
-  <p-select
-    [options]="properties()"
-    optionLabel="name"
-    optionValue="id"
-    [ngModel]="selectedPropertyId()"
-    (onChange)="onPropertyChange($event.value)"
-    placeholder="Selecciona una copropiedad"
-    [filter]="true"
-    filterBy="name"
-    styleClass="w-full"
-    [fluid]="true"
-  />
-</div>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
+    <p-select
+      [options]="properties()"
+      optionLabel="name"
+      optionValue="id"
+      [ngModel]="selectedPropertyId()"
+      (onChange)="onPropertyChange($event.value)"
+      placeholder="Selecciona una copropiedad"
+      [filter]="true"
+      filterBy="name"
+      styleClass="w-full"
+      [fluid]="true"
+    />
+  </div>
+</app-action-toolbar>
 
 @if (!selectedPropertyId()) {
-  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <app-section-card [bodyPadding]="false">
     <app-empty-state icon="pi pi-calculator" title="Selecciona una copropiedad" message="Elige una copropiedad para ver su contabilidad." />
-  </div>
+  </app-section-card>
 } @else {
   <!-- Movimientos -->
-  <div class="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-    <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-      <h2 class="text-sm font-semibold text-gray-900">Movimientos</h2>
-      <p-button label="Registrar movimiento" icon="pi pi-plus" size="small" (onClick)="openTx()" />
-    </div>
-    <p-table
+  <div class="mb-6">
+    <app-section-card title="Movimientos" [bodyPadding]="false">
+      <p-button card-actions label="Registrar movimiento" icon="pi pi-plus" size="small" (onClick)="openTx()" />
+      <p-table
       [value]="transactions()"
       [loading]="loadingTx()"
       [paginator]="transactions().length > 10"
@@ -48,7 +52,7 @@
       </ng-template>
       <ng-template #body let-tx>
         <tr>
-          <td class="text-gray-600">{{ tx.date | date: "mediumDate" }}</td>
+          <td class="text-slate-600">{{ tx.date | date: "mediumDate" }}</td>
           <td>
             <span
               class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
@@ -57,8 +61,8 @@
               {{ tx.type === "INCOME" ? "Ingreso" : "Egreso" }}
             </span>
           </td>
-          <td class="text-gray-600">{{ categoryName(tx.categoryId) }}</td>
-          <td class="text-gray-900">{{ tx.description }}</td>
+          <td class="text-slate-600">{{ categoryName(tx.categoryId) }}</td>
+          <td class="text-slate-900">{{ tx.description }}</td>
           <td
             class="text-right font-medium"
             [class]="tx.type === 'INCOME' ? 'text-green-700' : 'text-red-700'"
@@ -78,15 +82,13 @@
         </tr>
       </ng-template>
     </p-table>
+    </app-section-card>
   </div>
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Categorías -->
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-900">Categorías</h2>
-        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openCat()" />
-      </div>
+    <app-section-card title="Categorías" [bodyPadding]="false">
+      <p-button card-actions label="Agregar" icon="pi pi-plus" size="small" (onClick)="openCat()" />
       <p-table [value]="categories()" dataKey="id" size="small">
         <ng-template #header>
           <tr>
@@ -96,8 +98,8 @@
         </ng-template>
         <ng-template #body let-cat>
           <tr>
-            <td class="font-medium text-gray-900">{{ cat.name }}</td>
-            <td class="text-gray-600">{{ cat.type === "INCOME" ? "Ingreso" : "Egreso" }}</td>
+            <td class="font-medium text-slate-900">{{ cat.name }}</td>
+            <td class="text-slate-600">{{ cat.type === "INCOME" ? "Ingreso" : "Egreso" }}</td>
           </tr>
         </ng-template>
         <ng-template #emptymessage>
@@ -108,14 +110,11 @@
           </tr>
         </ng-template>
       </p-table>
-    </div>
+    </app-section-card>
 
     <!-- Cuentas bancarias -->
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-900">Cuentas bancarias</h2>
-        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openBank()" />
-      </div>
+    <app-section-card title="Cuentas bancarias" [bodyPadding]="false">
+      <p-button card-actions label="Agregar" icon="pi pi-plus" size="small" (onClick)="openBank()" />
       <p-table [value]="bankAccounts()" dataKey="id" size="small">
         <ng-template #header>
           <tr>
@@ -126,9 +125,9 @@
         </ng-template>
         <ng-template #body let-acc>
           <tr>
-            <td class="font-medium text-gray-900">{{ acc.name }}</td>
-            <td class="text-gray-600">{{ acc.bank }}</td>
-            <td class="text-gray-600">{{ acc.accountNumber }}</td>
+            <td class="font-medium text-slate-900">{{ acc.name }}</td>
+            <td class="text-slate-600">{{ acc.bank }}</td>
+            <td class="text-slate-600">{{ acc.accountNumber }}</td>
           </tr>
         </ng-template>
         <ng-template #emptymessage>
@@ -139,7 +138,7 @@
           </tr>
         </ng-template>
       </p-table>
-    </div>
+    </app-section-card>
   </div>
 }
 
@@ -155,36 +154,36 @@
 >
   <form [formGroup]="txForm" (ngSubmit)="saveTx()" class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Tipo</label>
       <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
     </div>
     <div>
-      <label for="amount" class="mb-1.5 block text-sm font-medium text-gray-700">Monto</label>
+      <label for="amount" class="mb-1.5 block text-sm font-medium text-slate-700">Monto</label>
       <p-inputNumber inputId="amount" formControlName="amount" mode="currency" currency="COP" [minFractionDigits]="0" [maxFractionDigits]="2" [min]="0" styleClass="w-full" [fluid]="true" />
       @if (txForm.controls.amount.touched && txForm.controls.amount.invalid) {
         <small class="mt-1 block text-red-600">Ingresa un monto mayor a 0.</small>
       }
     </div>
     <div class="sm:col-span-2">
-      <label for="description" class="mb-1.5 block text-sm font-medium text-gray-700">Descripción</label>
+      <label for="description" class="mb-1.5 block text-sm font-medium text-slate-700">Descripción</label>
       <input pInputText id="description" formControlName="description" placeholder="Pago factura energía" class="w-full" [fluid]="true" />
       @if (txForm.controls.description.touched && txForm.controls.description.invalid) {
         <small class="mt-1 block text-red-600">La descripción es obligatoria.</small>
       }
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Fecha</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Fecha</label>
       <p-datepicker formControlName="date" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full" [fluid]="true" />
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">
-        Categoría <span class="text-gray-400">(opcional)</span>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+        Categoría <span class="text-slate-400">(opcional)</span>
       </label>
       <p-select formControlName="categoryId" [options]="categories()" optionLabel="name" optionValue="id" placeholder="Sin categoría" [showClear]="true" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="sm:col-span-2">
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">
-        Cuenta bancaria <span class="text-gray-400">(opcional)</span>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">
+        Cuenta bancaria <span class="text-slate-400">(opcional)</span>
       </label>
       <p-select formControlName="bankAccountId" [options]="bankAccounts()" optionLabel="name" optionValue="id" placeholder="Sin cuenta" [showClear]="true" styleClass="w-full" [fluid]="true" />
     </div>
@@ -208,14 +207,14 @@
 >
   <form [formGroup]="catForm" (ngSubmit)="saveCat()" class="space-y-5 pt-2">
     <div>
-      <label for="catName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <label for="catName" class="mb-1.5 block text-sm font-medium text-slate-700">Nombre</label>
       <input pInputText id="catName" formControlName="name" placeholder="Mantenimiento ascensores" class="w-full" [fluid]="true" />
       @if (catForm.controls.name.touched && catForm.controls.name.invalid) {
         <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
       }
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Tipo</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Tipo</label>
       <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" styleClass="w-full" [fluid]="true" />
     </div>
     <div class="flex justify-end gap-2 pt-2">
@@ -237,21 +236,21 @@
 >
   <form [formGroup]="bankForm" (ngSubmit)="saveBank()" class="space-y-5 pt-2">
     <div>
-      <label for="bankAccName" class="mb-1.5 block text-sm font-medium text-gray-700">Nombre</label>
+      <label for="bankAccName" class="mb-1.5 block text-sm font-medium text-slate-700">Nombre</label>
       <input pInputText id="bankAccName" formControlName="name" placeholder="Cuenta de ahorros principal" class="w-full" [fluid]="true" />
       @if (bankForm.controls.name.touched && bankForm.controls.name.invalid) {
         <small class="mt-1 block text-red-600">El nombre es obligatorio.</small>
       }
     </div>
     <div>
-      <label for="bankEntity" class="mb-1.5 block text-sm font-medium text-gray-700">Banco</label>
+      <label for="bankEntity" class="mb-1.5 block text-sm font-medium text-slate-700">Banco</label>
       <input pInputText id="bankEntity" formControlName="bank" placeholder="Bancolombia" class="w-full" [fluid]="true" />
       @if (bankForm.controls.bank.touched && bankForm.controls.bank.invalid) {
         <small class="mt-1 block text-red-600">El banco es obligatorio.</small>
       }
     </div>
     <div>
-      <label for="accNumber" class="mb-1.5 block text-sm font-medium text-gray-700">Número de cuenta</label>
+      <label for="accNumber" class="mb-1.5 block text-sm font-medium text-slate-700">Número de cuenta</label>
       <input pInputText id="accNumber" formControlName="accountNumber" placeholder="1234567890" class="w-full" [fluid]="true" />
       @if (bankForm.controls.accountNumber.touched && bankForm.controls.accountNumber.invalid) {
         <small class="mt-1 block text-red-600">El número es obligatorio.</small>

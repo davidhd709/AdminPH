@@ -1,12 +1,13 @@
 <app-page-header
   title="Propietarios y residentes"
   subtitle="Personas vinculadas a cada unidad."
+  [breadcrumbs]="[{ label: 'Administración' }, { label: 'Propietarios y residentes' }]"
 />
 
 <!-- Selectores: copropiedad + unidad -->
-<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-  <div>
-    <label class="mb-1.5 block text-sm font-medium text-gray-700">Copropiedad</label>
+<app-action-toolbar>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Copropiedad</label>
     <p-select
       [options]="properties()"
       optionLabel="name"
@@ -20,8 +21,8 @@
       [fluid]="true"
     />
   </div>
-  <div>
-    <label class="mb-1.5 block text-sm font-medium text-gray-700">Unidad</label>
+  <div class="w-full sm:w-72">
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Unidad</label>
     <p-select
       [options]="units()"
       optionLabel="code"
@@ -36,24 +37,21 @@
       [fluid]="true"
     />
   </div>
-</div>
+</app-action-toolbar>
 
 @if (!selectedUnitId()) {
-  <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <app-section-card [bodyPadding]="false">
     <app-empty-state
       icon="pi pi-users"
       title="Selecciona una unidad"
       message="Elige una copropiedad y una unidad para ver sus propietarios y residentes."
     />
-  </div>
+  </app-section-card>
 } @else {
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Propietarios -->
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-900">Propietarios</h2>
-        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openAdd('owner')" />
-      </div>
+    <app-section-card title="Propietarios" [bodyPadding]="false">
+      <p-button card-actions label="Agregar" icon="pi pi-plus" size="small" (onClick)="openAdd('owner')" />
       <p-table [value]="owners()" [loading]="loadingOwners()" dataKey="id" size="small">
         <ng-template #header>
           <tr>
@@ -66,18 +64,18 @@
         </ng-template>
         <ng-template #body let-owner>
           <tr>
-            <td class="font-medium text-gray-900">
+            <td class="font-medium text-slate-900">
               {{ owner.user?.fullName ?? "Sin usuario" }}
               @if (owner.user?.email) {
-                <span class="block text-xs font-normal text-gray-500">{{ owner.user.email }}</span>
+                <span class="block text-xs font-normal text-slate-500">{{ owner.user.email }}</span>
               }
             </td>
-            <td class="text-gray-600">{{ owner.user?.document ?? "—" }}</td>
+            <td class="text-slate-600">{{ owner.user?.document ?? "—" }}</td>
             <td>
               @if (owner.isPrimary) {
                 <i class="pi pi-check text-green-600" aria-label="Principal"></i>
               } @else {
-                <span class="text-gray-400">—</span>
+                <span class="text-slate-400">—</span>
               }
             </td>
             <td><app-status-badge [status]="owner.status" /></td>
@@ -101,14 +99,11 @@
           </tr>
         </ng-template>
       </p-table>
-    </div>
+    </app-section-card>
 
     <!-- Residentes -->
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-900">Residentes</h2>
-        <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openAdd('resident')" />
-      </div>
+    <app-section-card title="Residentes" [bodyPadding]="false">
+      <p-button card-actions label="Agregar" icon="pi pi-plus" size="small" (onClick)="openAdd('resident')" />
       <p-table [value]="residents()" [loading]="loadingResidents()" dataKey="id" size="small">
         <ng-template #header>
           <tr>
@@ -120,13 +115,13 @@
         </ng-template>
         <ng-template #body let-resident>
           <tr>
-            <td class="font-medium text-gray-900">
+            <td class="font-medium text-slate-900">
               {{ resident.user?.fullName ?? "Sin usuario" }}
               @if (resident.user?.email) {
-                <span class="block text-xs font-normal text-gray-500">{{ resident.user.email }}</span>
+                <span class="block text-xs font-normal text-slate-500">{{ resident.user.email }}</span>
               }
             </td>
-            <td class="text-gray-600">{{ resident.user?.document ?? "—" }}</td>
+            <td class="text-slate-600">{{ resident.user?.document ?? "—" }}</td>
             <td><app-status-badge [status]="resident.status" /></td>
             <td class="text-right">
               <p-button
@@ -148,7 +143,7 @@
           </tr>
         </ng-template>
       </p-table>
-    </div>
+    </app-section-card>
   </div>
 }
 
@@ -164,7 +159,7 @@
 >
   <form [formGroup]="form" (ngSubmit)="save()" class="space-y-5 pt-2">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Usuario</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Usuario</label>
       <p-select
         formControlName="userId"
         [options]="userOptions()"
@@ -182,7 +177,7 @@
     </div>
 
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-gray-700">Estado</label>
+      <label class="mb-1.5 block text-sm font-medium text-slate-700">Estado</label>
       <p-select
         formControlName="status"
         [options]="statusOptions"
