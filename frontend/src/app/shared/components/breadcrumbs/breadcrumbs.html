@@ -1,0 +1,13 @@
+<nav class="flex flex-wrap items-center gap-1.5 text-sm text-slate-500" aria-label="Ruta de navegación">
+  <a routerLink="/app/dashboard" class="transition-colors hover:text-slate-700" aria-label="Inicio">
+    <i class="pi pi-home text-xs"></i>
+  </a>
+  @for (crumb of resolved(); track crumb.label) {
+    <i class="pi pi-angle-right text-xs text-slate-300"></i>
+    @if (crumb.link) {
+      <a [routerLink]="crumb.link" class="transition-colors hover:text-slate-700">{{ crumb.label }}</a>
+    } @else {
+      <span class="font-medium text-slate-700" aria-current="page">{{ crumb.label }}</span>
+    }
+  }
+</nav>
