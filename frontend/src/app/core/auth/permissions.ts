@@ -98,7 +98,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "pqr.submit",
     "reservations.book",
     "announcements.view",
-    "documents.view",
   ],
   RESIDENT: [
     "dashboard.view",

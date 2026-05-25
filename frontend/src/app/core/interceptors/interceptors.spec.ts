@@ -80,4 +80,31 @@ describe("errorInterceptor", () => {
     expect(navSpy).toHaveBeenCalledWith(["/login"]);
     httpMock.verify();
   });
+
+  it("ante un 429 NO limpia la sesión ni navega a /login (muestra aviso controlado)", () => {
+    const tokens = TestBed.inject(TokenService);
+    tokens.setTokens({ access_token: "a", refresh_token: "r" });
+    const router = TestBed.inject(Router);
+    const navSpy = vi.spyOn(router, "navigate").mockResolvedValue(true);
+    const messages = TestBed.inject(MessageService);
+    const addSpy = vi.spyOn(messages, "add");
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    http.get(`${API.baseUrl}${API.users.me}`).subscribe({ error: () => undefined });
+    httpMock
+      .expectOne(`${API.baseUrl}${API.users.me}`)
+      .flush("rate limit", { status: 429, statusText: "Too Many Requests" });
+
+    // La sesión se mantiene y no hay redirección.
+    expect(tokens.hasSession()).toBe(true);
+    expect(navSpy).not.toHaveBeenCalled();
+    // Se informa con un aviso (no se oculta el error en silencio).
+    expect(addSpy).toHaveBeenCalledTimes(1);
+    expect(addSpy.mock.calls[0][0]).toMatchObject({
+      severity: "warn",
+      summary: "Demasiadas solicitudes",
+    });
+    httpMock.verify();
+  });
 });

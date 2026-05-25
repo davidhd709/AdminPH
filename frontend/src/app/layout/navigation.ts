@@ -1,4 +1,5 @@
-import { Permission } from "../core/auth/permissions";
+import { UserRole } from "../core/auth/auth.models";
+import { Permission, roleHasPermission } from "../core/auth/permissions";
 
 export interface NavItem {
   label: string;
@@ -63,3 +64,18 @@ export const NAVIGATION: NavSection[] = [
     ],
   },
 ];
+
+/**
+ * Secciones del menú visibles para un rol: filtra los items por permiso y
+ * descarta las secciones que queden vacías. Es una función pura (sin DI) para
+ * poder testearla sin montar el componente ni acoplarse al DOM de PrimeNG.
+ */
+export function visibleNavSections(role: UserRole | null): NavSection[] {
+  if (!role) return [];
+  return NAVIGATION.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (item) => !item.permission || roleHasPermission(role, item.permission),
+    ),
+  })).filter((section) => section.items.length > 0);
+}
